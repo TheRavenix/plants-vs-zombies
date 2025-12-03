@@ -3,7 +3,6 @@ import {
   BOARD_HEIGHT,
   BOARD_ROWS,
   BOARD_WIDTH,
-  drawBoardTileStroke,
   TILE_HEIGHT,
   TILE_WIDTH,
   type Board,
@@ -86,7 +85,7 @@ function draw(game: Game, board: Board) {
 
   ctx.clearRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
 
-  drawBoardTileStroke(board);
+  board.drawTileStroke(board);
 
   for (const zombie of game.zombieManager.zombies) {
     zombie.draw({
