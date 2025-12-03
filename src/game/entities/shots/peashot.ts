@@ -3,8 +3,12 @@ import { drawShotId, drawShotRect, syncShotHitbox } from "./helpers";
 
 import { SHOT_HEIGHT, SHOT_WIDTH, ShotId } from "./constants";
 
-import type { ShotDrawOptions, ShotState, ShotUpdateOptions } from "./types";
-import type { Shot } from "./interfaces";
+import type {
+  Shot,
+  ShotDrawOptions,
+  ShotState,
+  ShotUpdateOptions,
+} from "./types";
 import type { Vector2 } from "@/game/utils/vector";
 
 type PeashotState = ShotState;
@@ -35,13 +39,13 @@ function createPeashot(options: CreatePeashotOptions): Peashot {
   };
 
   return {
-    getState: () => state,
-    draw: drawPeashot,
-    update: updatePeashot,
+    state,
+    draw,
+    update,
   };
 }
 
-function drawPeashot(options: ShotDrawOptions<PeashotState>) {
+function draw(options: ShotDrawOptions<PeashotState>) {
   const { state, board } = options;
   const { ctx } = board;
 
@@ -54,7 +58,7 @@ function drawPeashot(options: ShotDrawOptions<PeashotState>) {
   drawHitbox(state.hitbox, board);
 }
 
-function updatePeashot(options: ShotUpdateOptions<PeashotState>) {
+function update(options: ShotUpdateOptions<PeashotState>) {
   const { deltaTime, state } = options;
 
   state.x += state.speed * (deltaTime / 1000);
@@ -62,4 +66,4 @@ function updatePeashot(options: ShotUpdateOptions<PeashotState>) {
   syncShotHitbox(options);
 }
 
-export { createPeashot, drawPeashot, updatePeashot };
+export { createPeashot };

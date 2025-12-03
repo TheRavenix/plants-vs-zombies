@@ -1,5 +1,5 @@
 export * from "./types";
-export * from "./interfaces";
 export * from "./constants";
 export * from "./helpers";
+export * from "./shot-manager";
 export * from "./peashot";

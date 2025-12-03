@@ -69,13 +69,12 @@ function updatePeashooter(options: PlantUpdateOptions<PeashooterState>) {
   state.shotTimer += deltaTime;
 
   if (state.shotTimer >= PEASHOOTER_SHOT_INTERVAL) {
-    game.shots.push(
+    game.shotManager.addShot(
       createPeashot({
         x: state.x + state.width,
         y: state.y + state.height / 2 - SHOT_HEIGHT / 2,
       })
     );
-
     state.shotTimer = 0;
   }
 

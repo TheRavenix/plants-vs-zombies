@@ -11,6 +11,12 @@ export type ShotState = {
 } & Vector2 &
   Size;
 
+export type Shot<S extends ShotState = ShotState> = {
+  state: S;
+  draw(options: ShotDrawOptions): void;
+  update(options: ShotUpdateOptions): void;
+};
+
 export type ShotDrawOptions<S extends ShotState = ShotState> = {
   state: S;
   board: Board;
