@@ -1,8 +1,8 @@
 export const SHOT_WIDTH = 32;
 export const SHOT_HEIGHT = 32;
 
-export const ShotId = {
+export const ShotName = {
   Peashot: "peashot",
 } as const;
 
-export type ShotId = (typeof ShotId)[keyof typeof ShotId];
+export type ShotName = (typeof ShotName)[keyof typeof ShotName];

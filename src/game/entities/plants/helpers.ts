@@ -1,5 +1,9 @@
 import type { PlantDrawOptions, PlantUpdateOptions } from "./types";
 
+export function createPlantId(): string {
+  return `PLANT-${crypto.randomUUID()}`;
+}
+
 export function drawPlantRect({ board, state }: PlantDrawOptions) {
   const { ctx } = board;
 
@@ -12,7 +16,7 @@ export function drawPlantRect({ board, state }: PlantDrawOptions) {
   ctx.fill();
 }
 
-export function drawPlantId({ board, state }: PlantDrawOptions) {
+export function drawPlantName({ board, state }: PlantDrawOptions) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -20,7 +24,7 @@ export function drawPlantId({ board, state }: PlantDrawOptions) {
   }
 
   ctx.fillStyle = "#000000";
-  ctx.fillText(state.id, state.x, state.y + state.height / 2);
+  ctx.fillText(state.name, state.x, state.y + state.height / 2);
 }
 
 export function syncPlantHitbox({ state }: PlantUpdateOptions) {

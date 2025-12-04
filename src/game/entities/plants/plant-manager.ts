@@ -1,7 +1,7 @@
 import type { Plant } from "./types";
 
 type PlantManager = {
-  plants: Plant[];
+  get plants(): Plant[];
   addPlant(plant: Plant): void;
   addPlants(...plants: Plant[]): void;
 };
@@ -10,7 +10,9 @@ function createPlantManager(): PlantManager {
   const plants: Plant[] = [];
 
   return {
-    plants,
+    get plants() {
+      return plants;
+    },
     addPlant: (plant) => addPlant(plants, plant),
     addPlants: (...pList) => {
       for (const plant of pList) {

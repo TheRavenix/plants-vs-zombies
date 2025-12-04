@@ -1,7 +1,12 @@
-import { createHitbox } from "@/game/helpers/hitbox";
-import { drawShotId, drawShotRect, syncShotHitbox } from "./helpers";
+import { createHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import {
+  createShotId,
+  drawShotName,
+  drawShotRect,
+  syncShotHitbox,
+} from "./helpers";
 
-import { SHOT_HEIGHT, SHOT_WIDTH, ShotId } from "./constants";
+import { SHOT_HEIGHT, SHOT_WIDTH, ShotName } from "./constants";
 
 import type {
   Shot,
@@ -23,7 +28,8 @@ const PEASHOT_SPEED = 150;
 function createPeashot(options: CreatePeashotOptions): Peashot {
   const { x, y } = options;
   const state: PeashotState = {
-    id: ShotId.Peashot,
+    name: ShotName.Peashot,
+    id: createShotId(),
     x,
     y,
     width: SHOT_WIDTH,
@@ -39,7 +45,9 @@ function createPeashot(options: CreatePeashotOptions): Peashot {
   };
 
   return {
-    state,
+    get state() {
+      return state;
+    },
     draw,
     update,
   };
@@ -54,15 +62,41 @@ function draw(options: ShotDrawOptions<PeashotState>) {
   }
 
   drawShotRect(options);
-  drawShotId(options);
+  drawShotName(options);
 
   state.hitbox.draw(state.hitbox, board);
 }
 
 function update(options: ShotUpdateOptions<PeashotState>) {
-  const { deltaTime, state } = options;
+  const { deltaTime, state, game } = options;
 
   state.x += state.speed * (deltaTime / 1000);
+
+  let deleteZombieId: string | null = null;
+
+  for (let i = 0; i < game.zombieManager.zombies.length; i++) {
+    const zombie = game.zombieManager.zombies[i];
+
+    if (isHitboxColliding(state.hitbox, zombie.state.hitbox)) {
+      deleteZombieId = zombie.state.id;
+      break;
+    }
+  }
+
+  if (deleteZombieId !== null) {
+    const zombie = game.zombieManager.findZombieById(deleteZombieId);
+
+    if (zombie === undefined) {
+      return;
+    }
+
+    zombie.takeDamage({
+      state: zombie.state,
+      damage: PEASHOT_DAMAGE,
+    });
+    game.shotManager.removeShotById(state.id);
+    deleteZombieId = null;
+  }
 
   syncShotHitbox(options);
 }

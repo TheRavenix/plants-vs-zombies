@@ -1,5 +1,9 @@
 import type { ZombieDrawOptions, ZombieUpdateOptions } from "./types";
 
+export function createZombieId(): string {
+  return `ZOMBIE-${crypto.randomUUID()}`;
+}
+
 export function drawZombieRect({ board, state }: ZombieDrawOptions) {
   const { ctx } = board;
 
@@ -12,7 +16,7 @@ export function drawZombieRect({ board, state }: ZombieDrawOptions) {
   ctx.fill();
 }
 
-export function drawZombieId({ board, state }: ZombieDrawOptions) {
+export function drawZombieName({ board, state }: ZombieDrawOptions) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -20,7 +24,11 @@ export function drawZombieId({ board, state }: ZombieDrawOptions) {
   }
 
   ctx.fillStyle = "#000000";
-  ctx.fillText(state.id, state.x, state.y + state.height / 2);
+  ctx.fillText(
+    `${state.name} ${state.health}`,
+    state.x,
+    state.y + state.height / 2
+  );
 }
 
 export function handleZombieDefaultMovement({

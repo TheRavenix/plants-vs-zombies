@@ -28,5 +28,14 @@ function draw(hitbox: Hitbox, board: Board) {
   ctx.stroke();
 }
 
-export { createHitbox };
+function isHitboxColliding(a: Hitbox, b: Hitbox): boolean {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+}
+
+export { createHitbox, isHitboxColliding };
 export type { Hitbox };

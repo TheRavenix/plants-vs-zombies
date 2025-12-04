@@ -1,18 +1,20 @@
 import {
-  drawZombieId,
+  createZombieId,
+  drawZombieName,
   drawZombieRect,
   handleZombieDefaultMovement,
   syncZombieHitbox,
 } from "./helpers";
 import { createHitbox } from "@/game/helpers/hitbox";
 
-import { ZOMBIE_HEIGHT, ZOMBIE_WIDTH, ZombieId } from "./constants";
+import { ZOMBIE_HEIGHT, ZOMBIE_WIDTH, ZombieName } from "./constants";
 
 import { type Vector2 } from "@/game/utils/vector";
 import type {
   Zombie,
   ZombieDrawOptions,
   ZombieState,
+  ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
 
@@ -29,7 +31,8 @@ const FLAG_ZOMBIE_SPEED = 25;
 function createFlagZombie(options: CreateFlagZombieOptions): FlagZombie {
   const { x, y } = options;
   const state: FlagZombieState = {
-    id: ZombieId.Flag,
+    name: ZombieName.Flag,
+    id: createZombieId(),
     x,
     y,
     width: ZOMBIE_WIDTH,
@@ -46,9 +49,12 @@ function createFlagZombie(options: CreateFlagZombieOptions): FlagZombie {
   };
 
   return {
-    state,
+    get state() {
+      return state;
+    },
     draw,
     update,
+    takeDamage,
   };
 }
 
@@ -61,14 +67,26 @@ function draw(options: ZombieDrawOptions<FlagZombieState>) {
   }
 
   drawZombieRect(options);
-  drawZombieId(options);
+  drawZombieName(options);
 
   state.hitbox.draw(state.hitbox, board);
 }
 
 function update(options: ZombieUpdateOptions<FlagZombieState>) {
+  const { state, zombieManager } = options;
+
   handleZombieDefaultMovement(options);
   syncZombieHitbox(options);
+
+  if (state.health <= 0) {
+    zombieManager.removeZombieById(state.id);
+  }
+}
+
+function takeDamage(options: ZombieTakeDamageOptions<FlagZombieState>) {
+  const { state, damage } = options;
+
+  state.health -= damage;
 }
 
 export { createFlagZombie };

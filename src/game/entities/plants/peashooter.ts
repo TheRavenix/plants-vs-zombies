@@ -1,8 +1,13 @@
 import { createHitbox } from "@/game/helpers/hitbox";
-import { drawPlantId, drawPlantRect, syncPlantHitbox } from "./helpers";
+import {
+  createPlantId,
+  drawPlantName,
+  drawPlantRect,
+  syncPlantHitbox,
+} from "./helpers";
 import { createPeashot, SHOT_HEIGHT } from "../shots";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantId } from "./constants";
+import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "./constants";
 
 import type {
   Plant,
@@ -27,7 +32,8 @@ const PEASHOOTER_SHOT_INTERVAL = 1500;
 function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   const { x, y } = options;
   const state: PeashooterState = {
-    id: PlantId.Peashooter,
+    name: PlantName.Peashooter,
+    id: createPlantId(),
     x,
     y,
     width: PLANT_WIDTH,
@@ -44,7 +50,9 @@ function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   };
 
   return {
-    state,
+    get state() {
+      return state;
+    },
     draw,
     update,
   };
@@ -59,7 +67,7 @@ function draw(options: PlantDrawOptions<PeashooterState>) {
   }
 
   drawPlantRect(options);
-  drawPlantId(options);
+  drawPlantName(options);
 
   state.hitbox.draw(state.hitbox, board);
 }
@@ -73,7 +81,7 @@ function update(options: PlantUpdateOptions<PeashooterState>) {
     game.shotManager.addShot(
       createPeashot({
         x: state.x + state.width,
-        y: state.y + state.height / 2 - SHOT_HEIGHT / 2,
+        y: state.y + SHOT_HEIGHT / 2,
       })
     );
     state.shotTimer = 0;

@@ -1,7 +1,12 @@
 import { createHitbox } from "@/game/helpers/hitbox";
-import { drawPlantId, drawPlantRect, syncPlantHitbox } from "./helpers";
+import {
+  createPlantId,
+  drawPlantName,
+  drawPlantRect,
+  syncPlantHitbox,
+} from "./helpers";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantId } from "./constants";
+import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "./constants";
 
 import type {
   Plant,
@@ -23,7 +28,8 @@ const SUNFLOWER_SUNCOST = 50;
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const { x, y } = options;
   const state: SunflowerState = {
-    id: PlantId.Sunflower,
+    name: PlantName.Sunflower,
+    id: createPlantId(),
     x,
     y,
     width: PLANT_WIDTH,
@@ -39,7 +45,9 @@ function createSunflower(options: CreateSunflowerOptions): Sunflower {
   };
 
   return {
-    state,
+    get state() {
+      return state;
+    },
     draw,
     update,
   };
@@ -54,7 +62,7 @@ function draw(options: PlantDrawOptions<SunflowerState>) {
   }
 
   drawPlantRect(options);
-  drawPlantId(options);
+  drawPlantName(options);
 
   state.hitbox.draw(state.hitbox, board);
 }

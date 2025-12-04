@@ -1,5 +1,9 @@
 import type { ShotDrawOptions, ShotUpdateOptions } from "./types";
 
+export function createShotId(): string {
+  return `SHOT-${crypto.randomUUID()}`;
+}
+
 export function drawShotRect({ board, state }: ShotDrawOptions) {
   const { ctx } = board;
 
@@ -12,7 +16,7 @@ export function drawShotRect({ board, state }: ShotDrawOptions) {
   ctx.fill();
 }
 
-export function drawShotId({ board, state }: ShotDrawOptions) {
+export function drawShotName({ board, state }: ShotDrawOptions) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -20,7 +24,7 @@ export function drawShotId({ board, state }: ShotDrawOptions) {
   }
 
   ctx.fillStyle = "#000000";
-  ctx.fillText(state.id, state.x, state.y + state.height / 2);
+  ctx.fillText(state.name, state.x, state.y + state.height / 2);
 }
 
 export function syncShotHitbox({ state }: ShotUpdateOptions) {

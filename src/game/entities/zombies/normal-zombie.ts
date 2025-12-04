@@ -1,18 +1,20 @@
 import {
-  drawZombieId,
+  createZombieId,
+  drawZombieName,
   drawZombieRect,
   handleZombieDefaultMovement,
   syncZombieHitbox,
 } from "./helpers";
 import { createHitbox } from "@/game/helpers/hitbox";
 
-import { ZOMBIE_HEIGHT, ZOMBIE_WIDTH, ZombieId } from "./constants";
+import { ZOMBIE_HEIGHT, ZOMBIE_WIDTH, ZombieName } from "./constants";
 
 import { type Vector2 } from "@/game/utils/vector";
 import type {
   Zombie,
   ZombieDrawOptions,
   ZombieState,
+  ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
 
@@ -29,7 +31,8 @@ const NORMAL_ZOMBIE_SPEED = 15;
 function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
   const { x, y } = options;
   const state: NormalZombieState = {
-    id: ZombieId.Normal,
+    name: ZombieName.Normal,
+    id: createZombieId(),
     x,
     y,
     width: ZOMBIE_WIDTH,
@@ -46,9 +49,12 @@ function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
   };
 
   return {
-    state,
+    get state() {
+      return state;
+    },
     draw,
     update,
+    takeDamage,
   };
 }
 
@@ -61,14 +67,26 @@ function draw(options: ZombieDrawOptions<NormalZombieState>) {
   }
 
   drawZombieRect(options);
-  drawZombieId(options);
+  drawZombieName(options);
 
   state.hitbox.draw(state.hitbox, board);
 }
 
 function update(options: ZombieUpdateOptions<NormalZombieState>) {
+  const { state, zombieManager } = options;
+
   handleZombieDefaultMovement(options);
   syncZombieHitbox(options);
+
+  if (state.health <= 0) {
+    zombieManager.removeZombieById(state.id);
+  }
+}
+
+function takeDamage(options: ZombieTakeDamageOptions<NormalZombieState>) {
+  const { state, damage } = options;
+
+  state.health -= damage;
 }
 
 export { createNormalZombie };
