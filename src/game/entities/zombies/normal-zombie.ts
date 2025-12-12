@@ -29,10 +29,10 @@ type NormalZombie = Zombie<NormalZombieState>;
 
 type CreateNormalZombieOptions = Vector2;
 
-const NORMAL_ZOMBIE_HEALTH = 190;
-const NORMAL_ZOMBIE_DAMAGE = 25;
-const NORMAL_ZOMBIE_SPEED = 15;
-const NORMAL_ZOMBIE_DAMAGE_INTERVAL = 1000;
+const HEALTH = 190;
+const DAMAGE = 25;
+const SPEED = 15;
+const DAMAGE_INTERVAL = 1000;
 
 function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
   const { x, y } = options;
@@ -44,9 +44,9 @@ function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
     y,
     width: ZOMBIE_WIDTH,
     height: ZOMBIE_HEIGHT,
-    health: NORMAL_ZOMBIE_HEALTH,
-    damage: NORMAL_ZOMBIE_DAMAGE,
-    speed: NORMAL_ZOMBIE_SPEED,
+    health: HEALTH,
+    damage: DAMAGE,
+    speed: SPEED,
     hitbox: createHitbox({
       x,
       y,
@@ -82,38 +82,39 @@ function draw(options: ZombieDrawOptions<NormalZombieState>) {
 
 function update(options: ZombieUpdateOptions<NormalZombieState>) {
   const { state, game, deltaTime } = options;
+  const { plantManager } = game;
 
   let eatPlantId: string | null = null;
 
-  for (const plant of game.plantManager.plants) {
-    if (isHitboxColliding(state.hitbox, plant.state.hitbox)) {
-      eatPlantId = plant.state.id;
-      break;
-    }
+  const collisionPlant = plantManager.plants.find((plant) => {
+    return isHitboxColliding(state.hitbox, plant.state.hitbox);
+  });
+
+  if (collisionPlant !== undefined) {
+    eatPlantId = collisionPlant.state.id;
   }
+
   if (state.stateName === ZombieStateName.Walking) {
     handleZombieDefaultMovement(options);
 
-    for (const plant of game.plantManager.plants) {
-      if (isHitboxColliding(state.hitbox, plant.state.hitbox)) {
-        state.stateName = ZombieStateName.Eating;
-        break;
-      }
+    const isPlantCollision = plantManager.plants.some((plant) => {
+      return isHitboxColliding(state.hitbox, plant.state.hitbox);
+    });
+
+    if (isPlantCollision) {
+      state.stateName = ZombieStateName.Eating;
     }
   }
   if (state.stateName === ZombieStateName.Eating) {
     if (eatPlantId === null) {
       state.stateName = ZombieStateName.Walking;
     }
-    if (
-      state.damageTimer >= NORMAL_ZOMBIE_DAMAGE_INTERVAL &&
-      eatPlantId !== null
-    ) {
-      const plant = game.plantManager.findPlantById(eatPlantId);
+    if (state.damageTimer >= DAMAGE_INTERVAL && eatPlantId !== null) {
+      const plant = plantManager.findPlantById(eatPlantId);
 
       if (plant !== undefined) {
         plant.takeDamage({
-          damage: NORMAL_ZOMBIE_DAMAGE,
+          damage: DAMAGE,
           state: plant.state,
         });
       }
