@@ -16,6 +16,7 @@ import {
 import {
   createPeashooter,
   createPlantManager,
+  createRepeater,
   createSunflower,
   type PlantManager,
 } from "./entities/plants";
@@ -74,7 +75,7 @@ function createGame(): Game {
       x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
-    createPeashooter({
+    createRepeater({
       x: 0,
       y: TILE_HEIGHT * (BOARD_COLS - 1),
     })

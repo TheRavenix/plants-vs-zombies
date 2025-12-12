@@ -11,7 +11,7 @@ export function drawZombieRect({ board, state }: ZombieDrawOptions) {
     return;
   }
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#708090";
   ctx.fillRect(state.x, state.y, state.width, state.height);
   ctx.fill();
 }

@@ -22,7 +22,7 @@ type Peashot = Shot<PeashotState>;
 
 type CreatePeashotOptions = Vector2;
 
-const PEASHOT_DAMAGE = 5;
+const PEASHOT_DAMAGE = 15;
 const PEASHOT_SPEED = 150;
 
 function createPeashot(options: CreatePeashotOptions): Peashot {
@@ -36,6 +36,7 @@ function createPeashot(options: CreatePeashotOptions): Peashot {
     height: SHOT_HEIGHT,
     damage: PEASHOT_DAMAGE,
     speed: PEASHOT_SPEED,
+    fillStyle: "#A0B09A",
     hitbox: createHitbox({
       x,
       y,
@@ -62,7 +63,6 @@ function draw(options: ShotDrawOptions<PeashotState>) {
   }
 
   drawShotRect(options);
-  drawShotName(options);
 
   state.hitbox.draw(state.hitbox, board);
 }
@@ -95,6 +95,7 @@ function update(options: ShotUpdateOptions<PeashotState>) {
       damage: PEASHOT_DAMAGE,
     });
     game.shotManager.removeShotById(state.id);
+
     deleteZombieId = null;
   }
 

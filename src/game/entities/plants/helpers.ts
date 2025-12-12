@@ -11,7 +11,7 @@ export function drawPlantRect({ board, state }: PlantDrawOptions) {
     return;
   }
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#A0B09A";
   ctx.fillRect(state.x, state.y, state.width, state.height);
   ctx.fill();
 }

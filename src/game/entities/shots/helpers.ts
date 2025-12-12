@@ -11,7 +11,7 @@ export function drawShotRect({ board, state }: ShotDrawOptions) {
     return;
   }
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = state.fillStyle;
   ctx.fillRect(state.x, state.y, state.width, state.height);
   ctx.fill();
 }
@@ -23,7 +23,7 @@ export function drawShotName({ board, state }: ShotDrawOptions) {
     return;
   }
 
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#ffffff";
   ctx.fillText(state.name, state.x, state.y + state.height / 2);
 }
 

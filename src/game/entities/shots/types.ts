@@ -11,6 +11,7 @@ export type ShotState = {
   damage: number;
   speed: number;
   get hitbox(): Hitbox;
+  fillStyle: string;
 } & Vector2 &
   Size;
 

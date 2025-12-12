@@ -30,7 +30,7 @@ type FlagZombie = Zombie<FlagZombieState>;
 type CreateFlagZombieOptions = Vector2;
 
 const FLAG_ZOMBIE_HEALTH = 190;
-const FLAG_ZOMBIE_DAMAGE = 50;
+const FLAG_ZOMBIE_DAMAGE = 25;
 const FLAG_ZOMBIE_SPEED = 25;
 const FLAG_ZOMBIE_DAMAGE_INTERVAL = 1000;
 

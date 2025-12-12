@@ -30,7 +30,7 @@ type NormalZombie = Zombie<NormalZombieState>;
 type CreateNormalZombieOptions = Vector2;
 
 const NORMAL_ZOMBIE_HEALTH = 190;
-const NORMAL_ZOMBIE_DAMAGE = 40;
+const NORMAL_ZOMBIE_DAMAGE = 25;
 const NORMAL_ZOMBIE_SPEED = 15;
 const NORMAL_ZOMBIE_DAMAGE_INTERVAL = 1000;
 
