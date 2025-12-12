@@ -4,10 +4,10 @@ import {
   drawPlantName,
   drawPlantRect,
   syncPlantHitbox,
-} from "./helpers";
-import { createPeashot, SHOT_HEIGHT } from "../shots";
+} from "../helpers";
+import { createPeashot, SHOT_HEIGHT } from "../../shots";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "./constants";
+import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "../constants";
 import { TILE_WIDTH } from "@/game/board";
 
 import type {
@@ -16,7 +16,7 @@ import type {
   PlantState,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
-} from "./types";
+} from "../types";
 import type { Vector2 } from "@/game/utils/vector";
 
 type RepeaterState = {
@@ -27,10 +27,10 @@ type Repeater = Plant<RepeaterState>;
 
 type CreateRepeaterOptions = Vector2;
 
-const REPEATER_TOUGHNESS = 300;
-const REPEATER_SUNCOST = 100;
-const REPEATER_SHOT_INTERVAL = 1500;
-const REPEATER_RANGE = TILE_WIDTH * 6;
+const TOUGHNESS = 300;
+const SUNCOST = 100;
+const SHOT_INTERVAL = 1500;
+const RANGE = TILE_WIDTH * 6;
 
 function createRepeater(options: CreateRepeaterOptions): Repeater {
   const { x, y } = options;
@@ -41,8 +41,8 @@ function createRepeater(options: CreateRepeaterOptions): Repeater {
     y,
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    toughness: REPEATER_TOUGHNESS,
-    sunCost: REPEATER_SUNCOST,
+    toughness: TOUGHNESS,
+    sunCost: SUNCOST,
     shotTimer: 0,
     hitbox: createHitbox({
       x,
@@ -81,25 +81,24 @@ function update(options: PlantUpdateOptions<RepeaterState>) {
 
   state.shotTimer += deltaTime;
 
-  if (state.shotTimer >= REPEATER_SHOT_INTERVAL) {
-    for (const zombie of game.zombieManager.zombies) {
-      if (
-        state.y === zombie.state.y &&
-        zombie.state.x <= state.x + REPEATER_RANGE
-      ) {
-        game.shotManager.addShots(
-          createPeashot({
-            x: state.x + state.width,
-            y: state.y + SHOT_HEIGHT / 2,
-          }),
-          createPeashot({
-            x: state.x + state.width + TILE_WIDTH / 2,
-            y: state.y + SHOT_HEIGHT / 2,
-          })
-        );
-        break;
-      }
+  if (state.shotTimer >= SHOT_INTERVAL) {
+    const ableToShoot = game.zombieManager.zombies.some((zombie) => {
+      return state.y === zombie.state.y && zombie.state.x <= state.x + RANGE;
+    });
+
+    if (ableToShoot) {
+      game.shotManager.addShots(
+        createPeashot({
+          x: state.x + state.width,
+          y: state.y + SHOT_HEIGHT / 2,
+        }),
+        createPeashot({
+          x: state.x + state.width + TILE_WIDTH / 2,
+          y: state.y + SHOT_HEIGHT / 2,
+        })
+      );
     }
+
     state.shotTimer = 0;
   }
   if (state.toughness <= 0) {

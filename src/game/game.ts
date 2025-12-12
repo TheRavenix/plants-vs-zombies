@@ -18,6 +18,7 @@ import {
   createPlantManager,
   createRepeater,
   createSunflower,
+  createThreepeater,
   type PlantManager,
 } from "./entities/plants";
 import { createShotManager, type ShotManager } from "./entities/shots";
@@ -71,7 +72,7 @@ function createGame(): Game {
       x: 0,
       y: TILE_HEIGHT * 2,
     }),
-    createPeashooter({
+    createThreepeater({
       x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
@@ -155,6 +156,8 @@ function update(deltaTime: number, game: Game) {
       game,
     });
   }
+
+  game.shotManager.removeOutOfZoneShots();
 }
 
 function animate(currentTime: number, game: Game, board: Board) {

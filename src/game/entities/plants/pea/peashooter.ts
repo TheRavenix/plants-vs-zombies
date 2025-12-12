@@ -4,10 +4,10 @@ import {
   drawPlantName,
   drawPlantRect,
   syncPlantHitbox,
-} from "./helpers";
-import { createPeashot, SHOT_HEIGHT } from "../shots";
+} from "../helpers";
+import { createPeashot, SHOT_HEIGHT } from "../../shots";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "./constants";
+import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "../constants";
 import { TILE_WIDTH } from "@/game/board";
 
 import type {
@@ -16,7 +16,7 @@ import type {
   PlantState,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
-} from "./types";
+} from "../types";
 import type { Vector2 } from "@/game/utils/vector";
 
 type PeashooterState = {
@@ -27,10 +27,10 @@ type Peashooter = Plant<PeashooterState>;
 
 type CreatePeashooterOptions = Vector2;
 
-const PEASHOOTER_TOUGHNESS = 300;
-const PEASHOOTER_SUNCOST = 100;
-const PEASHOOTER_SHOT_INTERVAL = 1500;
-const PEASHOOTER_RANGE = TILE_WIDTH * 6;
+const TOUGHNESS = 300;
+const SUNCOST = 100;
+const SHOT_INTERVAL = 1500;
+const RANGE = TILE_WIDTH * 6;
 
 function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   const { x, y } = options;
@@ -41,8 +41,8 @@ function createPeashooter(options: CreatePeashooterOptions): Peashooter {
     y,
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    toughness: PEASHOOTER_TOUGHNESS,
-    sunCost: PEASHOOTER_SUNCOST,
+    toughness: TOUGHNESS,
+    sunCost: SUNCOST,
     shotTimer: 0,
     hitbox: createHitbox({
       x,
@@ -81,21 +81,20 @@ function update(options: PlantUpdateOptions<PeashooterState>) {
 
   state.shotTimer += deltaTime;
 
-  if (state.shotTimer >= PEASHOOTER_SHOT_INTERVAL) {
-    for (const zombie of game.zombieManager.zombies) {
-      if (
-        state.y === zombie.state.y &&
-        zombie.state.x <= state.x + PEASHOOTER_RANGE
-      ) {
-        game.shotManager.addShot(
-          createPeashot({
-            x: state.x + state.width,
-            y: state.y + SHOT_HEIGHT / 2,
-          })
-        );
-        break;
-      }
+  if (state.shotTimer >= SHOT_INTERVAL) {
+    const ableToShoot = game.zombieManager.zombies.some((zombie) => {
+      return state.y === zombie.state.y && zombie.state.x <= state.x + RANGE;
+    });
+
+    if (ableToShoot) {
+      game.shotManager.addShot(
+        createPeashot({
+          x: state.x + state.width,
+          y: state.y + SHOT_HEIGHT / 2,
+        })
+      );
     }
+
     state.shotTimer = 0;
   }
   if (state.toughness <= 0) {

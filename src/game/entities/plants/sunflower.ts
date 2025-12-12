@@ -25,10 +25,10 @@ type Sunflower = Plant<SunflowerState>;
 
 type CreateSunflowerOptions = Vector2;
 
-const SUNFLOWER_TOUGHNESS = 300;
-const SUNFLOWER_SUNCOST = 50;
-const SUNFLOWER_SUN_PRODUCTION = 25;
-const SUNFLOWER_RECHARGE_INTERVAL = 7500;
+const TOUGHNESS = 300;
+const SUNCOST = 50;
+const SUN_PRODUCTION = 25;
+const RECHARGE_INTERVAL = 7500;
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const { x, y } = options;
@@ -39,8 +39,8 @@ function createSunflower(options: CreateSunflowerOptions): Sunflower {
     y,
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    toughness: SUNFLOWER_TOUGHNESS,
-    sunCost: SUNFLOWER_SUNCOST,
+    toughness: TOUGHNESS,
+    sunCost: SUNCOST,
     hitbox: createHitbox({
       x,
       y,
@@ -79,8 +79,8 @@ function update(options: PlantUpdateOptions<SunflowerState>) {
 
   state.rechargeTimer += deltaTime;
 
-  if (state.rechargeTimer >= SUNFLOWER_RECHARGE_INTERVAL) {
-    game.sun += SUNFLOWER_SUN_PRODUCTION;
+  if (state.rechargeTimer >= RECHARGE_INTERVAL) {
+    game.sun += SUN_PRODUCTION;
     state.rechargeTimer = 0;
   }
   if (state.toughness <= 0) {
