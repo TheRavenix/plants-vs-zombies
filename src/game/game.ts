@@ -40,6 +40,10 @@ function createGame(): Game {
       y: TILE_HEIGHT * 2,
     }),
     createNormalZombie({
+      x: TILE_WIDTH * BOARD_ROWS,
+      y: TILE_HEIGHT * 2,
+    }),
+    createNormalZombie({
       x: TILE_WIDTH * 2,
       y: 0,
     }),
@@ -55,6 +59,10 @@ function createGame(): Game {
     }),
     createPeashooter({
       x: 0,
+      y: TILE_HEIGHT * 2,
+    }),
+    createPeashooter({
+      x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
     createPeashooter({

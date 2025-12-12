@@ -8,6 +8,7 @@ import {
 import { createPeashot, SHOT_HEIGHT } from "../shots";
 
 import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "./constants";
+import { TILE_WIDTH } from "@/game/board";
 
 import type {
   Plant,
@@ -28,6 +29,7 @@ type CreatePeashooterOptions = Vector2;
 const PEASHOOTER_TOUGHNESS = 300;
 const PEASHOOTER_SUNCOST = 100;
 const PEASHOOTER_SHOT_INTERVAL = 1500;
+const PEASHOOTER_RANGE = TILE_WIDTH * 6;
 
 function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   const { x, y } = options;
@@ -78,12 +80,20 @@ function update(options: PlantUpdateOptions<PeashooterState>) {
   state.shotTimer += deltaTime;
 
   if (state.shotTimer >= PEASHOOTER_SHOT_INTERVAL) {
-    game.shotManager.addShot(
-      createPeashot({
-        x: state.x + state.width,
-        y: state.y + SHOT_HEIGHT / 2,
-      })
-    );
+    for (const zombie of game.zombieManager.zombies) {
+      if (
+        state.y === zombie.state.y &&
+        zombie.state.x <= state.x + PEASHOOTER_RANGE
+      ) {
+        game.shotManager.addShot(
+          createPeashot({
+            x: state.x + state.width,
+            y: state.y + SHOT_HEIGHT / 2,
+          })
+        );
+        break;
+      }
+    }
     state.shotTimer = 0;
   }
 
