@@ -22,7 +22,7 @@ type PeashooterState = {
   shotTimer: number;
 } & PlantState;
 
-interface Peashooter extends Plant<PeashooterState> {}
+type Peashooter = Plant<PeashooterState>;
 
 type CreatePeashooterOptions = Vector2;
 

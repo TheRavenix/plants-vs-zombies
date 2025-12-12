@@ -18,7 +18,7 @@ import type { Vector2 } from "@/game/utils/vector";
 
 type PeashotState = ShotState;
 
-interface Peashot extends Shot<PeashotState> {}
+type Peashot = Shot<PeashotState>;
 
 type CreatePeashotOptions = Vector2;
 

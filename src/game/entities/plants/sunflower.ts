@@ -16,14 +16,18 @@ import type {
 } from "./types";
 import type { Vector2 } from "@/game/utils/vector";
 
-type SunflowerState = PlantState;
+type SunflowerState = {
+  rechargeTimer: number;
+} & PlantState;
 
-interface Sunflower extends Plant<SunflowerState> {}
+type Sunflower = Plant<SunflowerState>;
 
 type CreateSunflowerOptions = Vector2;
 
 const SUNFLOWER_TOUGHNESS = 300;
 const SUNFLOWER_SUNCOST = 50;
+const SUNFLOWER_SUN_PRODUCTION = 25;
+const SUNFLOWER_RECHARGE_INTERVAL = 7500;
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const { x, y } = options;
@@ -42,6 +46,7 @@ function createSunflower(options: CreateSunflowerOptions): Sunflower {
       width: PLANT_WIDTH,
       height: PLANT_HEIGHT,
     }),
+    rechargeTimer: 0,
   };
 
   return {
@@ -68,6 +73,15 @@ function draw(options: PlantDrawOptions<SunflowerState>) {
 }
 
 function update(options: PlantUpdateOptions<SunflowerState>) {
+  const { state, game, deltaTime } = options;
+
+  state.rechargeTimer += deltaTime;
+
+  if (state.rechargeTimer >= SUNFLOWER_RECHARGE_INTERVAL) {
+    game.sun += SUNFLOWER_SUN_PRODUCTION;
+    state.rechargeTimer = 0;
+  }
+
   syncPlantHitbox(options);
 }
 

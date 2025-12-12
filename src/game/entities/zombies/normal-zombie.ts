@@ -20,7 +20,7 @@ import type {
 
 type NormalZombieState = ZombieState;
 
-interface NormalZombie extends Zombie<NormalZombieState> {}
+type NormalZombie = Zombie<NormalZombieState>;
 
 type CreateNormalZombieOptions = Vector2;
 

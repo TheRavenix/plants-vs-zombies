@@ -23,6 +23,7 @@ import { createShotManager, type ShotManager } from "./entities/shots";
 
 type Game = {
   lastTime: number;
+  sun: number;
   zombieManager: ZombieManager;
   plantManager: PlantManager;
   shotManager: ShotManager;
@@ -73,6 +74,7 @@ function createGame(): Game {
 
   return {
     lastTime: 0,
+    sun: 0,
     zombieManager,
     plantManager,
     shotManager,
@@ -94,6 +96,13 @@ function draw(game: Game, board: Board) {
   ctx.clearRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
 
   board.drawTileStroke(board);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(
+    `SUN: ${game.sun}`,
+    BOARD_WIDTH - TILE_WIDTH / 2,
+    TILE_HEIGHT / 2
+  );
 
   for (const zombie of game.zombieManager.zombies) {
     zombie.draw({
