@@ -2,13 +2,11 @@ import {
   drawNormalZombie,
   normalZombieTakeDamage,
   updateNormalZombie,
-  type NormalZombie,
 } from "./normal-zombie";
 import {
   drawFlagZombie,
   flagZombieTakeDamage,
   updateFlagZombie,
-  type FlagZombie,
 } from "./flag-zombie";
 
 import { ZombieType } from "./constants";
@@ -20,55 +18,38 @@ import type {
   ZombieUpdateOptions,
 } from "./types";
 
-const zombieActions = {
-  drawZombie,
-  updateZombie,
-  zombieTakeDamage,
-  addZombie,
-  addZombies,
-  removeZombieById,
-  findZombieById,
-  removeOutOfHealthZombies,
-} as const;
-
-function drawZombie(options: ZombieDrawOptions) {
-  const { zombie } = options;
-
+function drawZombie(zombie: Zombie, options: ZombieDrawOptions) {
   switch (zombie.type) {
     case ZombieType.Normal:
-      drawNormalZombie(options as ZombieDrawOptions<NormalZombie>);
+      drawNormalZombie(zombie, options);
       break;
 
     case ZombieType.Flag:
-      drawFlagZombie(options as ZombieDrawOptions<FlagZombie>);
+      drawFlagZombie(zombie, options);
       break;
   }
 }
 
-function updateZombie(options: ZombieUpdateOptions) {
-  const { zombie } = options;
-
+function updateZombie(zombie: Zombie, options: ZombieUpdateOptions) {
   switch (zombie.type) {
     case ZombieType.Normal:
-      updateNormalZombie(options as ZombieUpdateOptions<NormalZombie>);
+      updateNormalZombie(zombie, options);
       break;
 
     case ZombieType.Flag:
-      updateFlagZombie(options as ZombieUpdateOptions<FlagZombie>);
+      updateFlagZombie(zombie, options);
       break;
   }
 }
 
-function zombieTakeDamage(options: ZombieTakeDamageOptions) {
-  const { zombie } = options;
-
+function zombieTakeDamage(zombie: Zombie, options: ZombieTakeDamageOptions) {
   switch (zombie.type) {
     case ZombieType.Normal:
-      normalZombieTakeDamage(options as ZombieTakeDamageOptions<NormalZombie>);
+      normalZombieTakeDamage(zombie, options);
       break;
 
     case ZombieType.Flag:
-      flagZombieTakeDamage(options as ZombieTakeDamageOptions<FlagZombie>);
+      flagZombieTakeDamage(zombie, options);
       break;
   }
 }
@@ -93,4 +74,13 @@ function removeOutOfHealthZombies(zombies: Zombie[]): Zombie[] {
   return zombies.filter((zombie) => zombie.health > 0);
 }
 
-export { zombieActions };
+export const zombieActions = {
+  drawZombie,
+  updateZombie,
+  zombieTakeDamage,
+  addZombie,
+  addZombies,
+  removeZombieById,
+  findZombieById,
+  removeOutOfHealthZombies,
+} as const;

@@ -1,8 +1,12 @@
 export const SHOT_WIDTH = 32;
 export const SHOT_HEIGHT = 32;
 
-export const ShotType = {
-  Peashot: "Peashot",
-} as const;
+export enum ShotType {
+  Peashot = "Peashot",
+}
 
-export type ShotType = (typeof ShotType)[keyof typeof ShotType];
+export enum ShotDirection {
+  Right = "RIGHT",
+  UpRight = "UP_RIGHT",
+  DownRight = "DOWN_RIGHT",
+}

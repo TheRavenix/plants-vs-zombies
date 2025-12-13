@@ -6,16 +6,12 @@ import { TILE_WIDTH } from "@/game/board";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
-  Plant,
+  Peashooter,
   PlantDrawOptions,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
-
-type Peashooter = {
-  shotTimer: number;
-} & Plant;
 
 type CreatePeashooterOptions = Vector2;
 
@@ -45,50 +41,55 @@ function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   };
 }
 
-function drawPeashooter(options: PlantDrawOptions<Peashooter>) {
-  const { plant, board } = options;
+function drawPeashooter(peashooter: Peashooter, options: PlantDrawOptions) {
+  const { board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  plantHelpers.drawPlantRect(options);
-  plantHelpers.drawPlantType(options);
+  peashooter.shotTimer;
 
-  hitboxActions.draw(plant.hitbox, board);
+  plantHelpers.drawPlantRect(peashooter, options);
+  plantHelpers.drawPlantType(peashooter, options);
+
+  hitboxActions.draw(peashooter.hitbox, board);
 }
 
-function updatePeashooter(options: PlantUpdateOptions<Peashooter>) {
-  const { deltaTime, plant, game } = options;
+function updatePeashooter(peashooter: Peashooter, options: PlantUpdateOptions) {
+  const { deltaTime, game } = options;
 
-  plant.shotTimer += deltaTime;
+  peashooter.shotTimer += deltaTime;
 
-  if (plant.shotTimer >= SHOT_INTERVAL) {
+  if (peashooter.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return plant.y === zombie.y && zombie.x <= plant.x + RANGE;
+      return peashooter.y === zombie.y && zombie.x <= peashooter.x + RANGE;
     });
 
     if (ableToShoot) {
       game.shots = shotActions.addShot(
         game.shots,
         createPeashot({
-          x: plant.x + plant.width,
-          y: plant.y + SHOT_HEIGHT / 2,
+          x: peashooter.x + peashooter.width,
+          y: peashooter.y + SHOT_HEIGHT / 2,
         })
       );
     }
 
-    plant.shotTimer = 0;
+    peashooter.shotTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(options);
+  plantHelpers.syncPlantHitbox(peashooter);
 }
 
-function peashooterTakeDamage(options: PlantTakeDamageOptions<Peashooter>) {
-  const { plant, damage } = options;
+function peashooterTakeDamage(
+  peashooter: Peashooter,
+  options: PlantTakeDamageOptions
+) {
+  const { damage } = options;
 
-  plant.toughness -= damage;
+  peashooter.toughness -= damage;
 }
 
 export {
@@ -97,4 +98,3 @@ export {
   updatePeashooter,
   peashooterTakeDamage,
 };
-export type { Peashooter };

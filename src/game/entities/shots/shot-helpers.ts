@@ -1,18 +1,11 @@
-import type { ShotDrawOptions, ShotUpdateOptions } from "./types";
-
-const shotHelpers = {
-  createShotId,
-  drawShotRect,
-  drawShotType,
-  syncShotHitbox,
-} as const;
+import type { Shot, ShotDrawOptions } from "./types";
 
 function createShotId(): string {
   return `SHOT-${crypto.randomUUID()}`;
 }
 
-function drawShotRect({ board, shot }: ShotDrawOptions) {
-  const { ctx } = board;
+function drawShotRect(shot: Shot, options: ShotDrawOptions) {
+  const { ctx } = options.board;
 
   if (ctx === null) {
     return;
@@ -23,8 +16,8 @@ function drawShotRect({ board, shot }: ShotDrawOptions) {
   ctx.fill();
 }
 
-function drawShotType({ board, shot }: ShotDrawOptions) {
-  const { ctx } = board;
+function drawShotType(shot: Shot, options: ShotDrawOptions) {
+  const { ctx } = options.board;
 
   if (ctx === null) {
     return;
@@ -34,9 +27,14 @@ function drawShotType({ board, shot }: ShotDrawOptions) {
   ctx.fillText(shot.type, shot.x, shot.y + shot.height / 2);
 }
 
-function syncShotHitbox({ shot }: ShotUpdateOptions) {
+function syncShotHitbox(shot: Shot) {
   shot.hitbox.x = shot.x;
   shot.hitbox.y = shot.y;
 }
 
-export { shotHelpers };
+export const shotHelpers = {
+  createShotId,
+  drawShotRect,
+  drawShotType,
+  syncShotHitbox,
+} as const;

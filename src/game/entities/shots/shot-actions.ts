@@ -4,38 +4,24 @@ import {
   TILE_HEIGHT,
   TILE_WIDTH,
 } from "@/game/board";
-import { drawPeashot, updatePeashot, type Peashot } from "./peashot";
+import { drawPeashot, updatePeashot } from "./peashot";
 
 import { ShotType } from "./constants";
 
 import type { Shot, ShotDrawOptions, ShotUpdateOptions } from "./types";
 
-const shotActions = {
-  drawShot,
-  updateShot,
-  addShot,
-  addShots,
-  removeShotById,
-  findShotById,
-  removeOutOfZoneShots,
-} as const;
-
-function drawShot(options: ShotDrawOptions) {
-  const { shot } = options;
-
+function drawShot(shot: Shot, options: ShotDrawOptions) {
   switch (shot.type) {
     case ShotType.Peashot:
-      drawPeashot(options as ShotDrawOptions<Peashot>);
+      drawPeashot(shot, options);
       break;
   }
 }
 
-function updateShot(options: ShotUpdateOptions) {
-  const { shot } = options;
-
+function updateShot(shot: Shot, options: ShotUpdateOptions) {
   switch (shot.type) {
     case ShotType.Peashot:
-      updatePeashot(options as ShotUpdateOptions<Peashot>);
+      updatePeashot(shot, options);
       break;
   }
 }
@@ -65,5 +51,15 @@ function removeOutOfZoneShots(shots: Shot[]): Shot[] {
     );
   });
 }
+
+const shotActions = {
+  drawShot,
+  updateShot,
+  addShot,
+  addShots,
+  removeShotById,
+  findShotById,
+  removeOutOfZoneShots,
+} as const;
 
 export { shotActions };

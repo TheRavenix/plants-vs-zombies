@@ -1,18 +1,11 @@
-import type { PlantDrawOptions, PlantUpdateOptions } from "./types";
-
-const plantHelpers = {
-  createPlantId,
-  drawPlantRect,
-  drawPlantType,
-  syncPlantHitbox,
-} as const;
+import type { Plant, PlantDrawOptions } from "./types";
 
 function createPlantId(): string {
   return `PLANT-${crypto.randomUUID()}`;
 }
 
-function drawPlantRect({ board, plant }: PlantDrawOptions) {
-  const { ctx } = board;
+function drawPlantRect(plant: Plant, options: PlantDrawOptions) {
+  const { ctx } = options.board;
 
   if (ctx === null) {
     return;
@@ -23,8 +16,8 @@ function drawPlantRect({ board, plant }: PlantDrawOptions) {
   ctx.fill();
 }
 
-function drawPlantType({ board, plant }: PlantDrawOptions) {
-  const { ctx } = board;
+function drawPlantType(plant: Plant, options: PlantDrawOptions) {
+  const { ctx } = options.board;
 
   if (ctx === null) {
     return;
@@ -38,9 +31,14 @@ function drawPlantType({ board, plant }: PlantDrawOptions) {
   );
 }
 
-function syncPlantHitbox({ plant }: PlantUpdateOptions) {
+function syncPlantHitbox(plant: Plant) {
   plant.hitbox.x = plant.x;
   plant.hitbox.y = plant.y;
 }
 
-export { plantHelpers };
+export const plantHelpers = {
+  createPlantId,
+  drawPlantRect,
+  drawPlantType,
+  syncPlantHitbox,
+} as const;

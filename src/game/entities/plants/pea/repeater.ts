@@ -6,16 +6,12 @@ import { TILE_WIDTH } from "@/game/board";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
-  Plant,
   PlantDrawOptions,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
+  Repeater,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
-
-type Repeater = {
-  shotTimer: number;
-} & Plant;
 
 type CreateRepeaterOptions = Vector2;
 
@@ -45,55 +41,57 @@ function createRepeater(options: CreateRepeaterOptions): Repeater {
   };
 }
 
-function drawRepeater(options: PlantDrawOptions<Repeater>) {
-  const { plant, board } = options;
+function drawRepeater(repeater: Repeater, options: PlantDrawOptions) {
+  const { board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  plantHelpers.drawPlantRect(options);
-  plantHelpers.drawPlantType(options);
+  plantHelpers.drawPlantRect(repeater, options);
+  plantHelpers.drawPlantType(repeater, options);
 
-  hitboxActions.draw(plant.hitbox, board);
+  hitboxActions.draw(repeater.hitbox, board);
 }
 
-function updateRepeater(options: PlantUpdateOptions<Repeater>) {
-  const { deltaTime, plant, game } = options;
+function updateRepeater(repeater: Repeater, options: PlantUpdateOptions) {
+  const { deltaTime, game } = options;
 
-  plant.shotTimer += deltaTime;
+  repeater.shotTimer += deltaTime;
 
-  if (plant.shotTimer >= SHOT_INTERVAL) {
+  if (repeater.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return plant.y === zombie.y && zombie.x <= plant.x + RANGE;
+      return repeater.y === zombie.y && zombie.x <= repeater.x + RANGE;
     });
 
     if (ableToShoot) {
       game.shots = shotActions.addShots(
         game.shots,
         createPeashot({
-          x: plant.x + plant.width,
-          y: plant.y + SHOT_HEIGHT / 2,
+          x: repeater.x + repeater.width,
+          y: repeater.y + SHOT_HEIGHT / 2,
         }),
         createPeashot({
-          x: plant.x + plant.width + TILE_WIDTH / 2,
-          y: plant.y + SHOT_HEIGHT / 2,
+          x: repeater.x + repeater.width + TILE_WIDTH / 2,
+          y: repeater.y + SHOT_HEIGHT / 2,
         })
       );
     }
 
-    plant.shotTimer = 0;
+    repeater.shotTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(options);
+  plantHelpers.syncPlantHitbox(repeater);
 }
 
-function repeaterTakeDamage(options: PlantTakeDamageOptions<Repeater>) {
-  const { plant, damage } = options;
+function repeaterTakeDamage(
+  repeater: Repeater,
+  options: PlantTakeDamageOptions
+) {
+  const { damage } = options;
 
-  plant.toughness -= damage;
+  repeater.toughness -= damage;
 }
 
 export { createRepeater, drawRepeater, updateRepeater, repeaterTakeDamage };
-export type { Repeater };

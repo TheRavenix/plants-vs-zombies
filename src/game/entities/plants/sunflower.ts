@@ -4,16 +4,12 @@ import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "./constants";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
-  Plant,
   PlantDrawOptions,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
+  Sunflower,
 } from "./types";
 import type { Vector2 } from "@/game/types/vector";
-
-type Sunflower = {
-  rechargeTimer: number;
-} & Plant;
 
 type CreateSunflowerOptions = Vector2;
 
@@ -43,38 +39,42 @@ function createSunflower(options: CreateSunflowerOptions): Sunflower {
   };
 }
 
-function drawSunflower(options: PlantDrawOptions<Sunflower>) {
-  const { plant, board } = options;
+function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
+  const { board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  plantHelpers.drawPlantRect(options);
-  plantHelpers.drawPlantType(options);
+  sunflower.rechargeTimer;
 
-  hitboxActions.draw(plant.hitbox, board);
+  plantHelpers.drawPlantRect(sunflower, options);
+  plantHelpers.drawPlantType(sunflower, options);
+
+  hitboxActions.draw(sunflower.hitbox, board);
 }
 
-function updateSunflower(options: PlantUpdateOptions<Sunflower>) {
-  const { plant, game, deltaTime } = options;
+function updateSunflower(sunflower: Sunflower, options: PlantUpdateOptions) {
+  const { game, deltaTime } = options;
 
-  plant.rechargeTimer += deltaTime;
+  sunflower.rechargeTimer += deltaTime;
 
-  if (plant.rechargeTimer >= RECHARGE_INTERVAL) {
+  if (sunflower.rechargeTimer >= RECHARGE_INTERVAL) {
     game.sun += SUN_PRODUCTION;
-    plant.rechargeTimer = 0;
+    sunflower.rechargeTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(options);
+  plantHelpers.syncPlantHitbox(sunflower);
 }
 
-function sunflowerTakeDamage(options: PlantTakeDamageOptions<Sunflower>) {
-  const { plant, damage } = options;
+function sunflowerTakeDamage(
+  sunflower: Sunflower,
+  options: PlantTakeDamageOptions
+) {
+  const { damage } = options;
 
-  plant.toughness -= damage;
+  sunflower.toughness -= damage;
 }
 
 export { createSunflower, drawSunflower, updateSunflower, sunflowerTakeDamage };
-export type { Sunflower };

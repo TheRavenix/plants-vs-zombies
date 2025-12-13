@@ -1,19 +1,11 @@
-import type { ZombieDrawOptions, ZombieUpdateOptions } from "./types";
-
-const zombieHelpers = {
-  createZombieId,
-  drawZombieRect,
-  drawZombieType,
-  syncZombieHitbox,
-  handleZombieDefaultMovement,
-} as const;
+import type { Zombie, ZombieDrawOptions, ZombieUpdateOptions } from "./types";
 
 function createZombieId(): string {
   return `ZOMBIE-${crypto.randomUUID()}`;
 }
 
-function drawZombieRect({ board, zombie }: ZombieDrawOptions) {
-  const { ctx } = board;
+function drawZombieRect(zombie: Zombie, options: ZombieDrawOptions) {
+  const { ctx } = options.board;
 
   if (ctx === null) {
     return;
@@ -24,8 +16,8 @@ function drawZombieRect({ board, zombie }: ZombieDrawOptions) {
   ctx.fill();
 }
 
-function drawZombieType({ board, zombie }: ZombieDrawOptions) {
-  const { ctx } = board;
+function drawZombieType(zombie: Zombie, options: ZombieDrawOptions) {
+  const { ctx } = options.board;
 
   if (ctx === null) {
     return;
@@ -39,16 +31,22 @@ function drawZombieType({ board, zombie }: ZombieDrawOptions) {
   );
 }
 
-function handleZombieDefaultMovement({
-  deltaTime,
-  zombie,
-}: ZombieUpdateOptions) {
-  zombie.x -= zombie.speed * (deltaTime / 1000);
+function handleZombieDefaultMovement(
+  zombie: Zombie,
+  options: ZombieUpdateOptions
+) {
+  zombie.x -= zombie.speed * (options.deltaTime / 1000);
 }
 
-function syncZombieHitbox({ zombie }: ZombieUpdateOptions) {
+function syncZombieHitbox(zombie: Zombie) {
   zombie.hitbox.x = zombie.x;
   zombie.hitbox.y = zombie.y;
 }
 
-export { zombieHelpers };
+export const zombieHelpers = {
+  createZombieId,
+  drawZombieRect,
+  drawZombieType,
+  syncZombieHitbox,
+  handleZombieDefaultMovement,
+} as const;

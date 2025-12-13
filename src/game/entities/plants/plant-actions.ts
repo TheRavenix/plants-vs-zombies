@@ -2,7 +2,6 @@ import {
   drawSunflower,
   sunflowerTakeDamage,
   updateSunflower,
-  type Sunflower,
 } from "./sunflower";
 import {
   drawPeashooter,
@@ -14,9 +13,6 @@ import {
   updatePeashooter,
   updateRepeater,
   updateThreepeater,
-  type Peashooter,
-  type Repeater,
-  type Threepeater,
 } from "./pea";
 
 import { PlantType } from "./constants";
@@ -28,79 +24,59 @@ import type {
   PlantUpdateOptions,
 } from "./types";
 
-const plantActions = {
-  drawPlant,
-  updatePlant,
-  plantTakeDamage,
-  addPlant,
-  addPlants,
-  removePlantById,
-  findPlantById,
-  removeOutOfToughnessPlants,
-} as const;
-
-function drawPlant(options: PlantDrawOptions) {
-  const { plant } = options;
-
+function drawPlant(plant: Plant, options: PlantDrawOptions) {
   switch (plant.type) {
     case PlantType.Sunflower:
-      drawSunflower(options as PlantDrawOptions<Sunflower>);
+      drawSunflower(plant, options);
       break;
-
     case PlantType.Peashooter:
-      drawPeashooter(options as PlantDrawOptions<Peashooter>);
+      drawPeashooter(plant, options);
       break;
-
     case PlantType.Repeater:
-      drawRepeater(options as PlantDrawOptions<Repeater>);
+      drawRepeater(plant, options);
       break;
-
     case PlantType.Threepeater:
-      drawThreepeater(options as PlantDrawOptions<Threepeater>);
+      drawThreepeater(plant, options);
       break;
   }
 }
 
-function updatePlant(options: PlantUpdateOptions) {
-  const { plant } = options;
-
+function updatePlant(plant: Plant, options: PlantUpdateOptions) {
   switch (plant.type) {
     case PlantType.Sunflower:
-      updateSunflower(options as PlantUpdateOptions<Sunflower>);
+      updateSunflower(plant, options);
       break;
 
     case PlantType.Peashooter:
-      updatePeashooter(options as PlantUpdateOptions<Peashooter>);
+      updatePeashooter(plant, options);
       break;
 
     case PlantType.Repeater:
-      updateRepeater(options as PlantUpdateOptions<Repeater>);
+      updateRepeater(plant, options);
       break;
 
     case PlantType.Threepeater:
-      updateThreepeater(options as PlantUpdateOptions<Threepeater>);
+      updateThreepeater(plant, options);
       break;
   }
 }
 
-function plantTakeDamage(options: PlantTakeDamageOptions) {
-  const { plant } = options;
-
+function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
   switch (plant.type) {
     case PlantType.Sunflower:
-      sunflowerTakeDamage(options as PlantTakeDamageOptions<Sunflower>);
+      sunflowerTakeDamage(plant, options);
       break;
 
     case PlantType.Peashooter:
-      peashooterTakeDamage(options as PlantTakeDamageOptions<Peashooter>);
+      peashooterTakeDamage(plant, options);
       break;
 
     case PlantType.Repeater:
-      repeaterTakeDamage(options as PlantTakeDamageOptions<Repeater>);
+      repeaterTakeDamage(plant, options);
       break;
 
     case PlantType.Threepeater:
-      threepeaterTakeDamage(options as PlantTakeDamageOptions<Threepeater>);
+      threepeaterTakeDamage(plant, options);
       break;
   }
 }
@@ -125,4 +101,13 @@ function removeOutOfToughnessPlants(plants: Plant[]): Plant[] {
   return plants.filter((plant) => plant.toughness > 0);
 }
 
-export { plantActions };
+export const plantActions = {
+  drawPlant,
+  updatePlant,
+  plantTakeDamage,
+  addPlant,
+  addPlants,
+  removePlantById,
+  findPlantById,
+  removeOutOfToughnessPlants,
+} as const;

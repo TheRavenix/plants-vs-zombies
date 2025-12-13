@@ -16,11 +16,6 @@ const BOARD_COLS = 5;
 const BOARD_WIDTH = BOARD_ROWS * TILE_WIDTH;
 const BOARD_HEIGHT = BOARD_COLS * TILE_HEIGHT;
 
-const boardActions = {
-  createBoard,
-  drawTileStroke,
-} as const;
-
 function createBoard(options?: CreateBoardOptions): Board {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -67,6 +62,11 @@ function drawTileStroke(board: Board) {
     }
   }
 }
+
+const boardActions = {
+  createBoard,
+  drawTileStroke,
+} as const;
 
 export {
   boardActions,

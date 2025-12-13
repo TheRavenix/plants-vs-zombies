@@ -2,12 +2,7 @@ import type { Board } from "../board";
 import type { Size } from "../types/size";
 import type { Vector2 } from "../types/vector";
 
-type Hitbox = Vector2 & Size;
-
-const hitboxActions = {
-  draw,
-  isColliding,
-} as const;
+export type Hitbox = Vector2 & Size;
 
 function draw(hitbox: Hitbox, board: Board) {
   const { ctx } = board;
@@ -30,5 +25,7 @@ function isColliding(a: Hitbox, b: Hitbox): boolean {
   );
 }
 
-export { hitboxActions };
-export type { Hitbox };
+export const hitboxActions = {
+  draw,
+  isColliding,
+} as const;

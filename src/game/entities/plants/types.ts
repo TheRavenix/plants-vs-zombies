@@ -5,8 +5,7 @@ import type { Size } from "@/game/types/size";
 import type { Vector2 } from "@/game/types/vector";
 import type { PlantType } from "./constants";
 
-export type Plant = {
-  type: PlantType;
+export type BasePlant = {
   id: string;
   toughness: number;
   sunCost: number;
@@ -14,18 +13,39 @@ export type Plant = {
 } & Vector2 &
   Size;
 
-export type PlantDrawOptions<P extends Plant = Plant> = {
-  plant: P;
+// TODO: Move Custom Plants to their own files
+// TODO: Keep in mind the a => b and b => a effect (dependant)
+export type Sunflower = {
+  rechargeTimer: number;
+  type: PlantType.Sunflower;
+} & BasePlant;
+
+export type Peashooter = {
+  shotTimer: number;
+  type: PlantType.Peashooter;
+} & BasePlant;
+
+export type Repeater = {
+  shotTimer: number;
+  type: PlantType.Repeater;
+} & BasePlant;
+
+export type Threepeater = {
+  shotTimer: number;
+  type: PlantType.Threepeater;
+} & BasePlant;
+
+export type Plant = Sunflower | Peashooter | Repeater | Threepeater;
+
+export type PlantDrawOptions = {
   board: Board;
 };
 
-export type PlantUpdateOptions<P extends Plant = Plant> = {
+export type PlantUpdateOptions = {
   deltaTime: number;
-  plant: P;
   game: Game;
 };
 
-export type PlantTakeDamageOptions<P extends Plant = Plant> = {
+export type PlantTakeDamageOptions = {
   damage: number;
-  plant: P;
 };

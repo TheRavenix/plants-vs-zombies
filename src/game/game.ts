@@ -120,20 +120,17 @@ function draw(game: Game, board: Board) {
   );
 
   for (const zombie of game.zombies) {
-    zombieActions.drawZombie({
-      zombie,
+    zombieActions.drawZombie(zombie, {
       board,
     });
   }
   for (const plant of game.plants) {
-    plantActions.drawPlant({
-      plant,
+    plantActions.drawPlant(plant, {
       board,
     });
   }
   for (const shot of game.shots) {
-    shotActions.drawShot({
-      shot,
+    shotActions.drawShot(shot, {
       board,
     });
   }
@@ -141,23 +138,20 @@ function draw(game: Game, board: Board) {
 
 function update(deltaTime: number, game: Game) {
   for (const zombie of game.zombies) {
-    zombieActions.updateZombie({
+    zombieActions.updateZombie(zombie, {
       deltaTime,
-      zombie,
       game,
     });
   }
   for (const plant of game.plants) {
-    plantActions.updatePlant({
+    plantActions.updatePlant(plant, {
       deltaTime,
-      plant,
       game,
     });
   }
   for (const shot of game.shots) {
-    shotActions.updateShot({
+    shotActions.updateShot(shot, {
       deltaTime,
-      shot,
       game,
     });
   }

@@ -4,11 +4,8 @@ import type { Board } from "@/game/board";
 import type { Hitbox } from "@/game/helpers/hitbox";
 import type { Size } from "@/game/types/size";
 import type { Game } from "@/game/game";
-import type { NormalZombie } from "./normal-zombie";
-import type { FlagZombie } from "./flag-zombie";
 
-export type Zombie = {
-  type: ZombieType;
+export type BaseZombie = {
   id: string;
   state: ZombieState;
   health: number;
@@ -19,20 +16,27 @@ export type Zombie = {
 } & Vector2 &
   Size;
 
-export type AnyZombie = NormalZombie | FlagZombie;
+// TODO: Move Custom Zombies to their own files
+// TODO: Keep in mind the a => b and b => a effect (dependant)
+export type NormalZombie = {
+  type: ZombieType.Normal;
+} & BaseZombie;
 
-export type ZombieDrawOptions<Z extends Zombie = Zombie> = {
-  zombie: Z;
+export type FlagZombie = {
+  type: ZombieType.Flag;
+} & BaseZombie;
+
+export type Zombie = NormalZombie | FlagZombie;
+
+export type ZombieDrawOptions = {
   board: Board;
 };
 
-export type ZombieUpdateOptions<Z extends Zombie = Zombie> = {
+export type ZombieUpdateOptions = {
   deltaTime: number;
-  zombie: Z;
   game: Game;
 };
 
-export type ZombieTakeDamageOptions<Z extends Zombie = Zombie> = {
+export type ZombieTakeDamageOptions = {
   damage: number;
-  zombie: Z;
 };
