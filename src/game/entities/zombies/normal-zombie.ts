@@ -1,31 +1,23 @@
-import {
-  createZombieId,
-  drawZombieName,
-  drawZombieRect,
-  handleZombieDefaultMovement,
-  syncZombieHitbox,
-} from "./helpers";
-import { createHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import { zombieHelpers } from "./zombie-helpers";
 
 import {
   ZOMBIE_HEIGHT,
   ZOMBIE_WIDTH,
-  ZombieName,
-  ZombieStateName,
+  ZombieState,
+  ZombieType,
 } from "./constants";
+import { plantActions } from "../plants";
 
-import { type Vector2 } from "@/game/utils/vector";
+import { type Vector2 } from "@/game/types/vector";
 import type {
   Zombie,
   ZombieDrawOptions,
-  ZombieState,
   ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
+import { hitboxActions } from "@/game/helpers/hitbox";
 
-type NormalZombieState = ZombieState;
-
-type NormalZombie = Zombie<NormalZombieState>;
+type NormalZombie = Zombie;
 
 type CreateNormalZombieOptions = Vector2;
 
@@ -36,10 +28,10 @@ const DAMAGE_INTERVAL = 1000;
 
 function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
   const { x, y } = options;
-  const state: NormalZombieState = {
-    name: ZombieName.Normal,
-    id: createZombieId(),
-    stateName: ZombieStateName.Walking,
+  return {
+    type: ZombieType.Normal,
+    id: zombieHelpers.createZombieId(),
+    state: ZombieState.Walking,
     x,
     y,
     width: ZOMBIE_WIDTH,
@@ -47,94 +39,90 @@ function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
     health: HEALTH,
     damage: DAMAGE,
     speed: SPEED,
-    hitbox: createHitbox({
+    hitbox: {
       x,
       y,
       width: ZOMBIE_WIDTH,
       height: ZOMBIE_HEIGHT,
-    }),
-    damageTimer: 0,
-  };
-
-  return {
-    get state() {
-      return state;
     },
-    draw,
-    update,
-    takeDamage,
+    damageTimer: 0,
   };
 }
 
-function draw(options: ZombieDrawOptions<NormalZombieState>) {
-  const { state, board } = options;
+function drawNormalZombie(options: ZombieDrawOptions<NormalZombie>) {
+  const { zombie, board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  drawZombieRect(options);
-  drawZombieName(options);
+  zombieHelpers.drawZombieRect(options);
+  zombieHelpers.drawZombieType(options);
 
-  state.hitbox.draw(state.hitbox, board);
+  hitboxActions.draw(zombie.hitbox, board);
 }
 
-function update(options: ZombieUpdateOptions<NormalZombieState>) {
-  const { state, game, deltaTime } = options;
-  const { plantManager } = game;
+function updateNormalZombie(options: ZombieUpdateOptions<NormalZombie>) {
+  const { zombie, game, deltaTime } = options;
+  const { plants } = game;
 
   let eatPlantId: string | null = null;
 
-  const collisionPlant = plantManager.plants.find((plant) => {
-    return isHitboxColliding(state.hitbox, plant.state.hitbox);
+  const collisionPlant = plants.find((plant) => {
+    return hitboxActions.isColliding(zombie.hitbox, plant.hitbox);
   });
 
   if (collisionPlant !== undefined) {
-    eatPlantId = collisionPlant.state.id;
+    eatPlantId = collisionPlant.id;
   }
 
-  if (state.stateName === ZombieStateName.Walking) {
-    handleZombieDefaultMovement(options);
+  if (zombie.state === ZombieState.Walking) {
+    zombieHelpers.handleZombieDefaultMovement(options);
 
-    const isPlantCollision = plantManager.plants.some((plant) => {
-      return isHitboxColliding(state.hitbox, plant.state.hitbox);
+    const isPlantCollision = plants.some((plant) => {
+      return hitboxActions.isColliding(zombie.hitbox, plant.hitbox);
     });
 
     if (isPlantCollision) {
-      state.stateName = ZombieStateName.Eating;
+      zombie.state = ZombieState.Eating;
     }
   }
-  if (state.stateName === ZombieStateName.Eating) {
+  if (zombie.state === ZombieState.Eating) {
     if (eatPlantId === null) {
-      state.stateName = ZombieStateName.Walking;
+      zombie.state = ZombieState.Walking;
     }
-    if (state.damageTimer >= DAMAGE_INTERVAL && eatPlantId !== null) {
-      const plant = plantManager.findPlantById(eatPlantId);
+    if (zombie.damageTimer >= DAMAGE_INTERVAL && eatPlantId !== null) {
+      const plant = plantActions.findPlantById(plants, eatPlantId);
 
       if (plant !== undefined) {
-        plant.takeDamage({
-          damage: DAMAGE,
-          state: plant.state,
+        plantActions.plantTakeDamage({
+          damage: zombie.damage,
+          plant,
         });
       }
 
-      state.damageTimer = 0;
+      zombie.damageTimer = 0;
     }
 
-    state.damageTimer += deltaTime;
-  }
-  if (state.health <= 0) {
-    game.zombieManager.removeZombieById(state.id);
+    zombie.damageTimer += deltaTime;
   }
 
-  syncZombieHitbox(options);
+  zombieHelpers.syncZombieHitbox(options);
 }
 
-function takeDamage(options: ZombieTakeDamageOptions<NormalZombieState>) {
-  const { state, damage } = options;
+function normalZombieTakeDamage(
+  options: ZombieTakeDamageOptions<NormalZombie>
+) {
+  const { zombie, damage } = options;
 
-  state.health -= damage;
+  zombie.health -= damage;
 }
 
-export { createNormalZombie };
+export {
+  createNormalZombie,
+  drawNormalZombie,
+  updateNormalZombie,
+  normalZombieTakeDamage,
+};
+export type { NormalZombie };

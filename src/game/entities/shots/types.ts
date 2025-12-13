@@ -1,33 +1,27 @@
 import type { Board } from "@/game/board";
 import type { Game } from "@/game/game";
 import type { Hitbox } from "@/game/helpers/hitbox";
-import type { Size } from "@/game/utils/size";
-import type { Vector2 } from "@/game/utils/vector";
-import type { ShotName } from "./constants";
+import type { Size } from "@/game/types/size";
+import type { Vector2 } from "@/game/types/vector";
+import type { ShotType } from "./constants";
 
-export type ShotState = {
-  name: ShotName;
+export type Shot = {
+  type: ShotType;
   id: string;
   damage: number;
   speed: number;
-  get hitbox(): Hitbox;
+  hitbox: Hitbox;
   fillStyle: string;
 } & Vector2 &
   Size;
 
-export type Shot<S extends ShotState = ShotState> = {
-  get state(): S;
-  draw(options: ShotDrawOptions): void;
-  update(options: ShotUpdateOptions): void;
-};
-
-export type ShotDrawOptions<S extends ShotState = ShotState> = {
-  get state(): S;
+export type ShotDrawOptions<S extends Shot = Shot> = {
+  shot: S;
   board: Board;
 };
 
-export type ShotUpdateOptions<S extends ShotState = ShotState> = {
+export type ShotUpdateOptions<S extends Shot = Shot> = {
   deltaTime: number;
-  get state(): S;
-  get game(): Game;
+  shot: S;
+  game: Game;
 };

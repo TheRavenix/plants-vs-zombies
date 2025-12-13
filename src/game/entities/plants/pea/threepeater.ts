@@ -1,29 +1,26 @@
-import { createHitbox } from "@/game/helpers/hitbox";
+import { plantHelpers } from "../plant-helpers";
 import {
-  createPlantId,
-  drawPlantName,
-  drawPlantRect,
-  syncPlantHitbox,
-} from "../helpers";
-import { createPeashot, PeashotDirection, SHOT_HEIGHT } from "../../shots";
+  createPeashot,
+  PeashotDirection,
+  SHOT_HEIGHT,
+  shotActions,
+} from "../../shots";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "../constants";
+import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
 import { TILE_WIDTH } from "@/game/board";
+import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
   Plant,
   PlantDrawOptions,
-  PlantState,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
-import type { Vector2 } from "@/game/utils/vector";
+import type { Vector2 } from "@/game/types/vector";
 
-type ThreepeaterState = {
+type Threepeater = {
   shotTimer: number;
-} & PlantState;
-
-type Threepeater = Plant<ThreepeaterState>;
+} & Plant;
 
 type CreateThreepeaterOptions = Vector2;
 
@@ -34,9 +31,9 @@ const RANGE = TILE_WIDTH * 6;
 
 function createThreepeater(options: CreateThreepeaterOptions): Threepeater {
   const { x, y } = options;
-  const state: ThreepeaterState = {
-    name: PlantName.Threepeater,
-    id: createPlantId(),
+  return {
+    type: PlantType.Threepeater,
+    id: plantHelpers.createPlantId(),
     x,
     y,
     width: PLANT_WIDTH,
@@ -44,80 +41,75 @@ function createThreepeater(options: CreateThreepeaterOptions): Threepeater {
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
     shotTimer: 0,
-    hitbox: createHitbox({
+    hitbox: {
       x,
       y,
       width: PLANT_WIDTH,
       height: PLANT_HEIGHT,
-    }),
-  };
-
-  return {
-    get state() {
-      return state;
     },
-    draw,
-    update,
-    takeDamage,
   };
 }
 
-function draw(options: PlantDrawOptions<ThreepeaterState>) {
-  const { state, board } = options;
+function drawThreepeater(options: PlantDrawOptions<Threepeater>) {
+  const { plant, board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  drawPlantRect(options);
-  drawPlantName(options);
+  plantHelpers.drawPlantRect(options);
+  plantHelpers.drawPlantType(options);
 
-  state.hitbox.draw(state.hitbox, board);
+  hitboxActions.draw(plant.hitbox, board);
 }
 
-function update(options: PlantUpdateOptions<ThreepeaterState>) {
-  const { deltaTime, state, game } = options;
+function updateThreepeater(options: PlantUpdateOptions<Threepeater>) {
+  const { deltaTime, plant, game } = options;
 
-  state.shotTimer += deltaTime;
+  plant.shotTimer += deltaTime;
 
-  if (state.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombieManager.zombies.some((zombie) => {
-      return zombie.state.x <= state.x + RANGE;
+  if (plant.shotTimer >= SHOT_INTERVAL) {
+    const ableToShoot = game.zombies.some((zombie) => {
+      return zombie.x <= plant.x + RANGE;
     });
 
     if (ableToShoot) {
-      game.shotManager.addShots(
+      game.shots = shotActions.addShots(
+        game.shots,
         createPeashot({
-          x: state.x + state.width,
-          y: state.y + SHOT_HEIGHT / 2,
+          x: plant.x + plant.width,
+          y: plant.y + SHOT_HEIGHT / 2,
         }),
         createPeashot({
-          x: state.x + state.width,
-          y: state.y + SHOT_HEIGHT / 2,
+          x: plant.x + plant.width,
+          y: plant.y + SHOT_HEIGHT / 2,
           direction: PeashotDirection.UpRight,
         }),
         createPeashot({
-          x: state.x + state.width,
-          y: state.y + SHOT_HEIGHT / 2,
+          x: plant.x + plant.width,
+          y: plant.y + SHOT_HEIGHT / 2,
           direction: PeashotDirection.DownRight,
         })
       );
     }
 
-    state.shotTimer = 0;
-  }
-  if (state.toughness <= 0) {
-    game.plantManager.removePlantById(state.id);
+    plant.shotTimer = 0;
   }
 
-  syncPlantHitbox(options);
+  plantHelpers.syncPlantHitbox(options);
 }
 
-function takeDamage(options: PlantTakeDamageOptions<ThreepeaterState>) {
-  const { state, damage } = options;
+function threepeaterTakeDamage(options: PlantTakeDamageOptions<Threepeater>) {
+  const { plant, damage } = options;
 
-  state.toughness -= damage;
+  plant.toughness -= damage;
 }
 
-export { createThreepeater };
+export {
+  createThreepeater,
+  drawThreepeater,
+  updateThreepeater,
+  threepeaterTakeDamage,
+};
+export type { Threepeater };

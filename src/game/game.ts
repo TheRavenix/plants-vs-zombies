@@ -3,6 +3,7 @@ import {
   BOARD_HEIGHT,
   BOARD_ROWS,
   BOARD_WIDTH,
+  boardActions,
   TILE_HEIGHT,
   TILE_WIDTH,
   type Board,
@@ -10,34 +11,38 @@ import {
 import {
   createFlagZombie,
   createNormalZombie,
-  createZombieManager,
-  type ZombieManager,
+  zombieActions,
+  type Zombie,
 } from "./entities/zombies";
 import {
   createPeashooter,
-  createPlantManager,
-  createRepeater,
   createSunflower,
   createThreepeater,
-  type PlantManager,
+  plantActions,
+  type Plant,
 } from "./entities/plants";
-import { createShotManager, type ShotManager } from "./entities/shots";
+import { shotActions, type Shot } from "./entities/shots";
 
 type Game = {
   lastTime: number;
   sun: number;
-  zombieManager: ZombieManager;
-  plantManager: PlantManager;
-  shotManager: ShotManager;
-  start(game: Game, board: Board): void;
+  zombies: Zombie[];
+  plants: Plant[];
+  shots: Shot[];
 };
 
-function createGame(): Game {
-  const zombieManager = createZombieManager();
-  const plantManager = createPlantManager();
-  const shotManager = createShotManager();
+const gameActions = {
+  createGame,
+  startGame,
+} as const;
 
-  zombieManager.addZombies(
+function createGame(): Game {
+  let zombies: Zombie[] = [];
+  let plants: Plant[] = [];
+  let shots: Shot[] = [];
+
+  zombies = zombieActions.addZombies(
+    zombies,
     createNormalZombie({
       x: TILE_WIDTH * (BOARD_ROWS - 1),
       y: TILE_HEIGHT * 2,
@@ -55,8 +60,9 @@ function createGame(): Game {
       y: TILE_HEIGHT * (BOARD_COLS - 1),
     })
   );
-  plantManager.addPlants(
-    createSunflower({
+  plants = plantActions.addPlants(
+    plants,
+    createThreepeater({
       x: 0,
       y: 0,
     }),
@@ -76,7 +82,7 @@ function createGame(): Game {
       x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
-    createRepeater({
+    createThreepeater({
       x: 0,
       y: TILE_HEIGHT * (BOARD_COLS - 1),
     })
@@ -85,14 +91,13 @@ function createGame(): Game {
   return {
     lastTime: 0,
     sun: 0,
-    zombieManager,
-    plantManager,
-    shotManager,
-    start,
+    zombies,
+    plants,
+    shots,
   };
 }
 
-function start(game: Game, board: Board) {
+function startGame(game: Game, board: Board) {
   requestAnimationFrame((currentTime) => animate(currentTime, game, board));
 }
 
@@ -105,7 +110,7 @@ function draw(game: Game, board: Board) {
 
   ctx.clearRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
 
-  board.drawTileStroke(board);
+  boardActions.drawTileStroke(board);
 
   ctx.fillStyle = "#ffffff";
   ctx.fillText(
@@ -114,50 +119,52 @@ function draw(game: Game, board: Board) {
     TILE_HEIGHT / 2
   );
 
-  for (const zombie of game.zombieManager.zombies) {
-    zombie.draw({
-      state: zombie.state,
+  for (const zombie of game.zombies) {
+    zombieActions.drawZombie({
+      zombie,
       board,
     });
   }
-  for (const plant of game.plantManager.plants) {
-    plant.draw({
-      state: plant.state,
+  for (const plant of game.plants) {
+    plantActions.drawPlant({
+      plant,
       board,
     });
   }
-  for (const shot of game.shotManager.shots) {
-    shot.draw({
-      state: shot.state,
+  for (const shot of game.shots) {
+    shotActions.drawShot({
+      shot,
       board,
     });
   }
 }
 
 function update(deltaTime: number, game: Game) {
-  for (const zombie of game.zombieManager.zombies) {
-    zombie.update({
+  for (const zombie of game.zombies) {
+    zombieActions.updateZombie({
       deltaTime,
-      state: zombie.state,
+      zombie,
       game,
     });
   }
-  for (const plant of game.plantManager.plants) {
-    plant.update({
-      deltaTime: deltaTime,
-      state: plant.state,
+  for (const plant of game.plants) {
+    plantActions.updatePlant({
+      deltaTime,
+      plant,
       game,
     });
   }
-  for (const shot of game.shotManager.shots) {
-    shot.update({
-      deltaTime: deltaTime,
-      state: shot.state,
+  for (const shot of game.shots) {
+    shotActions.updateShot({
+      deltaTime,
+      shot,
       game,
     });
   }
 
-  game.shotManager.removeOutOfZoneShots();
+  game.zombies = zombieActions.removeOutOfHealthZombies(game.zombies);
+  game.plants = plantActions.removeOutOfToughnessPlants(game.plants);
+  game.shots = shotActions.removeOutOfZoneShots(game.shots);
 }
 
 function animate(currentTime: number, game: Game, board: Board) {
@@ -173,5 +180,5 @@ function animate(currentTime: number, game: Game, board: Board) {
   );
 }
 
-export { createGame };
+export { gameActions };
 export type { Game };

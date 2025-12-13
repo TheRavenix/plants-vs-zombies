@@ -1,7 +1,6 @@
 type Board = {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | null;
-  drawTileStroke(board: Board): void;
 };
 
 type CreateBoardOptions = {
@@ -16,6 +15,11 @@ const BOARD_ROWS = 10;
 const BOARD_COLS = 5;
 const BOARD_WIDTH = BOARD_ROWS * TILE_WIDTH;
 const BOARD_HEIGHT = BOARD_COLS * TILE_HEIGHT;
+
+const boardActions = {
+  createBoard,
+  drawTileStroke,
+} as const;
 
 function createBoard(options?: CreateBoardOptions): Board {
   const canvas = document.createElement("canvas");
@@ -40,7 +44,6 @@ function createBoard(options?: CreateBoardOptions): Board {
   return {
     canvas,
     ctx,
-    drawTileStroke,
   };
 }
 
@@ -65,8 +68,8 @@ function drawTileStroke(board: Board) {
   }
 }
 
-export { createBoard };
 export {
+  boardActions,
   BOARD_WIDTH,
   BOARD_HEIGHT,
   BOARD_ROWS,

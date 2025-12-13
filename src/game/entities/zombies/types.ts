@@ -1,41 +1,38 @@
-import type { Vector2 } from "@/game/utils/vector";
-import type { ZombieName, ZombieStateName } from "./constants";
+import type { Vector2 } from "@/game/types/vector";
+import type { ZombieState, ZombieType } from "./constants";
 import type { Board } from "@/game/board";
 import type { Hitbox } from "@/game/helpers/hitbox";
-import type { Size } from "@/game/utils/size";
+import type { Size } from "@/game/types/size";
 import type { Game } from "@/game/game";
+import type { NormalZombie } from "./normal-zombie";
+import type { FlagZombie } from "./flag-zombie";
 
-export type ZombieState = {
-  name: ZombieName;
+export type Zombie = {
+  type: ZombieType;
   id: string;
-  stateName: ZombieStateName;
+  state: ZombieState;
   health: number;
   damage: number;
   speed: number;
-  get hitbox(): Hitbox;
+  hitbox: Hitbox;
   damageTimer: number;
 } & Vector2 &
   Size;
 
-export type Zombie<S extends ZombieState = ZombieState> = {
-  get state(): S;
-  draw(options: ZombieDrawOptions): void;
-  update(options: ZombieUpdateOptions): void;
-  takeDamage(options: ZombieTakeDamageOptions): void;
+export type AnyZombie = NormalZombie | FlagZombie;
+
+export type ZombieDrawOptions<Z extends Zombie = Zombie> = {
+  zombie: Z;
+  board: Board;
 };
 
-export type ZombieDrawOptions<S extends ZombieState = ZombieState> = {
-  get state(): S;
-  get board(): Board;
-};
-
-export type ZombieUpdateOptions<S extends ZombieState = ZombieState> = {
+export type ZombieUpdateOptions<Z extends Zombie = Zombie> = {
   deltaTime: number;
-  get state(): S;
-  get game(): Game;
+  zombie: Z;
+  game: Game;
 };
 
-export type ZombieTakeDamageOptions<S extends ZombieState = ZombieState> = {
+export type ZombieTakeDamageOptions<Z extends Zombie = Zombie> = {
   damage: number;
-  get state(): S;
+  zombie: Z;
 };

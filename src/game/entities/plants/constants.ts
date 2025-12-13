@@ -1,11 +1,11 @@
 export const PLANT_WIDTH = 96;
 export const PLANT_HEIGHT = 96;
 
-export const PlantName = {
-  Peashooter: "peashooter",
-  Sunflower: "sunflower",
-  Repeater: "repeater",
-  Threepeater: "threepeater",
+export const PlantType = {
+  Peashooter: "Peashooter",
+  Sunflower: "Sunflower",
+  Repeater: "Repeater",
+  Threepeater: "Threepeater",
 } as const;
 
-export type PlantName = (typeof PlantName)[keyof typeof PlantName];
+export type PlantType = (typeof PlantType)[keyof typeof PlantType];

@@ -1,29 +1,21 @@
-import { createHitbox } from "@/game/helpers/hitbox";
-import {
-  createPlantId,
-  drawPlantName,
-  drawPlantRect,
-  syncPlantHitbox,
-} from "../helpers";
-import { createPeashot, SHOT_HEIGHT } from "../../shots";
+import { plantHelpers } from "../plant-helpers";
+import { createPeashot, SHOT_HEIGHT, shotActions } from "../../shots";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "../constants";
+import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
 import { TILE_WIDTH } from "@/game/board";
+import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
   Plant,
   PlantDrawOptions,
-  PlantState,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
-import type { Vector2 } from "@/game/utils/vector";
+import type { Vector2 } from "@/game/types/vector";
 
-type RepeaterState = {
+type Repeater = {
   shotTimer: number;
-} & PlantState;
-
-type Repeater = Plant<RepeaterState>;
+} & Plant;
 
 type CreateRepeaterOptions = Vector2;
 
@@ -34,9 +26,9 @@ const RANGE = TILE_WIDTH * 6;
 
 function createRepeater(options: CreateRepeaterOptions): Repeater {
   const { x, y } = options;
-  const state: RepeaterState = {
-    name: PlantName.Repeater,
-    id: createPlantId(),
+  return {
+    type: PlantType.Repeater,
+    id: plantHelpers.createPlantId(),
     x,
     y,
     width: PLANT_WIDTH,
@@ -44,74 +36,64 @@ function createRepeater(options: CreateRepeaterOptions): Repeater {
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
     shotTimer: 0,
-    hitbox: createHitbox({
+    hitbox: {
       x,
       y,
       width: PLANT_WIDTH,
       height: PLANT_HEIGHT,
-    }),
-  };
-
-  return {
-    get state() {
-      return state;
     },
-    draw,
-    update,
-    takeDamage,
   };
 }
 
-function draw(options: PlantDrawOptions<RepeaterState>) {
-  const { state, board } = options;
+function drawRepeater(options: PlantDrawOptions<Repeater>) {
+  const { plant, board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  drawPlantRect(options);
-  drawPlantName(options);
+  plantHelpers.drawPlantRect(options);
+  plantHelpers.drawPlantType(options);
 
-  state.hitbox.draw(state.hitbox, board);
+  hitboxActions.draw(plant.hitbox, board);
 }
 
-function update(options: PlantUpdateOptions<RepeaterState>) {
-  const { deltaTime, state, game } = options;
+function updateRepeater(options: PlantUpdateOptions<Repeater>) {
+  const { deltaTime, plant, game } = options;
 
-  state.shotTimer += deltaTime;
+  plant.shotTimer += deltaTime;
 
-  if (state.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombieManager.zombies.some((zombie) => {
-      return state.y === zombie.state.y && zombie.state.x <= state.x + RANGE;
+  if (plant.shotTimer >= SHOT_INTERVAL) {
+    const ableToShoot = game.zombies.some((zombie) => {
+      return plant.y === zombie.y && zombie.x <= plant.x + RANGE;
     });
 
     if (ableToShoot) {
-      game.shotManager.addShots(
+      game.shots = shotActions.addShots(
+        game.shots,
         createPeashot({
-          x: state.x + state.width,
-          y: state.y + SHOT_HEIGHT / 2,
+          x: plant.x + plant.width,
+          y: plant.y + SHOT_HEIGHT / 2,
         }),
         createPeashot({
-          x: state.x + state.width + TILE_WIDTH / 2,
-          y: state.y + SHOT_HEIGHT / 2,
+          x: plant.x + plant.width + TILE_WIDTH / 2,
+          y: plant.y + SHOT_HEIGHT / 2,
         })
       );
     }
 
-    state.shotTimer = 0;
-  }
-  if (state.toughness <= 0) {
-    game.plantManager.removePlantById(state.id);
+    plant.shotTimer = 0;
   }
 
-  syncPlantHitbox(options);
+  plantHelpers.syncPlantHitbox(options);
 }
 
-function takeDamage(options: PlantTakeDamageOptions<RepeaterState>) {
-  const { state, damage } = options;
+function repeaterTakeDamage(options: PlantTakeDamageOptions<Repeater>) {
+  const { plant, damage } = options;
 
-  state.toughness -= damage;
+  plant.toughness -= damage;
 }
 
-export { createRepeater };
+export { createRepeater, drawRepeater, updateRepeater, repeaterTakeDamage };
+export type { Repeater };

@@ -1,20 +1,13 @@
 import type { Board } from "../board";
-import type { Size } from "../utils/size";
-import type { Vector2 } from "../utils/vector";
+import type { Size } from "../types/size";
+import type { Vector2 } from "../types/vector";
 
-type Hitbox = {
-  draw(hitbox: Hitbox, board: Board): void;
-} & Vector2 &
-  Size;
+type Hitbox = Vector2 & Size;
 
-type CreateHitboxOptions = Vector2 & Size;
-
-function createHitbox(options: CreateHitboxOptions): Hitbox {
-  return {
-    ...options,
-    draw,
-  };
-}
+const hitboxActions = {
+  draw,
+  isColliding,
+} as const;
 
 function draw(hitbox: Hitbox, board: Board) {
   const { ctx } = board;
@@ -28,7 +21,7 @@ function draw(hitbox: Hitbox, board: Board) {
   ctx.stroke();
 }
 
-function isHitboxColliding(a: Hitbox, b: Hitbox): boolean {
+function isColliding(a: Hitbox, b: Hitbox): boolean {
   return (
     a.x < b.x + b.width &&
     a.x + a.width > b.x &&
@@ -37,5 +30,5 @@ function isHitboxColliding(a: Hitbox, b: Hitbox): boolean {
   );
 }
 
-export { createHitbox, isHitboxColliding };
+export { hitboxActions };
 export type { Hitbox };

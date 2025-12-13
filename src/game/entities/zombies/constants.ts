@@ -1,17 +1,16 @@
 export const ZOMBIE_WIDTH = 96;
 export const ZOMBIE_HEIGHT = 96;
 
-export const ZombieName = {
-  Normal: "normal_zombie",
-  Flag: "flag_zombie",
+export const ZombieType = {
+  Normal: "NormalZombie",
+  Flag: "FlagZombie",
 } as const;
 
-export type ZombieName = (typeof ZombieName)[keyof typeof ZombieName];
+export type ZombieType = (typeof ZombieType)[keyof typeof ZombieType];
 
-export const ZombieStateName = {
-  Walking: "walking",
-  Eating: "eating",
+export const ZombieState = {
+  Walking: "WALKING",
+  Eating: "EATING",
 } as const;
 
-export type ZombieStateName =
-  (typeof ZombieStateName)[keyof typeof ZombieStateName];
+export type ZombieState = (typeof ZombieState)[keyof typeof ZombieState];

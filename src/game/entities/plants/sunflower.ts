@@ -1,27 +1,19 @@
-import { createHitbox } from "@/game/helpers/hitbox";
-import {
-  createPlantId,
-  drawPlantName,
-  drawPlantRect,
-  syncPlantHitbox,
-} from "./helpers";
+import { plantHelpers } from "./plant-helpers";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantName } from "./constants";
+import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "./constants";
+import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
   Plant,
   PlantDrawOptions,
-  PlantState,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
-import type { Vector2 } from "@/game/utils/vector";
+import type { Vector2 } from "@/game/types/vector";
 
-type SunflowerState = {
+type Sunflower = {
   rechargeTimer: number;
-} & PlantState;
-
-type Sunflower = Plant<SunflowerState>;
+} & Plant;
 
 type CreateSunflowerOptions = Vector2;
 
@@ -32,68 +24,57 @@ const RECHARGE_INTERVAL = 7500;
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const { x, y } = options;
-  const state: SunflowerState = {
-    name: PlantName.Sunflower,
-    id: createPlantId(),
+  return {
+    type: PlantType.Sunflower,
+    id: plantHelpers.createPlantId(),
     x,
     y,
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
-    hitbox: createHitbox({
+    hitbox: {
       x,
       y,
       width: PLANT_WIDTH,
       height: PLANT_HEIGHT,
-    }),
-    rechargeTimer: 0,
-  };
-
-  return {
-    get state() {
-      return state;
     },
-    draw,
-    update,
-    takeDamage,
+    rechargeTimer: 0,
   };
 }
 
-function draw(options: PlantDrawOptions<SunflowerState>) {
-  const { state, board } = options;
+function drawSunflower(options: PlantDrawOptions<Sunflower>) {
+  const { plant, board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  drawPlantRect(options);
-  drawPlantName(options);
+  plantHelpers.drawPlantRect(options);
+  plantHelpers.drawPlantType(options);
 
-  state.hitbox.draw(state.hitbox, board);
+  hitboxActions.draw(plant.hitbox, board);
 }
 
-function update(options: PlantUpdateOptions<SunflowerState>) {
-  const { state, game, deltaTime } = options;
+function updateSunflower(options: PlantUpdateOptions<Sunflower>) {
+  const { plant, game, deltaTime } = options;
 
-  state.rechargeTimer += deltaTime;
+  plant.rechargeTimer += deltaTime;
 
-  if (state.rechargeTimer >= RECHARGE_INTERVAL) {
+  if (plant.rechargeTimer >= RECHARGE_INTERVAL) {
     game.sun += SUN_PRODUCTION;
-    state.rechargeTimer = 0;
-  }
-  if (state.toughness <= 0) {
-    game.plantManager.removePlantById(state.id);
+    plant.rechargeTimer = 0;
   }
 
-  syncPlantHitbox(options);
+  plantHelpers.syncPlantHitbox(options);
 }
 
-function takeDamage(options: PlantTakeDamageOptions<SunflowerState>) {
-  const { state, damage } = options;
+function sunflowerTakeDamage(options: PlantTakeDamageOptions<Sunflower>) {
+  const { plant, damage } = options;
 
-  state.toughness -= damage;
+  plant.toughness -= damage;
 }
 
-export { createSunflower };
+export { createSunflower, drawSunflower, updateSunflower, sunflowerTakeDamage };
+export type { Sunflower };

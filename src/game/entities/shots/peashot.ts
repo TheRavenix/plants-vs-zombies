@@ -1,21 +1,16 @@
-import { createHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
-import { createShotId, drawShotRect, syncShotHitbox } from "./helpers";
+import { shotHelpers } from "./shot-helpers";
 
-import { SHOT_HEIGHT, SHOT_WIDTH, ShotName } from "./constants";
+import { SHOT_HEIGHT, SHOT_WIDTH, ShotType } from "./constants";
+import { zombieActions } from "../zombies";
+import { shotActions } from "./shot-actions";
+import { hitboxActions } from "@/game/helpers/hitbox";
 
-import type {
-  Shot,
-  ShotDrawOptions,
-  ShotState,
-  ShotUpdateOptions,
-} from "./types";
-import type { Vector2 } from "@/game/utils/vector";
+import type { Shot, ShotDrawOptions, ShotUpdateOptions } from "./types";
+import type { Vector2 } from "@/game/types/vector";
 
-type PeashotState = {
+type Peashot = {
   direction?: PeashotDirection;
-} & ShotState;
-
-type Peashot = Shot<PeashotState>;
+} & Shot;
 
 type CreatePeashotOptions = {
   direction?: PeashotDirection;
@@ -34,9 +29,9 @@ type PeashotDirection =
 
 function createPeashot(options: CreatePeashotOptions): Peashot {
   const { x, y, direction = PeashotDirection.Right } = options;
-  const state: PeashotState = {
-    name: ShotName.Peashot,
-    id: createShotId(),
+  return {
+    type: ShotType.Peashot,
+    id: shotHelpers.createShotId(),
     x,
     y,
     width: SHOT_WIDTH,
@@ -44,88 +39,81 @@ function createPeashot(options: CreatePeashotOptions): Peashot {
     damage: DAMAGE,
     speed: SPEED,
     fillStyle: "#A0B09A",
-    hitbox: createHitbox({
+    hitbox: {
       x,
       y,
       width: SHOT_WIDTH,
       height: SHOT_HEIGHT,
-    }),
-    direction,
-  };
-
-  return {
-    get state() {
-      return state;
     },
-    draw,
-    update,
+    direction,
   };
 }
 
-function draw(options: ShotDrawOptions<PeashotState>) {
-  const { state, board } = options;
+function drawPeashot(options: ShotDrawOptions<Peashot>) {
+  const { shot, board } = options;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  drawShotRect(options);
+  shotHelpers.drawShotRect(options);
 
-  state.hitbox.draw(state.hitbox, board);
+  hitboxActions.draw(shot.hitbox, board);
 }
 
-function update(options: ShotUpdateOptions<PeashotState>) {
-  const { deltaTime, state, game } = options;
-  const { zombieManager, shotManager } = game;
-  const speed = state.speed * (deltaTime / 1000);
+function updatePeashot(options: ShotUpdateOptions<Peashot>) {
+  const { deltaTime, shot, game } = options;
+  const { zombies } = game;
+  const speed = shot.speed * (deltaTime / 1000);
 
-  switch (state.direction) {
+  switch (shot.direction) {
     case PeashotDirection.Right:
-      state.x += speed;
+      shot.x += speed;
       break;
 
     case PeashotDirection.UpRight:
-      state.x += speed;
-      state.y -= speed;
+      shot.x += speed;
+      shot.y -= speed;
       break;
 
     case PeashotDirection.DownRight:
-      state.x += speed;
-      state.y += speed;
+      shot.x += speed;
+      shot.y += speed;
       break;
 
     default:
-      state.x += speed;
+      shot.x += speed;
   }
 
   let deleteZombieId: string | null = null;
 
-  const collisionZombie = zombieManager.zombies.find((zombie) => {
-    return isHitboxColliding(state.hitbox, zombie.state.hitbox);
+  const collisionZombie = zombies.find((zombie) => {
+    return hitboxActions.isColliding(shot.hitbox, zombie.hitbox);
   });
 
   if (collisionZombie !== undefined) {
-    deleteZombieId = collisionZombie.state.id;
+    deleteZombieId = collisionZombie.id;
   }
   if (deleteZombieId !== null) {
-    const zombie = zombieManager.findZombieById(deleteZombieId);
+    const zombie = zombieActions.findZombieById(zombies, deleteZombieId);
 
     if (zombie === undefined) {
       return;
     }
 
-    zombie.takeDamage({
-      state: zombie.state,
-      damage: DAMAGE,
+    zombieActions.zombieTakeDamage({
+      zombie,
+      damage: shot.damage,
     });
-    shotManager.removeShotById(state.id);
+    game.shots = shotActions.removeShotById(game.shots, shot.id);
 
     deleteZombieId = null;
   }
 
-  syncShotHitbox(options);
+  shotHelpers.syncShotHitbox(options);
 }
 
-export { createPeashot };
+export { createPeashot, drawPeashot, updatePeashot };
 export { PeashotDirection };
+export type { Peashot };

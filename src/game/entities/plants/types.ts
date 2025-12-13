@@ -1,38 +1,31 @@
 import type { Board } from "@/game/board";
 import type { Game } from "@/game/game";
 import type { Hitbox } from "@/game/helpers/hitbox";
-import type { Size } from "@/game/utils/size";
-import type { Vector2 } from "@/game/utils/vector";
-import type { PlantName } from "./constants";
+import type { Size } from "@/game/types/size";
+import type { Vector2 } from "@/game/types/vector";
+import type { PlantType } from "./constants";
 
-export type PlantState = {
-  name: PlantName;
+export type Plant = {
+  type: PlantType;
   id: string;
   toughness: number;
   sunCost: number;
-  get hitbox(): Hitbox;
+  hitbox: Hitbox;
 } & Vector2 &
   Size;
 
-export type Plant<S extends PlantState = PlantState> = {
-  get state(): S;
-  draw(options: PlantDrawOptions): void;
-  update(options: PlantUpdateOptions): void;
-  takeDamage(damage: PlantTakeDamageOptions): void;
+export type PlantDrawOptions<P extends Plant = Plant> = {
+  plant: P;
+  board: Board;
 };
 
-export type PlantDrawOptions<S extends PlantState = PlantState> = {
-  get state(): S;
-  get board(): Board;
-};
-
-export type PlantUpdateOptions<S extends PlantState = PlantState> = {
+export type PlantUpdateOptions<P extends Plant = Plant> = {
   deltaTime: number;
-  get state(): S;
-  get game(): Game;
+  plant: P;
+  game: Game;
 };
 
-export type PlantTakeDamageOptions<S extends PlantState = PlantState> = {
+export type PlantTakeDamageOptions<P extends Plant = Plant> = {
   damage: number;
-  get state(): S;
+  plant: P;
 };

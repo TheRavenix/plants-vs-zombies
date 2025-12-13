@@ -1,16 +1,16 @@
 import "./style.css";
 
-import { createBoard } from "./game/board";
-import { createGame } from "./game/game";
+import { boardActions } from "./game/board";
+import { gameActions } from "./game/game";
 
 const app = document.querySelector("#app");
 
 window.addEventListener("load", () => {
-  const board = createBoard({
+  const board = boardActions.createBoard({
     root: app,
     center: true,
   });
-  const game = createGame();
+  const game = gameActions.createGame();
 
-  game.start(game, board);
+  gameActions.startGame(game, board);
 });
