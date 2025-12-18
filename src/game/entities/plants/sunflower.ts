@@ -4,12 +4,17 @@ import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "./constants";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
+  BasePlant,
   PlantDrawOptions,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
-  Sunflower,
 } from "./types";
 import type { Vector2 } from "@/game/types/vector";
+
+type Sunflower = {
+  type: PlantType.Sunflower;
+  rechargeTimer: number;
+} & BasePlant;
 
 type CreateSunflowerOptions = Vector2;
 
@@ -78,3 +83,4 @@ function sunflowerTakeDamage(
 }
 
 export { createSunflower, drawSunflower, updateSunflower, sunflowerTakeDamage };
+export type { Sunflower };

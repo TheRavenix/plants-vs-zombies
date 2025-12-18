@@ -6,12 +6,17 @@ import { TILE_WIDTH } from "@/game/board";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
+  BasePlant,
   PlantDrawOptions,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
-  Repeater,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
+
+type Repeater = {
+  type: PlantType.Repeater;
+  shotTimer: number;
+} & BasePlant;
 
 type CreateRepeaterOptions = Vector2;
 
@@ -95,3 +100,4 @@ function repeaterTakeDamage(
 }
 
 export { createRepeater, drawRepeater, updateRepeater, repeaterTakeDamage };
+export type { Repeater };

@@ -5,8 +5,12 @@ import { zombieActions } from "../zombies";
 import { shotActions } from "./shot-actions";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
-import type { Peashot, ShotDrawOptions, ShotUpdateOptions } from "./types";
+import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "./types";
 import type { Vector2 } from "@/game/types/vector";
+
+type Peashot = {
+  type: ShotType.Peashot;
+} & BaseShot;
 
 type CreatePeashotOptions = {
   direction?: ShotDirection;
@@ -102,3 +106,4 @@ function updatePeashot(peashot: Peashot, options: ShotUpdateOptions) {
 }
 
 export { createPeashot, drawPeashot, updatePeashot };
+export type { Peashot };

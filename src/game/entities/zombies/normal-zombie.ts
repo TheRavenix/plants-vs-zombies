@@ -10,12 +10,16 @@ import { plantActions } from "../plants";
 
 import { type Vector2 } from "@/game/types/vector";
 import type {
-  NormalZombie,
+  BaseZombie,
   ZombieDrawOptions,
   ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
 import { hitboxActions } from "@/game/helpers/hitbox";
+
+type NormalZombie = {
+  type: ZombieType.Normal;
+} & BaseZombie;
 
 type CreateNormalZombieOptions = Vector2;
 
@@ -129,3 +133,4 @@ export {
   updateNormalZombie,
   normalZombieTakeDamage,
 };
+export type { NormalZombie };

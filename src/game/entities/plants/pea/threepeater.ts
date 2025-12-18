@@ -11,12 +11,17 @@ import { TILE_WIDTH } from "@/game/board";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
+  BasePlant,
   PlantDrawOptions,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
-  Threepeater,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
+
+type Threepeater = {
+  type: PlantType.Threepeater;
+  shotTimer: number;
+} & BasePlant;
 
 type CreateThreepeaterOptions = Vector2;
 
@@ -114,3 +119,4 @@ export {
   updateThreepeater,
   threepeaterTakeDamage,
 };
+export type { Threepeater };
