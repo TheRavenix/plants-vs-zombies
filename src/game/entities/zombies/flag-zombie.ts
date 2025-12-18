@@ -10,12 +10,16 @@ import { plantActions } from "../plants";
 
 import { type Vector2 } from "@/game/types/vector";
 import type {
-  FlagZombie,
+  BaseZombie,
   ZombieDrawOptions,
   ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
 import { hitboxActions } from "@/game/helpers/hitbox";
+
+type FlagZombie = {
+  type: ZombieType.Flag;
+} & BaseZombie;
 
 type CreateFlagZombieOptions = Vector2;
 
@@ -126,3 +130,4 @@ export {
   updateFlagZombie,
   flagZombieTakeDamage,
 };
+export type { FlagZombie };

@@ -6,12 +6,17 @@ import { TILE_WIDTH } from "@/game/board";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import type {
-  Peashooter,
+  BasePlant,
   PlantDrawOptions,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
+
+type Peashooter = {
+  type: PlantType.Peashooter;
+  shotTimer: number;
+} & BasePlant;
 
 type CreatePeashooterOptions = Vector2;
 
@@ -98,3 +103,4 @@ export {
   updatePeashooter,
   peashooterTakeDamage,
 };
+export type { Peashooter };
