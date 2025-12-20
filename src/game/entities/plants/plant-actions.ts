@@ -26,6 +26,11 @@ import {
   updatePuffshroom,
   updateSunshroom,
 } from "./shroom";
+import {
+  drawTorchwood,
+  torchwoodTakeDamage,
+  updateTorchwood,
+} from "./torchwood";
 
 import { PlantType } from "./constants";
 
@@ -69,6 +74,10 @@ function drawPlant(plant: Plant, options: PlantDrawOptions) {
     case PlantType.Sunshroom:
       drawSunshroom(plant, options);
       break;
+
+    case PlantType.Torchwood:
+      drawTorchwood(plant, options);
+      break;
   }
 }
 
@@ -105,6 +114,10 @@ function updatePlant(plant: Plant, options: PlantUpdateOptions) {
     case PlantType.Sunshroom:
       updateSunshroom(plant, options);
       break;
+
+    case PlantType.Torchwood:
+      updateTorchwood(plant, options);
+      break;
   }
 }
 
@@ -140,6 +153,10 @@ function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
 
     case PlantType.Sunshroom:
       sunshroomTakeDamage(plant, options);
+      break;
+
+    case PlantType.Torchwood:
+      torchwoodTakeDamage(plant, options);
       break;
   }
 }

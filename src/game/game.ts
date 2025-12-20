@@ -20,7 +20,7 @@ import {
   createSnowpea,
   createSunshroom,
   createThreepeater,
-  createWallNut,
+  createTorchwood,
   plantActions,
   type Plant,
 } from "./entities/plants";
@@ -76,12 +76,12 @@ function createGame(): Game {
       x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
-    createSnowpea({
-      x: TILE_WIDTH * 3,
+    createTorchwood({
+      x: TILE_WIDTH * 2,
       y: TILE_HEIGHT * 2,
     }),
-    createWallNut({
-      x: TILE_WIDTH * 4,
+    createSnowpea({
+      x: TILE_WIDTH * 3,
       y: TILE_HEIGHT * 2,
     }),
     createThreepeater({

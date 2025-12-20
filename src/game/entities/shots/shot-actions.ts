@@ -5,8 +5,10 @@ import {
   TILE_WIDTH,
 } from "@/game/board";
 import {
+  drawFirepeaShot,
   drawPeashot,
   drawSnowpeaShot,
+  updateFirepeaShot,
   updatePeashot,
   updateSnowpeaShot,
 } from "./pea";
@@ -29,6 +31,10 @@ function drawShot(shot: Shot, options: ShotDrawOptions) {
     case ShotType.Shroomshot:
       drawShroomshot(shot, options);
       break;
+
+    case ShotType.FirepeaShot:
+      drawFirepeaShot(shot, options);
+      break;
   }
 }
 
@@ -44,6 +50,10 @@ function updateShot(shot: Shot, options: ShotUpdateOptions) {
 
     case ShotType.Shroomshot:
       updateShroomshot(shot, options);
+      break;
+
+    case ShotType.FirepeaShot:
+      updateFirepeaShot(shot, options);
       break;
   }
 }
