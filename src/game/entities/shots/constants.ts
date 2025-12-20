@@ -4,6 +4,7 @@ export const SHOT_HEIGHT = 32;
 export enum ShotType {
   Peashot = "Peashot",
   SnowpeaShot = "SnowpeaShot",
+  Shroomshot = "Shroomshot",
 }
 
 export enum ShotDirection {

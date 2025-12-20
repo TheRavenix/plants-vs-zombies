@@ -24,7 +24,7 @@ type CreateSnowpeaOptions = Vector2;
 const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
-const RANGE = TILE_WIDTH * 6;
+const RANGE = TILE_WIDTH * 7;
 
 function createSnowpea(options: CreateSnowpeaOptions): Snowpea {
   const { x, y } = options;
@@ -54,8 +54,6 @@ function drawSnowpea(snowpea: Snowpea, options: PlantDrawOptions) {
   if (ctx === null) {
     return;
   }
-
-  snowpea.shotTimer;
 
   plantHelpers.drawPlantRect(snowpea, {
     ...options,

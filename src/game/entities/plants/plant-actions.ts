@@ -27,6 +27,11 @@ import type {
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
+import {
+  drawPuffshroom,
+  puffshroomTakeDamage,
+  updatePuffshroom,
+} from "./shroom";
 
 function drawPlant(plant: Plant, options: PlantDrawOptions) {
   switch (plant.type) {
@@ -52,6 +57,10 @@ function drawPlant(plant: Plant, options: PlantDrawOptions) {
 
     case PlantType.WallNut:
       drawWallNut(plant, options);
+      break;
+
+    case PlantType.Puffshroom:
+      drawPuffshroom(plant, options);
       break;
   }
 }
@@ -81,6 +90,10 @@ function updatePlant(plant: Plant, options: PlantUpdateOptions) {
     case PlantType.WallNut:
       updateWallNut(plant, options);
       break;
+
+    case PlantType.Puffshroom:
+      updatePuffshroom(plant, options);
+      break;
   }
 }
 
@@ -108,6 +121,10 @@ function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
 
     case PlantType.WallNut:
       wallNutTakeDamage(plant, options);
+      break;
+
+    case PlantType.Puffshroom:
+      puffshroomTakeDamage(plant, options);
       break;
   }
 }

@@ -16,9 +16,11 @@ import {
 } from "./entities/zombies";
 import {
   createPeashooter,
+  createPuffshroom,
   createSnowpea,
   createSunflower,
   createThreepeater,
+  createWallNut,
   plantActions,
   type Plant,
 } from "./entities/plants";
@@ -82,11 +84,15 @@ function createGame(): Game {
       x: TILE_WIDTH * 3,
       y: TILE_HEIGHT * 2,
     }),
+    createWallNut({
+      x: TILE_WIDTH * 4,
+      y: TILE_HEIGHT * 2,
+    }),
     createThreepeater({
       x: 0,
       y: TILE_HEIGHT * (BOARD_COLS - 1),
     }),
-    createSnowpea({
+    createPuffshroom({
       x: TILE_WIDTH * 3,
       y: TILE_HEIGHT * (BOARD_COLS - 1),
     })

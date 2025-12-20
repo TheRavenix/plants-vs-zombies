@@ -24,7 +24,7 @@ type CreatePeashooterOptions = Vector2;
 const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
-const RANGE = TILE_WIDTH * 6;
+const RANGE = TILE_WIDTH * 7;
 
 function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   const { x, y } = options;
@@ -54,8 +54,6 @@ function drawPeashooter(peashooter: Peashooter, options: PlantDrawOptions) {
   if (ctx === null) {
     return;
   }
-
-  peashooter.shotTimer;
 
   plantHelpers.drawPlantRect(peashooter, options);
   plantHelpers.drawPlantType(peashooter, options);

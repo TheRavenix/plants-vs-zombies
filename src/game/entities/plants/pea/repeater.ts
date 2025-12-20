@@ -23,7 +23,7 @@ type CreateRepeaterOptions = Vector2;
 const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
-const RANGE = TILE_WIDTH * 6;
+const RANGE = TILE_WIDTH * 7;
 
 function createRepeater(options: CreateRepeaterOptions): Repeater {
   const { x, y } = options;

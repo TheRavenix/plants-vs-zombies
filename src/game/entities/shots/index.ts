@@ -3,3 +3,4 @@ export * from "./constants";
 export * from "./shot-helpers";
 export * from "./shot-actions";
 export * from "./pea";
+export * from "./shroomshot";

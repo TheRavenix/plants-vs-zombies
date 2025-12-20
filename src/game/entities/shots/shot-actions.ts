@@ -10,6 +10,7 @@ import {
   updatePeashot,
   updateSnowpeaShot,
 } from "./pea";
+import { drawShroomshot, updateShroomshot } from "./shroomshot";
 
 import { ShotType } from "./constants";
 
@@ -24,6 +25,10 @@ function drawShot(shot: Shot, options: ShotDrawOptions) {
     case ShotType.SnowpeaShot:
       drawSnowpeaShot(shot, options);
       break;
+
+    case ShotType.Shroomshot:
+      drawShroomshot(shot, options);
+      break;
   }
 }
 
@@ -35,6 +40,10 @@ function updateShot(shot: Shot, options: ShotUpdateOptions) {
 
     case ShotType.SnowpeaShot:
       updateSnowpeaShot(shot, options);
+      break;
+
+    case ShotType.Shroomshot:
+      updateShroomshot(shot, options);
       break;
   }
 }
