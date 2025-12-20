@@ -30,7 +30,7 @@ function drawZombieType(zombie: Zombie, options: ZombieDrawOptions) {
 
   ctx.fillStyle = "#000000";
   ctx.fillText(
-    `${zombie.type} ${zombie.freezeAmount}%`,
+    `${zombie.type} ${zombie.health}`,
     zombie.x,
     zombie.y + zombie.height / 2
   );

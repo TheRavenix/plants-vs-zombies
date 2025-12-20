@@ -16,7 +16,7 @@ type CreateSnowpeaShotOptions = {
   direction?: ShotDirection;
 } & Vector2;
 
-const DAMAGE = 15;
+const DAMAGE = 20;
 const SPEED = 150;
 const FREEZE_AMOUNT = 10;
 

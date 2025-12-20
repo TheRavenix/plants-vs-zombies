@@ -17,6 +17,7 @@ import {
   updateSnowpea,
   updateThreepeater,
 } from "./pea";
+import { drawWallNut, updateWallNut, wallNutTakeDamage } from "./wall-nut";
 
 import { PlantType } from "./constants";
 
@@ -48,6 +49,10 @@ function drawPlant(plant: Plant, options: PlantDrawOptions) {
     case PlantType.Snowpea:
       drawSnowpea(plant, options);
       break;
+
+    case PlantType.WallNut:
+      drawWallNut(plant, options);
+      break;
   }
 }
 
@@ -72,6 +77,10 @@ function updatePlant(plant: Plant, options: PlantUpdateOptions) {
     case PlantType.Snowpea:
       updateSnowpea(plant, options);
       break;
+
+    case PlantType.WallNut:
+      updateWallNut(plant, options);
+      break;
   }
 }
 
@@ -95,6 +104,10 @@ function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
 
     case PlantType.Snowpea:
       snowpeaTakeDamage(plant, options);
+      break;
+
+    case PlantType.WallNut:
+      wallNutTakeDamage(plant, options);
       break;
   }
 }

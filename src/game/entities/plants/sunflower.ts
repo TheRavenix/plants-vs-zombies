@@ -52,8 +52,6 @@ function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
     return;
   }
 
-  sunflower.rechargeTimer;
-
   plantHelpers.drawPlantRect(sunflower, options);
   plantHelpers.drawPlantType(sunflower, options);
 

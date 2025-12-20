@@ -7,4 +7,5 @@ export enum PlantType {
   Repeater = "Repeater",
   Threepeater = "Threepeater",
   Snowpea = "Snowpea",
+  WallNut = "WallNut",
 }

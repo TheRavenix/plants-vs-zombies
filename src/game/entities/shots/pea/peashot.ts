@@ -16,7 +16,7 @@ type CreatePeashotOptions = {
   direction?: ShotDirection;
 } & Vector2;
 
-const DAMAGE = 15;
+const DAMAGE = 20;
 const SPEED = 150;
 
 function createPeashot(options: CreatePeashotOptions): Peashot {
