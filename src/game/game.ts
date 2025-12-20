@@ -18,7 +18,7 @@ import {
   createPeashooter,
   createPuffshroom,
   createSnowpea,
-  createSunflower,
+  createSunshroom,
   createThreepeater,
   createWallNut,
   plantActions,
@@ -64,12 +64,8 @@ function createGame(): Game {
       x: 0,
       y: 0,
     }),
-    createSunflower({
+    createSunshroom({
       x: TILE_WIDTH,
-      y: 0,
-    }),
-    createSunflower({
-      x: TILE_WIDTH * 2,
       y: 0,
     }),
     createPeashooter({

@@ -18,6 +18,14 @@ import {
   updateThreepeater,
 } from "./pea";
 import { drawWallNut, updateWallNut, wallNutTakeDamage } from "./wall-nut";
+import {
+  drawPuffshroom,
+  drawSunshroom,
+  puffshroomTakeDamage,
+  sunshroomTakeDamage,
+  updatePuffshroom,
+  updateSunshroom,
+} from "./shroom";
 
 import { PlantType } from "./constants";
 
@@ -27,11 +35,6 @@ import type {
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
-import {
-  drawPuffshroom,
-  puffshroomTakeDamage,
-  updatePuffshroom,
-} from "./shroom";
 
 function drawPlant(plant: Plant, options: PlantDrawOptions) {
   switch (plant.type) {
@@ -61,6 +64,10 @@ function drawPlant(plant: Plant, options: PlantDrawOptions) {
 
     case PlantType.Puffshroom:
       drawPuffshroom(plant, options);
+      break;
+
+    case PlantType.Sunshroom:
+      drawSunshroom(plant, options);
       break;
   }
 }
@@ -94,6 +101,10 @@ function updatePlant(plant: Plant, options: PlantUpdateOptions) {
     case PlantType.Puffshroom:
       updatePuffshroom(plant, options);
       break;
+
+    case PlantType.Sunshroom:
+      updateSunshroom(plant, options);
+      break;
   }
 }
 
@@ -125,6 +136,10 @@ function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
 
     case PlantType.Puffshroom:
       puffshroomTakeDamage(plant, options);
+      break;
+
+    case PlantType.Sunshroom:
+      sunshroomTakeDamage(plant, options);
       break;
   }
 }

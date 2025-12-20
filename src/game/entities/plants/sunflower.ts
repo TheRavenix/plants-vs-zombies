@@ -21,7 +21,7 @@ type CreateSunflowerOptions = Vector2;
 const TOUGHNESS = 300;
 const SUNCOST = 50;
 const SUN_PRODUCTION = 25;
-const RECHARGE_INTERVAL = 7500;
+const RECHARGE_INTERVAL = 1000 * 24;
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const { x, y } = options;
