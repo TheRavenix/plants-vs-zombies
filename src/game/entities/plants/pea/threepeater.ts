@@ -1,15 +1,10 @@
 import { TILE_WIDTH } from "@/game/board";
-import {
-  createPeashot,
-  SHOT_HEIGHT,
-  shotActions,
-  ShotDirection,
-} from "../../shots";
+import { createPeashot, shotActions, ShotDirection } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
+import { PlantType } from "../constants";
 
 import type {
   BasePlant,
@@ -30,6 +25,11 @@ const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
+const SPRITE_WIDTH = 96;
+const SPRITE_HEIGHT = 96;
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+
+SPRITE_IMAGE.src = "./plants/pea/threepeater/Threepeater.png";
 
 function createThreepeater(options: CreateThreepeaterOptions): Threepeater {
   const { x, y } = options;
@@ -38,17 +38,17 @@ function createThreepeater(options: CreateThreepeaterOptions): Threepeater {
     id: plantHelpers.createPlantId(),
     x,
     y,
-    width: PLANT_WIDTH,
-    height: PLANT_HEIGHT,
+    width: SPRITE_WIDTH,
+    height: SPRITE_HEIGHT,
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
-    shotTimer: 0,
     hitbox: {
       x,
       y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
+      width: SPRITE_WIDTH,
+      height: SPRITE_HEIGHT,
     },
+    shotTimer: 0,
   };
 }
 
@@ -60,8 +60,13 @@ function drawThreepeater(threepeater: Threepeater, options: PlantDrawOptions) {
     return;
   }
 
-  plantHelpers.drawPlantRect(threepeater, options);
-  plantHelpers.drawPlantType(threepeater, options);
+  ctx.drawImage(
+    SPRITE_IMAGE,
+    Math.round(threepeater.x),
+    Math.round(threepeater.y),
+    threepeater.width,
+    threepeater.height
+  );
 
   hitboxActions.draw(threepeater.hitbox, board);
 }
@@ -84,16 +89,16 @@ function updateThreepeater(
         game.shots,
         createPeashot({
           x: threepeater.x + threepeater.width,
-          y: threepeater.y + SHOT_HEIGHT / 2,
+          y: threepeater.y + 2,
         }),
         createPeashot({
           x: threepeater.x + threepeater.width,
-          y: threepeater.y + SHOT_HEIGHT / 2,
+          y: threepeater.y + 2,
           direction: ShotDirection.UpRight,
         }),
         createPeashot({
           x: threepeater.x + threepeater.width,
-          y: threepeater.y + SHOT_HEIGHT / 2,
+          y: threepeater.y + 2,
           direction: ShotDirection.DownRight,
         })
       );

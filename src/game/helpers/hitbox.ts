@@ -11,7 +11,7 @@ function draw(hitbox: Hitbox, board: Board) {
     return;
   }
 
-  ctx.strokeStyle = "red";
+  ctx.strokeStyle = "transparent";
   ctx.strokeRect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
   ctx.stroke();
 }

@@ -1,9 +1,9 @@
 import { plantHelpers } from "../plant-helpers";
-import { createPeashot, SHOT_HEIGHT, shotActions } from "../../shots";
+import { createPeashot, shotActions } from "../../shots";
 import { TILE_WIDTH } from "@/game/board";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
+import { PlantType } from "../constants";
 
 import type {
   BasePlant,
@@ -24,6 +24,11 @@ const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
+const SPRITE_WIDTH = 96;
+const SPRITE_HEIGHT = 96;
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+
+SPRITE_IMAGE.src = "./plants/pea/repeater/Repeater.png";
 
 function createRepeater(options: CreateRepeaterOptions): Repeater {
   const { x, y } = options;
@@ -32,17 +37,17 @@ function createRepeater(options: CreateRepeaterOptions): Repeater {
     id: plantHelpers.createPlantId(),
     x,
     y,
-    width: PLANT_WIDTH,
-    height: PLANT_HEIGHT,
+    width: SPRITE_WIDTH,
+    height: SPRITE_HEIGHT,
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
-    shotTimer: 0,
     hitbox: {
       x,
       y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
+      width: SPRITE_WIDTH,
+      height: SPRITE_HEIGHT,
     },
+    shotTimer: 0,
   };
 }
 
@@ -54,8 +59,13 @@ function drawRepeater(repeater: Repeater, options: PlantDrawOptions) {
     return;
   }
 
-  plantHelpers.drawPlantRect(repeater, options);
-  plantHelpers.drawPlantType(repeater, options);
+  ctx.drawImage(
+    SPRITE_IMAGE,
+    Math.round(repeater.x),
+    Math.round(repeater.y),
+    repeater.width,
+    repeater.height
+  );
 
   hitboxActions.draw(repeater.hitbox, board);
 }
@@ -75,11 +85,11 @@ function updateRepeater(repeater: Repeater, options: PlantUpdateOptions) {
         game.shots,
         createPeashot({
           x: repeater.x + repeater.width,
-          y: repeater.y + SHOT_HEIGHT / 2,
+          y: repeater.y + 2,
         }),
         createPeashot({
           x: repeater.x + repeater.width + TILE_WIDTH / 2,
-          y: repeater.y + SHOT_HEIGHT / 2,
+          y: repeater.y + 2,
         })
       );
     }

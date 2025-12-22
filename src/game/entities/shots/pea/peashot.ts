@@ -3,7 +3,7 @@ import { zombieActions } from "../../zombies";
 import { shotActions } from "../shot-actions";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
-import { SHOT_HEIGHT, SHOT_WIDTH, ShotDirection, ShotType } from "../constants";
+import { ShotDirection, ShotType } from "../constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
 import type { Vector2 } from "@/game/types/vector";
@@ -18,6 +18,15 @@ type CreatePeashotOptions = {
 
 const DAMAGE = 20;
 const SPEED = 150;
+const SPRITE_WIDTH = 32;
+const SPRITE_HEIGHT = 32;
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_IMAGE_SX = 11;
+const SPRITE_IMAGE_SY = 11;
+const SPRITE_IMAGE_SW = 9;
+const SPRITE_IMAGE_SH = 9;
+
+SPRITE_IMAGE.src = "./shots/pea/peashot/Peashot.png";
 
 function createPeashot(options: CreatePeashotOptions): Peashot {
   const { x, y, direction = ShotDirection.Right } = options;
@@ -26,16 +35,16 @@ function createPeashot(options: CreatePeashotOptions): Peashot {
     id: shotHelpers.createShotId(),
     x,
     y,
-    width: SHOT_WIDTH,
-    height: SHOT_HEIGHT,
+    width: SPRITE_HEIGHT,
+    height: SPRITE_HEIGHT,
     damage: DAMAGE,
     speed: SPEED,
     fillStyle: "#A0B09A",
     hitbox: {
       x,
       y,
-      width: SHOT_WIDTH,
-      height: SHOT_HEIGHT,
+      width: SPRITE_WIDTH,
+      height: SPRITE_HEIGHT,
     },
     direction,
   };
@@ -49,7 +58,17 @@ function drawPeashot(peashot: Peashot, options: ShotDrawOptions) {
     return;
   }
 
-  shotHelpers.drawShotRect(peashot, options);
+  ctx.drawImage(
+    SPRITE_IMAGE,
+    SPRITE_IMAGE_SX,
+    SPRITE_IMAGE_SY,
+    SPRITE_IMAGE_SW,
+    SPRITE_IMAGE_SH,
+    Math.round(peashot.x),
+    Math.round(peashot.y),
+    peashot.width,
+    peashot.height
+  );
 
   hitboxActions.draw(peashot.hitbox, board);
 }

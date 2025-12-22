@@ -17,10 +17,10 @@ import {
 import {
   createPeashooter,
   createPuffshroom,
+  createRepeater,
   createSnowpea,
   createSunshroom,
   createThreepeater,
-  createTorchwood,
   plantActions,
   type Plant,
 } from "./entities/plants";
@@ -72,15 +72,15 @@ function createGame(): Game {
       x: 0,
       y: TILE_HEIGHT * 2,
     }),
-    createThreepeater({
+    createSnowpea({
       x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
-    createTorchwood({
-      x: TILE_WIDTH * 2,
-      y: TILE_HEIGHT * 2,
-    }),
-    createSnowpea({
+    // createTorchwood({
+    //   x: TILE_WIDTH * 2,
+    //   y: TILE_HEIGHT * 2,
+    // }),
+    createRepeater({
       x: TILE_WIDTH * 3,
       y: TILE_HEIGHT * 2,
     }),
@@ -104,6 +104,12 @@ function createGame(): Game {
 }
 
 function startGame(game: Game, board: Board) {
+  const { ctx } = board;
+
+  if (ctx !== null) {
+    ctx.imageSmoothingEnabled = false;
+  }
+
   requestAnimationFrame((currentTime) => animate(currentTime, game, board));
 }
 

@@ -1,10 +1,10 @@
 import { TILE_WIDTH } from "@/game/board";
-import { createSnowpeaShot, SHOT_HEIGHT, shotActions } from "../../shots";
+import { createSnowpeaShot, shotActions } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
+import { PlantType } from "../constants";
 
 import type {
   BasePlant,
@@ -25,6 +25,11 @@ const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
+const SPRITE_WIDTH = 96;
+const SPRITE_HEIGHT = 96;
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+
+SPRITE_IMAGE.src = "./plants/pea/snowpea/Snowpea.png";
 
 function createSnowpea(options: CreateSnowpeaOptions): Snowpea {
   const { x, y } = options;
@@ -33,17 +38,17 @@ function createSnowpea(options: CreateSnowpeaOptions): Snowpea {
     id: plantHelpers.createPlantId(),
     x,
     y,
-    width: PLANT_WIDTH,
-    height: PLANT_HEIGHT,
+    width: SPRITE_WIDTH,
+    height: SPRITE_HEIGHT,
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
-    shotTimer: 0,
     hitbox: {
       x,
       y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
+      width: SPRITE_WIDTH,
+      height: SPRITE_HEIGHT,
     },
+    shotTimer: 0,
   };
 }
 
@@ -55,11 +60,13 @@ function drawSnowpea(snowpea: Snowpea, options: PlantDrawOptions) {
     return;
   }
 
-  plantHelpers.drawPlantRect(snowpea, {
-    ...options,
-    fillStyle: "#aec6cf",
-  });
-  plantHelpers.drawPlantType(snowpea, options);
+  ctx.drawImage(
+    SPRITE_IMAGE,
+    Math.round(snowpea.x),
+    Math.round(snowpea.y),
+    snowpea.width,
+    snowpea.height
+  );
 
   hitboxActions.draw(snowpea.hitbox, board);
 }
@@ -79,7 +86,7 @@ function updateSnowpea(snowpea: Snowpea, options: PlantUpdateOptions) {
         game.shots,
         createSnowpeaShot({
           x: snowpea.x + snowpea.width,
-          y: snowpea.y + SHOT_HEIGHT / 2,
+          y: snowpea.y + 2,
         })
       );
     }
