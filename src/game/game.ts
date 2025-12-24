@@ -52,7 +52,7 @@ function createGame(): Game {
     }),
     createNormalZombie({
       x: TILE_WIDTH * (BOARD_ROWS - 1),
-      y: 0,
+      y: TILE_HEIGHT,
     }),
     createFlagZombie({
       x: TILE_WIDTH * (BOARD_ROWS - 1),
@@ -62,35 +62,35 @@ function createGame(): Game {
   plants = plantActions.addPlants(
     plants,
     createThreepeater({
-      x: 0,
-      y: 0,
+      x: TILE_WIDTH,
+      y: TILE_HEIGHT,
     }),
     createSunflower({
-      x: TILE_WIDTH,
-      y: 0,
-    }),
-    createPeashooter({
-      x: 0,
-      y: TILE_HEIGHT * 2,
+      x: TILE_WIDTH * 2,
+      y: TILE_HEIGHT,
     }),
     createPeashooter({
       x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
-    createSnowpea({
+    createPeashooter({
       x: TILE_WIDTH * 2,
       y: TILE_HEIGHT * 2,
     }),
-    createTorchwood({
+    createSnowpea({
       x: TILE_WIDTH * 3,
       y: TILE_HEIGHT * 2,
     }),
-    createFirepea({
+    createTorchwood({
       x: TILE_WIDTH * 4,
       y: TILE_HEIGHT * 2,
     }),
+    createFirepea({
+      x: TILE_WIDTH * 5,
+      y: TILE_HEIGHT * 2,
+    }),
     createThreepeater({
-      x: 0,
+      x: TILE_WIDTH,
       y: TILE_HEIGHT * (BOARD_COLS - 1),
     }),
     createPuffshroom({

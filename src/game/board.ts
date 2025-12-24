@@ -8,13 +8,17 @@ type CreateBoardOptions = {
   center?: boolean;
 };
 
-const BOARD_BACKGROUND = "#212121";
 const TILE_WIDTH = 96;
 const TILE_HEIGHT = 96;
 const BOARD_ROWS = 10;
-const BOARD_COLS = 5;
+const BOARD_COLS = 6;
 const BOARD_WIDTH = BOARD_ROWS * TILE_WIDTH;
 const BOARD_HEIGHT = BOARD_COLS * TILE_HEIGHT;
+const GRASS_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
+const WALL_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
+
+GRASS_IMAGE.src = "./grass/Grass.png";
+WALL_IMAGE.src = "./wall/Wall.png";
 
 function createBoard(options?: CreateBoardOptions): Board {
   const canvas = document.createElement("canvas");
@@ -22,7 +26,6 @@ function createBoard(options?: CreateBoardOptions): Board {
 
   canvas.width = BOARD_WIDTH;
   canvas.height = BOARD_HEIGHT;
-  canvas.style.backgroundColor = BOARD_BACKGROUND;
 
   if (options !== undefined) {
     if (options.root !== undefined && options.root !== null) {
@@ -51,14 +54,24 @@ function drawTileStroke(board: Board) {
 
   for (let row = 0; row < BOARD_ROWS; row++) {
     for (let col = 0; col < BOARD_COLS; col++) {
-      ctx.strokeRect(
-        row * TILE_WIDTH,
-        col * TILE_HEIGHT,
+      if (row === 0 || col === 0) {
+        ctx.drawImage(
+          WALL_IMAGE,
+          Math.round(row * TILE_WIDTH),
+          Math.round(col * TILE_HEIGHT),
+          TILE_WIDTH,
+          TILE_HEIGHT
+        );
+        continue;
+      }
+
+      ctx.drawImage(
+        GRASS_IMAGE,
+        Math.round(row * TILE_WIDTH),
+        Math.round(col * TILE_HEIGHT),
         TILE_WIDTH,
         TILE_HEIGHT
       );
-      ctx.strokeStyle = "#ffffff";
-      ctx.stroke();
     }
   }
 }
