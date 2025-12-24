@@ -15,12 +15,13 @@ import {
   type Zombie,
 } from "./entities/zombies";
 import {
+  createFirepea,
   createPeashooter,
   createPuffshroom,
-  createRepeater,
   createSnowpea,
-  createSunshroom,
+  createSunflower,
   createThreepeater,
+  createTorchwood,
   plantActions,
   type Plant,
 } from "./entities/plants";
@@ -64,7 +65,7 @@ function createGame(): Game {
       x: 0,
       y: 0,
     }),
-    createSunshroom({
+    createSunflower({
       x: TILE_WIDTH,
       y: 0,
     }),
@@ -72,16 +73,20 @@ function createGame(): Game {
       x: 0,
       y: TILE_HEIGHT * 2,
     }),
-    createSnowpea({
+    createPeashooter({
       x: TILE_WIDTH,
       y: TILE_HEIGHT * 2,
     }),
-    // createTorchwood({
-    //   x: TILE_WIDTH * 2,
-    //   y: TILE_HEIGHT * 2,
-    // }),
-    createRepeater({
+    createSnowpea({
+      x: TILE_WIDTH * 2,
+      y: TILE_HEIGHT * 2,
+    }),
+    createTorchwood({
       x: TILE_WIDTH * 3,
+      y: TILE_HEIGHT * 2,
+    }),
+    createFirepea({
+      x: TILE_WIDTH * 4,
       y: TILE_HEIGHT * 2,
     }),
     createThreepeater({
