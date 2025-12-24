@@ -1,7 +1,7 @@
 import { plantHelpers } from "./plant-helpers";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "./constants";
+import { PlantType } from "./constants";
 
 import type {
   BasePlant,
@@ -22,6 +22,11 @@ const TOUGHNESS = 300;
 const SUNCOST = 50;
 const SUN_PRODUCTION = 25;
 const RECHARGE_INTERVAL = 1000 * 24;
+const SPRITE_WIDTH = 96;
+const SPRITE_HEIGHT = 96;
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+
+SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const { x, y } = options;
@@ -30,15 +35,15 @@ function createSunflower(options: CreateSunflowerOptions): Sunflower {
     id: plantHelpers.createPlantId(),
     x,
     y,
-    width: PLANT_WIDTH,
-    height: PLANT_HEIGHT,
+    width: SPRITE_WIDTH,
+    height: SPRITE_HEIGHT,
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
     hitbox: {
       x,
       y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
+      width: SPRITE_WIDTH,
+      height: SPRITE_HEIGHT,
     },
     rechargeTimer: 0,
   };
@@ -52,8 +57,13 @@ function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
     return;
   }
 
-  plantHelpers.drawPlantRect(sunflower, options);
-  plantHelpers.drawPlantType(sunflower, options);
+  ctx.drawImage(
+    SPRITE_IMAGE,
+    Math.round(sunflower.x),
+    Math.round(sunflower.y),
+    sunflower.width,
+    sunflower.height
+  );
 
   hitboxActions.draw(sunflower.hitbox, board);
 }

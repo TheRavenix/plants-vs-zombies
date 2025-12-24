@@ -11,4 +11,5 @@ export enum PlantType {
   Puffshroom = "Puffshroom",
   Sunshroom = "Sunshroom",
   Torchwood = "Torchwood",
+  Firepea = "Firepea",
 }

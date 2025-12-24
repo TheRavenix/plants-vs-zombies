@@ -1,5 +1,5 @@
 import { TILE_WIDTH } from "@/game/board";
-import { createSnowpeaShot, shotActions } from "../../shots";
+import { createFirepeaShot, shotActions } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
 import { hitboxActions } from "@/game/helpers/hitbox";
@@ -14,12 +14,12 @@ import type {
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Snowpea = {
-  type: PlantType.Snowpea;
+type Firepea = {
+  type: PlantType.Firepea;
   shotTimer: number;
 } & BasePlant;
 
-type CreateSnowpeaOptions = Vector2;
+type CreateFirepeaOptions = Vector2;
 
 const TOUGHNESS = 300;
 const SUNCOST = 175;
@@ -29,12 +29,12 @@ const SPRITE_WIDTH = 96;
 const SPRITE_HEIGHT = 96;
 const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SPRITE_IMAGE.src = "./plants/pea/snowpea/Snowpea.png";
+SPRITE_IMAGE.src = "./plants/pea/firepea/Firepea.png";
 
-function createSnowpea(options: CreateSnowpeaOptions): Snowpea {
+function createFirepea(options: CreateFirepeaOptions): Firepea {
   const { x, y } = options;
   return {
-    type: PlantType.Snowpea,
+    type: PlantType.Firepea,
     id: plantHelpers.createPlantId(),
     x,
     y,
@@ -52,7 +52,7 @@ function createSnowpea(options: CreateSnowpeaOptions): Snowpea {
   };
 }
 
-function drawSnowpea(snowpea: Snowpea, options: PlantDrawOptions) {
+function drawFirepea(firepea: Firepea, options: PlantDrawOptions) {
   const { board } = options;
   const { ctx } = board;
 
@@ -62,46 +62,46 @@ function drawSnowpea(snowpea: Snowpea, options: PlantDrawOptions) {
 
   ctx.drawImage(
     SPRITE_IMAGE,
-    Math.round(snowpea.x),
-    Math.round(snowpea.y),
-    snowpea.width,
-    snowpea.height
+    Math.round(firepea.x),
+    Math.round(firepea.y),
+    firepea.width,
+    firepea.height
   );
 
-  hitboxActions.draw(snowpea.hitbox, board);
+  hitboxActions.draw(firepea.hitbox, board);
 }
 
-function updateSnowpea(snowpea: Snowpea, options: PlantUpdateOptions) {
+function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
   const { deltaTime, game } = options;
 
-  snowpea.shotTimer += deltaTime;
+  firepea.shotTimer += deltaTime;
 
-  if (snowpea.shotTimer >= SHOT_INTERVAL) {
+  if (firepea.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return snowpea.y === zombie.y && zombie.x <= snowpea.x + RANGE;
+      return firepea.y === zombie.y && zombie.x <= firepea.x + RANGE;
     });
 
     if (ableToShoot) {
       game.shots = shotActions.addShot(
         game.shots,
-        createSnowpeaShot({
-          x: snowpea.x + snowpea.width,
-          y: snowpea.y + 2,
+        createFirepeaShot({
+          x: firepea.x + firepea.width,
+          y: firepea.y + 2,
         })
       );
     }
 
-    snowpea.shotTimer = 0;
+    firepea.shotTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(snowpea);
+  plantHelpers.syncPlantHitbox(firepea);
 }
 
-function snowpeaTakeDamage(snowpea: Snowpea, options: PlantTakeDamageOptions) {
+function firepeaTakeDamage(firepea: Firepea, options: PlantTakeDamageOptions) {
   const { damage } = options;
 
-  snowpea.toughness -= damage;
+  firepea.toughness -= damage;
 }
 
-export { createSnowpea, drawSnowpea, updateSnowpea, snowpeaTakeDamage };
-export type { Snowpea };
+export { createFirepea, drawFirepea, updateFirepea, firepeaTakeDamage };
+export type { Firepea };

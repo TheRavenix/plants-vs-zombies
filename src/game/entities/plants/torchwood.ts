@@ -2,7 +2,7 @@ import { plantHelpers } from "./plant-helpers";
 import { hitboxActions } from "@/game/helpers/hitbox";
 import { createFirepeaShot, shotActions, ShotType } from "../shots";
 
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "./constants";
+import { PlantType } from "./constants";
 
 import type {
   BasePlant,
@@ -20,6 +20,11 @@ type CreateTorchwoodOptions = Vector2;
 
 const TOUGHNESS = 300;
 const SUNCOST = 175;
+const SPRITE_WIDTH = 96;
+const SPRITE_HEIGHT = 96;
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+
+SPRITE_IMAGE.src = "./plants/torchwood/Torchwood.png";
 
 function createTorchwood(options: CreateTorchwoodOptions): Torchwood {
   const { x, y } = options;
@@ -28,15 +33,15 @@ function createTorchwood(options: CreateTorchwoodOptions): Torchwood {
     id: plantHelpers.createPlantId(),
     x,
     y,
-    width: PLANT_WIDTH,
-    height: PLANT_HEIGHT,
+    width: SPRITE_WIDTH,
+    height: SPRITE_HEIGHT,
     toughness: TOUGHNESS,
     sunCost: SUNCOST,
     hitbox: {
       x,
       y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
+      width: SPRITE_WIDTH,
+      height: SPRITE_HEIGHT,
     },
   };
 }
@@ -49,11 +54,13 @@ function drawTorchwood(torchwood: Torchwood, options: PlantDrawOptions) {
     return;
   }
 
-  plantHelpers.drawPlantRect(torchwood, {
-    ...options,
-    fillStyle: "#CE2029",
-  });
-  plantHelpers.drawPlantType(torchwood, options);
+  ctx.drawImage(
+    SPRITE_IMAGE,
+    Math.round(torchwood.x),
+    Math.round(torchwood.y),
+    torchwood.width,
+    torchwood.height
+  );
 
   hitboxActions.draw(torchwood.hitbox, board);
 }

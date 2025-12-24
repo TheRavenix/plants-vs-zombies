@@ -1,4 +1,10 @@
-import type { Peashooter, Repeater, Snowpea, Threepeater } from "../pea";
+import type {
+  Firepea,
+  Peashooter,
+  Repeater,
+  Snowpea,
+  Threepeater,
+} from "../pea";
 import type { Puffshroom, Sunshroom } from "../shroom";
 import type { Sunflower } from "../sunflower";
 import type { Torchwood } from "../torchwood";
@@ -13,4 +19,5 @@ export type Plant =
   | WallNut
   | Puffshroom
   | Sunshroom
-  | Torchwood;
+  | Torchwood
+  | Firepea;

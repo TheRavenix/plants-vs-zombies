@@ -18,6 +18,15 @@ type CreateFirepeaShotOptions = {
 
 const DAMAGE = 40;
 const SPEED = 150;
+const SPRITE_WIDTH = 32;
+const SPRITE_HEIGHT = 32;
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_IMAGE_SX = 11;
+const SPRITE_IMAGE_SY = 11;
+const SPRITE_IMAGE_SW = 9;
+const SPRITE_IMAGE_SH = 9;
+
+SPRITE_IMAGE.src = "./shots/pea/firepea-shot/FirepeaShot.png";
 
 function createFirepeaShot(options: CreateFirepeaShotOptions): FirepeaShot {
   const { x, y, direction = ShotDirection.Right } = options;
@@ -49,7 +58,17 @@ function drawFirepeaShot(firepeaShot: FirepeaShot, options: ShotDrawOptions) {
     return;
   }
 
-  shotHelpers.drawShotRect(firepeaShot, options);
+  ctx.drawImage(
+    SPRITE_IMAGE,
+    SPRITE_IMAGE_SX,
+    SPRITE_IMAGE_SY,
+    SPRITE_IMAGE_SW,
+    SPRITE_IMAGE_SH,
+    Math.round(firepeaShot.x),
+    Math.round(firepeaShot.y),
+    firepeaShot.width,
+    firepeaShot.height
+  );
 
   hitboxActions.draw(firepeaShot.hitbox, board);
 }

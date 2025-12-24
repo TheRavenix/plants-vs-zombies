@@ -4,14 +4,17 @@ import {
   updateSunflower,
 } from "./sunflower";
 import {
+  drawFirepea,
   drawPeashooter,
   drawRepeater,
   drawSnowpea,
   drawThreepeater,
+  firepeaTakeDamage,
   peashooterTakeDamage,
   repeaterTakeDamage,
   snowpeaTakeDamage,
   threepeaterTakeDamage,
+  updateFirepea,
   updatePeashooter,
   updateRepeater,
   updateSnowpea,
@@ -78,6 +81,10 @@ function drawPlant(plant: Plant, options: PlantDrawOptions) {
     case PlantType.Torchwood:
       drawTorchwood(plant, options);
       break;
+
+    case PlantType.Firepea:
+      drawFirepea(plant, options);
+      break;
   }
 }
 
@@ -118,6 +125,10 @@ function updatePlant(plant: Plant, options: PlantUpdateOptions) {
     case PlantType.Torchwood:
       updateTorchwood(plant, options);
       break;
+
+    case PlantType.Firepea:
+      updateFirepea(plant, options);
+      break;
   }
 }
 
@@ -157,6 +168,10 @@ function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
 
     case PlantType.Torchwood:
       torchwoodTakeDamage(plant, options);
+      break;
+
+    case PlantType.Firepea:
+      firepeaTakeDamage(plant, options);
       break;
   }
 }

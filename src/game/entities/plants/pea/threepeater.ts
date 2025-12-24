@@ -22,7 +22,7 @@ type Threepeater = {
 type CreateThreepeaterOptions = Vector2;
 
 const TOUGHNESS = 300;
-const SUNCOST = 100;
+const SUNCOST = 325;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
 const SPRITE_WIDTH = 96;
