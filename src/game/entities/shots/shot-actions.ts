@@ -1,9 +1,4 @@
-import {
-  BOARD_HEIGHT,
-  BOARD_WIDTH,
-  TILE_HEIGHT,
-  TILE_WIDTH,
-} from "@/game/board";
+import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import {
   drawFirepeaShot,
   drawPeashot,
@@ -74,11 +69,13 @@ function findShotById(shots: Shot[], id: string): Shot | undefined {
   return shots.find((shot) => shot.id === id);
 }
 
-function removeOutOfZoneShots(shots: Shot[]): Shot[] {
+function removeOutOfZoneShots(shots: Shot[], board: Board): Shot[] {
+  const { canvas } = board;
+
   return shots.filter((shot) => {
     return (
-      shot.x - TILE_WIDTH < BOARD_WIDTH &&
-      shot.y - TILE_HEIGHT < BOARD_HEIGHT &&
+      shot.x - TILE_WIDTH < canvas.width &&
+      shot.y - TILE_HEIGHT < canvas.height &&
       shot.y + TILE_HEIGHT > 0
     );
   });

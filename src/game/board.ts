@@ -1,6 +1,11 @@
+import type { Vector2 } from "./types/vector";
+
+type TilePosition = Vector2;
+
 type Board = {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | null;
+  tilePosList: TilePosition[];
 };
 
 type CreateBoardOptions = {
@@ -23,9 +28,11 @@ WALL_IMAGE.src = "./wall/Wall.png";
 function createBoard(options?: CreateBoardOptions): Board {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
+  const tilePosList: TilePosition[] = [];
 
   canvas.width = BOARD_WIDTH;
   canvas.height = BOARD_HEIGHT;
+  canvas.style.touchAction = "none";
 
   if (options !== undefined) {
     if (options.root !== undefined && options.root !== null) {
@@ -39,13 +46,23 @@ function createBoard(options?: CreateBoardOptions): Board {
     }
   }
 
+  for (let row = 0; row < BOARD_ROWS; row++) {
+    for (let col = 0; col < BOARD_COLS; col++) {
+      tilePosList.push({
+        x: row * TILE_WIDTH,
+        y: col * TILE_HEIGHT,
+      });
+    }
+  }
+
   return {
     canvas,
     ctx,
+    tilePosList,
   };
 }
 
-function drawTileStroke(board: Board) {
+function drawBoardGraphics(board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -76,18 +93,23 @@ function drawTileStroke(board: Board) {
   }
 }
 
+function getCanvasCoordinates(
+  canvas: HTMLCanvasElement,
+  event: PointerEvent
+): Vector2 {
+  const rect = canvas.getBoundingClientRect();
+
+  return {
+    x: (event.clientX - rect.left) * (canvas.width / rect.width),
+    y: (event.clientY - rect.top) * (canvas.height / rect.height),
+  };
+}
+
 const boardActions = {
   createBoard,
-  drawTileStroke,
+  drawBoardGraphics,
+  getCanvasCoordinates,
 } as const;
 
-export {
-  boardActions,
-  BOARD_WIDTH,
-  BOARD_HEIGHT,
-  BOARD_ROWS,
-  BOARD_COLS,
-  TILE_WIDTH,
-  TILE_HEIGHT,
-};
+export { boardActions, BOARD_ROWS, BOARD_COLS, TILE_WIDTH, TILE_HEIGHT };
 export type { Board };

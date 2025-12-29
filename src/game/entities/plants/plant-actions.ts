@@ -1,9 +1,15 @@
 import {
+  createSunflower,
   drawSunflower,
   sunflowerTakeDamage,
   updateSunflower,
 } from "./sunflower";
 import {
+  createFirepea,
+  createPeashooter,
+  createRepeater,
+  createSnowpea,
+  createThreepeater,
   drawFirepea,
   drawPeashooter,
   drawRepeater,
@@ -20,8 +26,15 @@ import {
   updateSnowpea,
   updateThreepeater,
 } from "./pea";
-import { drawWallNut, updateWallNut, wallNutTakeDamage } from "./wall-nut";
 import {
+  createWallNut,
+  drawWallNut,
+  updateWallNut,
+  wallNutTakeDamage,
+} from "./wall-nut";
+import {
+  createPuffshroom,
+  createSunshroom,
   drawPuffshroom,
   drawSunshroom,
   puffshroomTakeDamage,
@@ -30,6 +43,7 @@ import {
   updateSunshroom,
 } from "./shroom";
 import {
+  createTorchwood,
   drawTorchwood,
   torchwoodTakeDamage,
   updateTorchwood,
@@ -176,6 +190,84 @@ function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
   }
 }
 
+function createPlant(type: PlantType, x: number, y: number): Plant | null {
+  let plant: Plant | null = null;
+
+  switch (type) {
+    case PlantType.Peashooter:
+      plant = createPeashooter({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Sunflower:
+      plant = createSunflower({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Repeater:
+      plant = createRepeater({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Threepeater:
+      plant = createThreepeater({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Snowpea:
+      plant = createSnowpea({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Firepea:
+      plant = createFirepea({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.WallNut:
+      plant = createWallNut({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Torchwood:
+      plant = createTorchwood({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Puffshroom:
+      plant = createPuffshroom({
+        x,
+        y,
+      });
+      break;
+
+    case PlantType.Sunshroom:
+      plant = createSunshroom({
+        x,
+        y,
+      });
+      break;
+  }
+
+  return plant;
+}
+
 function addPlant(plants: Plant[], plant: Plant): Plant[] {
   return [...plants, plant];
 }
@@ -200,6 +292,7 @@ export const plantActions = {
   drawPlant,
   updatePlant,
   plantTakeDamage,
+  createPlant,
   addPlant,
   addPlants,
   removePlantById,

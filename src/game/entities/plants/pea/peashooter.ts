@@ -1,4 +1,4 @@
-import { TILE_WIDTH } from "@/game/board";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 import { createPeashot, shotActions } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
@@ -25,14 +25,18 @@ const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
-const SPRITE_WIDTH = 96;
-const SPRITE_HEIGHT = 96;
-const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_WIDTH = 64;
+const SPRITE_HEIGHT = 64;
+const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
+const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
+const PEASHOOTER_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SPRITE_IMAGE.src = "./plants/pea/peashooter/Peashooter.png";
+PEASHOOTER_SPRITE_IMAGE.src = "./plants/pea/peashooter/Peashooter.png";
 
 function createPeashooter(options: CreatePeashooterOptions): Peashooter {
-  const { x, y } = options;
+  const x = options.x + OFFSET_X;
+  const y = options.y + OFFSET_Y;
+
   return {
     type: PlantType.Peashooter,
     id: plantHelpers.createPlantId(),
@@ -61,7 +65,7 @@ function drawPeashooter(peashooter: Peashooter, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    SPRITE_IMAGE,
+    PEASHOOTER_SPRITE_IMAGE,
     Math.round(peashooter.x),
     Math.round(peashooter.y),
     peashooter.width,
@@ -78,7 +82,11 @@ function updatePeashooter(peashooter: Peashooter, options: PlantUpdateOptions) {
 
   if (peashooter.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return peashooter.y === zombie.y && zombie.x <= peashooter.x + RANGE;
+      return (
+        peashooter.y >= zombie.y &&
+        peashooter.y <= zombie.y + TILE_HEIGHT &&
+        zombie.x <= peashooter.x + RANGE
+      );
     });
 
     if (ableToShoot) {
@@ -86,7 +94,7 @@ function updatePeashooter(peashooter: Peashooter, options: PlantUpdateOptions) {
         game.shots,
         createPeashot({
           x: peashooter.x + peashooter.width,
-          y: peashooter.y + 2,
+          y: peashooter.y,
         })
       );
     }
@@ -112,4 +120,5 @@ export {
   updatePeashooter,
   peashooterTakeDamage,
 };
+export { PEASHOOTER_SPRITE_IMAGE };
 export type { Peashooter };

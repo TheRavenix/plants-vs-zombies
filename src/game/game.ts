@@ -1,8 +1,6 @@
 import {
   BOARD_COLS,
-  BOARD_HEIGHT,
   BOARD_ROWS,
-  BOARD_WIDTH,
   boardActions,
   TILE_HEIGHT,
   TILE_WIDTH,
@@ -14,18 +12,15 @@ import {
   zombieActions,
   type Zombie,
 } from "./entities/zombies";
-import {
-  createFirepea,
-  createPeashooter,
-  createPuffshroom,
-  createSnowpea,
-  createSunflower,
-  createThreepeater,
-  createTorchwood,
-  plantActions,
-  type Plant,
-} from "./entities/plants";
+import { plantActions, type Plant } from "./entities/plants";
 import { shotActions, type Shot } from "./entities/shots";
+import {
+  SEED_PACKET_DEFAULT_Y,
+  seedSlotContainerActions,
+  type SeedSlotContainer,
+} from "./seed-slot-container";
+
+import { closestLowerValue } from "@/utils/math";
 
 type Game = {
   lastTime: number;
@@ -33,12 +28,14 @@ type Game = {
   zombies: Zombie[];
   plants: Plant[];
   shots: Shot[];
+  seedSlotContainer: SeedSlotContainer;
 };
 
 function createGame(): Game {
   let zombies: Zombie[] = [];
   let plants: Plant[] = [];
   let shots: Shot[] = [];
+  const seedSlotContainer = seedSlotContainerActions.createSeedSlotContainer();
 
   zombies = zombieActions.addZombies(
     zombies,
@@ -59,45 +56,6 @@ function createGame(): Game {
       y: TILE_HEIGHT * (BOARD_COLS - 1),
     })
   );
-  plants = plantActions.addPlants(
-    plants,
-    createThreepeater({
-      x: TILE_WIDTH,
-      y: TILE_HEIGHT,
-    }),
-    createSunflower({
-      x: TILE_WIDTH * 2,
-      y: TILE_HEIGHT,
-    }),
-    createPeashooter({
-      x: TILE_WIDTH,
-      y: TILE_HEIGHT * 2,
-    }),
-    createPeashooter({
-      x: TILE_WIDTH * 2,
-      y: TILE_HEIGHT * 2,
-    }),
-    createSnowpea({
-      x: TILE_WIDTH * 3,
-      y: TILE_HEIGHT * 2,
-    }),
-    createTorchwood({
-      x: TILE_WIDTH * 4,
-      y: TILE_HEIGHT * 2,
-    }),
-    createFirepea({
-      x: TILE_WIDTH * 5,
-      y: TILE_HEIGHT * 2,
-    }),
-    createThreepeater({
-      x: TILE_WIDTH,
-      y: TILE_HEIGHT * (BOARD_COLS - 1),
-    }),
-    createPuffshroom({
-      x: TILE_WIDTH * 3,
-      y: TILE_HEIGHT * (BOARD_COLS - 1),
-    })
-  );
 
   return {
     lastTime: 0,
@@ -105,37 +63,97 @@ function createGame(): Game {
     zombies,
     plants,
     shots,
+    seedSlotContainer,
   };
 }
 
 function startGame(game: Game, board: Board) {
-  const { ctx } = board;
+  const { canvas, ctx } = board;
 
   if (ctx !== null) {
     ctx.imageSmoothingEnabled = false;
   }
 
+  game.seedSlotContainer.game = game;
+
+  canvas.addEventListener("pointerdown", (e) => {
+    const { x, y } = boardActions.getCanvasCoordinates(canvas, e);
+
+    if (game.seedSlotContainer.activeSlot !== null) {
+      if (x >= TILE_WIDTH && y >= TILE_HEIGHT) {
+        const closestX = closestLowerValue(
+          x,
+          board.tilePosList.map((tilePos) => tilePos.x)
+        );
+        const closestY = closestLowerValue(
+          y,
+          board.tilePosList.map((tilePos) => tilePos.y)
+        );
+
+        const plantExist = game.plants.find((plant) => {
+          return (
+            plant.x >= closestX &&
+            plant.x <= closestX + TILE_WIDTH &&
+            plant.y >= closestY &&
+            plant.y <= closestY + TILE_HEIGHT
+          );
+        });
+
+        if (plantExist !== undefined) {
+          return;
+        }
+
+        const plant = plantActions.createPlant(
+          game.seedSlotContainer.activeSlot.packet.type,
+          closestX,
+          closestY
+        );
+
+        if (plant !== null) {
+          game.plants = plantActions.addPlant(game.plants, plant);
+        }
+
+        game.seedSlotContainer.activeSlot = null;
+        game.seedSlotContainer.slots.forEach((slot2) => {
+          slot2.packet.y = SEED_PACKET_DEFAULT_Y;
+        });
+      }
+    }
+    if (seedSlotContainerActions.x(game.seedSlotContainer, board, e)) {
+      game.seedSlotContainer.slots.forEach((slot) => {
+        if (x >= slot.x && x <= slot.x + slot.width) {
+          game.seedSlotContainer.slots.forEach((slot2) => {
+            slot2.packet.y = SEED_PACKET_DEFAULT_Y;
+          });
+
+          game.seedSlotContainer.activeSlot = slot;
+          game.seedSlotContainer.activeSlot.packet.y -= 4;
+        }
+      });
+    }
+  });
+
   requestAnimationFrame((currentTime) => animate(currentTime, game, board));
 }
 
 function draw(game: Game, board: Board) {
-  const { ctx } = board;
+  const { canvas, ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  ctx.clearRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  boardActions.drawTileStroke(board);
+  boardActions.drawBoardGraphics(board);
 
-  for (const zombie of game.zombies) {
-    zombieActions.drawZombie(zombie, {
+  for (const plant of game.plants) {
+    plantActions.drawPlant(plant, {
       board,
     });
   }
-  for (const plant of game.plants) {
-    plantActions.drawPlant(plant, {
+  for (const zombie of game.zombies) {
+    zombieActions.drawZombie(zombie, {
       board,
     });
   }
@@ -145,15 +163,12 @@ function draw(game: Game, board: Board) {
     });
   }
 
-  ctx.fillStyle = "#ffffff";
-  ctx.fillText(
-    `SUN: ${game.sun}`,
-    BOARD_WIDTH - TILE_WIDTH / 2,
-    TILE_HEIGHT / 2
-  );
+  seedSlotContainerActions.drawSeedSlotContainer(game.seedSlotContainer, board);
 }
 
-function update(deltaTime: number, game: Game) {
+function update(deltaTime: number, game: Game, board: Board) {
+  seedSlotContainerActions.updateSeedSlotContainer(game.seedSlotContainer);
+
   for (const zombie of game.zombies) {
     zombieActions.updateZombie(zombie, {
       deltaTime,
@@ -175,7 +190,7 @@ function update(deltaTime: number, game: Game) {
 
   game.zombies = zombieActions.removeOutOfHealthZombies(game.zombies);
   game.plants = plantActions.removeOutOfToughnessPlants(game.plants);
-  game.shots = shotActions.removeOutOfZoneShots(game.shots);
+  game.shots = shotActions.removeOutOfZoneShots(game.shots, board);
 }
 
 function animate(currentTime: number, game: Game, board: Board) {
@@ -184,7 +199,7 @@ function animate(currentTime: number, game: Game, board: Board) {
   game.lastTime = currentTime;
 
   draw(game, board);
-  update(deltaTime, game);
+  update(deltaTime, game, board);
 
   requestAnimationFrame((newCurrentTime) =>
     animate(newCurrentTime, game, board)

@@ -1,4 +1,4 @@
-import { TILE_WIDTH } from "@/game/board";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 import { createPeashot, shotActions, ShotDirection } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
@@ -25,14 +25,18 @@ const TOUGHNESS = 300;
 const SUNCOST = 325;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
-const SPRITE_WIDTH = 96;
-const SPRITE_HEIGHT = 96;
-const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_WIDTH = 64;
+const SPRITE_HEIGHT = 64;
+const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
+const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
+const THREEPEATER_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SPRITE_IMAGE.src = "./plants/pea/threepeater/Threepeater.png";
+THREEPEATER_SPRITE_IMAGE.src = "./plants/pea/threepeater/Threepeater.png";
 
 function createThreepeater(options: CreateThreepeaterOptions): Threepeater {
-  const { x, y } = options;
+  const x = options.x + OFFSET_X;
+  const y = options.y + OFFSET_Y;
+
   return {
     type: PlantType.Threepeater,
     id: plantHelpers.createPlantId(),
@@ -61,7 +65,7 @@ function drawThreepeater(threepeater: Threepeater, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    SPRITE_IMAGE,
+    THREEPEATER_SPRITE_IMAGE,
     Math.round(threepeater.x),
     Math.round(threepeater.y),
     threepeater.width,
@@ -89,16 +93,16 @@ function updateThreepeater(
         game.shots,
         createPeashot({
           x: threepeater.x + threepeater.width,
-          y: threepeater.y + 2,
+          y: threepeater.y,
         }),
         createPeashot({
           x: threepeater.x + threepeater.width,
-          y: threepeater.y + 2,
+          y: threepeater.y,
           direction: ShotDirection.UpRight,
         }),
         createPeashot({
           x: threepeater.x + threepeater.width,
-          y: threepeater.y + 2,
+          y: threepeater.y,
           direction: ShotDirection.DownRight,
         })
       );
@@ -125,4 +129,5 @@ export {
   updateThreepeater,
   threepeaterTakeDamage,
 };
+export { THREEPEATER_SPRITE_IMAGE };
 export type { Threepeater };

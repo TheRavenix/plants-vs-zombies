@@ -1,4 +1,4 @@
-import { TILE_WIDTH } from "@/game/board";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 import { createFirepeaShot, shotActions } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
@@ -25,14 +25,18 @@ const TOUGHNESS = 300;
 const SUNCOST = 175;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
-const SPRITE_WIDTH = 96;
-const SPRITE_HEIGHT = 96;
-const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_WIDTH = 64;
+const SPRITE_HEIGHT = 64;
+const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
+const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
+const FIREPEA_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SPRITE_IMAGE.src = "./plants/pea/firepea/Firepea.png";
+FIREPEA_SPRITE_IMAGE.src = "./plants/pea/firepea/Firepea.png";
 
 function createFirepea(options: CreateFirepeaOptions): Firepea {
-  const { x, y } = options;
+  const x = options.x + OFFSET_X;
+  const y = options.y + OFFSET_Y;
+
   return {
     type: PlantType.Firepea,
     id: plantHelpers.createPlantId(),
@@ -61,7 +65,7 @@ function drawFirepea(firepea: Firepea, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    SPRITE_IMAGE,
+    FIREPEA_SPRITE_IMAGE,
     Math.round(firepea.x),
     Math.round(firepea.y),
     firepea.width,
@@ -78,7 +82,11 @@ function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
 
   if (firepea.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return firepea.y === zombie.y && zombie.x <= firepea.x + RANGE;
+      return (
+        firepea.y >= zombie.y &&
+        firepea.y <= zombie.y + TILE_HEIGHT &&
+        zombie.x <= firepea.x + RANGE
+      );
     });
 
     if (ableToShoot) {
@@ -86,7 +94,7 @@ function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
         game.shots,
         createFirepeaShot({
           x: firepea.x + firepea.width,
-          y: firepea.y + 2,
+          y: firepea.y,
         })
       );
     }
@@ -104,4 +112,5 @@ function firepeaTakeDamage(firepea: Firepea, options: PlantTakeDamageOptions) {
 }
 
 export { createFirepea, drawFirepea, updateFirepea, firepeaTakeDamage };
+export { FIREPEA_SPRITE_IMAGE };
 export type { Firepea };
