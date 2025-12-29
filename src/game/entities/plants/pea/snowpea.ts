@@ -1,4 +1,4 @@
-import { TILE_WIDTH } from "@/game/board";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 import { createSnowpeaShot, shotActions } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
@@ -25,14 +25,18 @@ const TOUGHNESS = 300;
 const SUNCOST = 175;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
-const SPRITE_WIDTH = 96;
-const SPRITE_HEIGHT = 96;
-const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_WIDTH = 64;
+const SPRITE_HEIGHT = 64;
+const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
+const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
+const SNOWPEA_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SPRITE_IMAGE.src = "./plants/pea/snowpea/Snowpea.png";
+SNOWPEA_SPRITE_IMAGE.src = "./plants/pea/snowpea/Snowpea.png";
 
 function createSnowpea(options: CreateSnowpeaOptions): Snowpea {
-  const { x, y } = options;
+  const x = options.x + OFFSET_X;
+  const y = options.y + OFFSET_Y;
+
   return {
     type: PlantType.Snowpea,
     id: plantHelpers.createPlantId(),
@@ -61,7 +65,7 @@ function drawSnowpea(snowpea: Snowpea, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    SPRITE_IMAGE,
+    SNOWPEA_SPRITE_IMAGE,
     Math.round(snowpea.x),
     Math.round(snowpea.y),
     snowpea.width,
@@ -78,7 +82,11 @@ function updateSnowpea(snowpea: Snowpea, options: PlantUpdateOptions) {
 
   if (snowpea.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return snowpea.y === zombie.y && zombie.x <= snowpea.x + RANGE;
+      return (
+        snowpea.y >= zombie.y &&
+        snowpea.y <= zombie.y + TILE_HEIGHT &&
+        zombie.x <= snowpea.x + RANGE
+      );
     });
 
     if (ableToShoot) {
@@ -86,7 +94,7 @@ function updateSnowpea(snowpea: Snowpea, options: PlantUpdateOptions) {
         game.shots,
         createSnowpeaShot({
           x: snowpea.x + snowpea.width,
-          y: snowpea.y + 2,
+          y: snowpea.y,
         })
       );
     }
@@ -104,4 +112,5 @@ function snowpeaTakeDamage(snowpea: Snowpea, options: PlantTakeDamageOptions) {
 }
 
 export { createSnowpea, drawSnowpea, updateSnowpea, snowpeaTakeDamage };
+export { SNOWPEA_SPRITE_IMAGE };
 export type { Snowpea };

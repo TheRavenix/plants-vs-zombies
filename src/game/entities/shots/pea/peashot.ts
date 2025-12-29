@@ -18,8 +18,8 @@ type CreatePeashotOptions = {
 
 const DAMAGE = 20;
 const SPEED = 150;
-const SPRITE_WIDTH = 32;
-const SPRITE_HEIGHT = 32;
+const SPRITE_WIDTH = 24;
+const SPRITE_HEIGHT = 24;
 const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 const SPRITE_IMAGE_SX = 11;
 const SPRITE_IMAGE_SY = 11;

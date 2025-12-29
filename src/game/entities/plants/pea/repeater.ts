@@ -1,6 +1,6 @@
 import { plantHelpers } from "../plant-helpers";
 import { createPeashot, shotActions } from "../../shots";
-import { TILE_WIDTH } from "@/game/board";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 import { hitboxActions } from "@/game/helpers/hitbox";
 
 import { PlantType } from "../constants";
@@ -24,14 +24,18 @@ const TOUGHNESS = 300;
 const SUNCOST = 200;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
-const SPRITE_WIDTH = 96;
-const SPRITE_HEIGHT = 96;
-const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_WIDTH = 64;
+const SPRITE_HEIGHT = 64;
+const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
+const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
+const REPEATER_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SPRITE_IMAGE.src = "./plants/pea/repeater/Repeater.png";
+REPEATER_SPRITE_IMAGE.src = "./plants/pea/repeater/Repeater.png";
 
 function createRepeater(options: CreateRepeaterOptions): Repeater {
-  const { x, y } = options;
+  const x = options.x + OFFSET_X;
+  const y = options.y + OFFSET_Y;
+
   return {
     type: PlantType.Repeater,
     id: plantHelpers.createPlantId(),
@@ -60,7 +64,7 @@ function drawRepeater(repeater: Repeater, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    SPRITE_IMAGE,
+    REPEATER_SPRITE_IMAGE,
     Math.round(repeater.x),
     Math.round(repeater.y),
     repeater.width,
@@ -77,7 +81,11 @@ function updateRepeater(repeater: Repeater, options: PlantUpdateOptions) {
 
   if (repeater.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return repeater.y === zombie.y && zombie.x <= repeater.x + RANGE;
+      return (
+        repeater.y >= zombie.y &&
+        repeater.y <= zombie.y + TILE_HEIGHT &&
+        zombie.x <= repeater.x + RANGE
+      );
     });
 
     if (ableToShoot) {
@@ -85,11 +93,11 @@ function updateRepeater(repeater: Repeater, options: PlantUpdateOptions) {
         game.shots,
         createPeashot({
           x: repeater.x + repeater.width,
-          y: repeater.y + 2,
+          y: repeater.y,
         }),
         createPeashot({
           x: repeater.x + repeater.width + TILE_WIDTH / 2,
-          y: repeater.y + 2,
+          y: repeater.y,
         })
       );
     }
@@ -110,4 +118,5 @@ function repeaterTakeDamage(
 }
 
 export { createRepeater, drawRepeater, updateRepeater, repeaterTakeDamage };
+export { REPEATER_SPRITE_IMAGE };
 export type { Repeater };

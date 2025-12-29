@@ -1,5 +1,6 @@
 import { plantHelpers } from "./plant-helpers";
 import { hitboxActions } from "@/game/helpers/hitbox";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 
 import { PlantType } from "./constants";
 
@@ -22,14 +23,18 @@ const TOUGHNESS = 300;
 const SUNCOST = 50;
 const SUN_PRODUCTION = 25;
 const RECHARGE_INTERVAL = 1000 * 24;
-const SPRITE_WIDTH = 96;
-const SPRITE_HEIGHT = 96;
-const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_WIDTH = 64;
+const SPRITE_HEIGHT = 64;
+const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
+const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
+const SUNFLOWER_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
+SUNFLOWER_SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
-  const { x, y } = options;
+  const x = options.x + OFFSET_X;
+  const y = options.y + OFFSET_Y;
+
   return {
     type: PlantType.Sunflower,
     id: plantHelpers.createPlantId(),
@@ -58,7 +63,7 @@ function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    SPRITE_IMAGE,
+    SUNFLOWER_SPRITE_IMAGE,
     Math.round(sunflower.x),
     Math.round(sunflower.y),
     sunflower.width,
@@ -91,4 +96,5 @@ function sunflowerTakeDamage(
 }
 
 export { createSunflower, drawSunflower, updateSunflower, sunflowerTakeDamage };
+export { SUNFLOWER_SPRITE_IMAGE };
 export type { Sunflower };

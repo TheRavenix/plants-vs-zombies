@@ -1,4 +1,4 @@
-import { TILE_WIDTH } from "@/game/board";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 import { createShroomshot, SHOT_HEIGHT, shotActions } from "../../shots";
 
 import { plantHelpers } from "../plant-helpers";
@@ -71,7 +71,11 @@ function updatePuffshroom(puffshroom: Puffshroom, options: PlantUpdateOptions) {
 
   if (puffshroom.shotTimer >= SHOT_INTERVAL) {
     const ableToShoot = game.zombies.some((zombie) => {
-      return puffshroom.y === zombie.y && zombie.x <= puffshroom.x + RANGE;
+      return (
+        puffshroom.y >= zombie.y &&
+        puffshroom.y <= zombie.y + TILE_HEIGHT &&
+        zombie.x <= puffshroom.x + RANGE
+      );
     });
 
     if (ableToShoot) {
