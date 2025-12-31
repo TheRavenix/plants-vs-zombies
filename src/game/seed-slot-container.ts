@@ -17,7 +17,7 @@ type SeedPacket = {
   Size;
 
 type SeedSlot = {
-  name: string;
+  id: string;
   packet: SeedPacket;
 } & Vector2 &
   Size;
@@ -29,38 +29,49 @@ type SeedSlotContainer = {
 } & Vector2 &
   Size;
 
-const SLOT_WIDTH = 80;
-const SLOT_HEIGHT = 80;
-const SLOT_OFFSET_Y = (TILE_HEIGHT - SLOT_HEIGHT) / 2;
-const SLOT_OFFSET_X = (TILE_WIDTH - SLOT_WIDTH) / 2;
+const SEED_PACKET_MARGIN_LEFT = 8;
+const SEED_SLOT_WIDTH = 80 + SEED_PACKET_MARGIN_LEFT;
+const SEED_SLOT_HEIGHT = 80;
+const SEED_SLOT_OFFSET_Y = (TILE_HEIGHT - SEED_SLOT_HEIGHT) / 2;
+const SEED_SLOT_OFFSET_X = (TILE_WIDTH - SEED_SLOT_WIDTH) / 2;
 // const MAX_SLOTS = 10;
 const SEED_PACKET_WIDTH = 72;
 const SEED_PACKET_HEIGHT = 72;
-// const SEED_PACKET_OFFSET_X = (SLOT_WIDTH - SEED_PACKET_WIDTH) / 2;
-const SEED_PACKET_OFFSET_Y = (SLOT_HEIGHT - SEED_PACKET_HEIGHT) / 2;
-const SEED_PACKET_DEFAULT_Y = SLOT_OFFSET_Y + SEED_PACKET_OFFSET_Y;
-const SEED_SLOT_FULL_IMAGE = new Image(SLOT_WIDTH, SLOT_HEIGHT);
-const SEED_SLOT_OPEN_IMAGE = new Image(SLOT_WIDTH, SLOT_HEIGHT);
-const SEED_SLOT_CENTER_IMAGE = new Image(SLOT_WIDTH, SLOT_HEIGHT);
-const SEED_SLOT_CLOSE_IMAGE = new Image(SLOT_WIDTH, SLOT_HEIGHT);
-const SEED_PACKET_IMAGE = new Image(SLOT_WIDTH, SLOT_HEIGHT);
+const SEED_PACKET_ACTIVE_Y = 4;
+const SEED_SLOT_FULL_IMAGE = new Image(SEED_SLOT_WIDTH, SEED_SLOT_HEIGHT);
+const SEED_SLOT_OPEN_IMAGE = new Image(SEED_SLOT_WIDTH, SEED_SLOT_HEIGHT);
+const SEED_SLOT_CENTER_IMAGE = new Image(SEED_SLOT_WIDTH, SEED_SLOT_HEIGHT);
+const SEED_SLOT_CLOSE_IMAGE = new Image(SEED_SLOT_WIDTH, SEED_SLOT_HEIGHT);
+const SEED_PACKET_IMAGE = new Image(SEED_SLOT_WIDTH, SEED_SLOT_HEIGHT);
+const ACTIVE_SEED_PACKET_IMAGE = new Image(SEED_SLOT_WIDTH, SEED_SLOT_HEIGHT);
 
 SEED_SLOT_FULL_IMAGE.src = "./seed/seed-slot/Seed_Slot_Full.png";
 SEED_SLOT_OPEN_IMAGE.src = "./seed/seed-slot/Seed_Slot_Open.png";
 SEED_SLOT_CENTER_IMAGE.src = "./seed/seed-slot/Seed_Slot_Center.png";
 SEED_SLOT_CLOSE_IMAGE.src = "./seed/seed-slot/Seed_Slot_Close.png";
 SEED_PACKET_IMAGE.src = "./seed/seed-packet/Seed_Packet.png";
+ACTIVE_SEED_PACKET_IMAGE.src = "./seed/seed-packet/Active_Seed_Packet.png";
+
+function createSeedSlotId(): string {
+  return `SEED_SLOT-${crypto.randomUUID()}`;
+}
 
 function drawSeedSlot(
   slot: SeedSlot,
   board: Board,
+  seedSlotContainer: SeedSlotContainer,
   spriteImage: HTMLImageElement
 ) {
   const { ctx } = board;
   const { packet } = slot;
+  let isActiveSlot = false;
 
   if (ctx === null) {
     return;
+  }
+
+  if (seedSlotContainer.activeSlot !== null) {
+    isActiveSlot = slot.id === seedSlotContainer.activeSlot.id;
   }
 
   ctx.drawImage(
@@ -71,16 +82,20 @@ function drawSeedSlot(
     slot.height
   );
   ctx.drawImage(
-    SEED_PACKET_IMAGE,
+    isActiveSlot ? ACTIVE_SEED_PACKET_IMAGE : SEED_PACKET_IMAGE,
     Math.round(packet.x),
-    Math.round(packet.y),
+    Math.round(isActiveSlot ? packet.y - SEED_PACKET_ACTIVE_Y : packet.y),
     packet.width,
     packet.height
   );
   ctx.drawImage(
     PlantSpriteImage[packet.type],
-    Math.round(packet.x),
-    Math.round(packet.y),
+    Math.round(packet.x + SEED_PACKET_WIDTH / 2 / 2),
+    Math.round(
+      isActiveSlot
+        ? packet.y + SEED_PACKET_ACTIVE_Y
+        : packet.y + SEED_PACKET_ACTIVE_Y * 2
+    ),
     packet.width / 2,
     packet.height / 2
   );
@@ -91,43 +106,43 @@ function createSeedSlotContainer(): SeedSlotContainer {
 
   slots.push(
     {
-      name: "Slot 1",
+      id: createSeedSlotId(),
       x: TILE_WIDTH,
-      y: SLOT_OFFSET_Y,
-      width: SLOT_WIDTH,
-      height: SLOT_HEIGHT,
+      y: SEED_SLOT_OFFSET_Y,
+      width: SEED_SLOT_WIDTH,
+      height: SEED_SLOT_HEIGHT,
       packet: {
-        type: PlantType.Peashooter,
-        x: TILE_WIDTH,
-        y: SEED_PACKET_DEFAULT_Y,
+        type: PlantType.Repeater,
+        x: TILE_WIDTH + SEED_PACKET_MARGIN_LEFT,
+        y: SEED_SLOT_OFFSET_Y + SEED_PACKET_ACTIVE_Y,
         width: SEED_PACKET_WIDTH,
         height: SEED_PACKET_HEIGHT,
       },
     },
     {
-      name: "Slot 2",
-      x: TILE_WIDTH + SLOT_WIDTH,
-      y: SLOT_OFFSET_Y,
-      width: SLOT_WIDTH,
-      height: SLOT_HEIGHT,
+      id: createSeedSlotId(),
+      x: TILE_WIDTH + SEED_SLOT_WIDTH,
+      y: SEED_SLOT_OFFSET_Y,
+      width: SEED_SLOT_WIDTH,
+      height: SEED_SLOT_HEIGHT,
       packet: {
         type: PlantType.Snowpea,
-        x: TILE_WIDTH + SLOT_WIDTH,
-        y: SEED_PACKET_DEFAULT_Y,
+        x: TILE_WIDTH + SEED_SLOT_WIDTH + SEED_PACKET_MARGIN_LEFT,
+        y: SEED_SLOT_OFFSET_Y + SEED_PACKET_ACTIVE_Y,
         width: SEED_PACKET_WIDTH,
         height: SEED_PACKET_HEIGHT,
       },
     },
     {
-      name: "Slot 3",
-      x: TILE_WIDTH + SLOT_WIDTH * 2,
-      y: SLOT_OFFSET_Y,
-      width: SLOT_WIDTH,
-      height: SLOT_HEIGHT,
+      id: createSeedSlotId(),
+      x: TILE_WIDTH + SEED_SLOT_WIDTH * 2,
+      y: SEED_SLOT_OFFSET_Y,
+      width: SEED_SLOT_WIDTH,
+      height: SEED_SLOT_HEIGHT,
       packet: {
-        type: PlantType.Torchwood,
-        x: TILE_WIDTH + SLOT_WIDTH * 2,
-        y: SEED_PACKET_DEFAULT_Y,
+        type: PlantType.Threepeater,
+        x: TILE_WIDTH + SEED_SLOT_WIDTH * 2 + SEED_PACKET_MARGIN_LEFT,
+        y: SEED_SLOT_OFFSET_Y + SEED_PACKET_ACTIVE_Y,
         width: SEED_PACKET_WIDTH,
         height: SEED_PACKET_HEIGHT,
       },
@@ -137,9 +152,9 @@ function createSeedSlotContainer(): SeedSlotContainer {
   return {
     game: null,
     x: 0,
-    y: SLOT_OFFSET_Y,
+    y: SEED_SLOT_OFFSET_Y,
     width: TILE_WIDTH * BOARD_ROWS,
-    height: SLOT_HEIGHT,
+    height: SEED_SLOT_HEIGHT,
     slots,
     activeSlot: null,
   };
@@ -163,31 +178,31 @@ function drawSeedSlotContainer(
 
   ctx.drawImage(
     SEED_SLOT_FULL_IMAGE,
-    Math.round(SLOT_OFFSET_X),
-    Math.round(SLOT_OFFSET_Y),
-    SLOT_WIDTH,
-    SLOT_HEIGHT
+    Math.round(SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2),
+    Math.round(SEED_SLOT_OFFSET_Y),
+    SEED_SLOT_WIDTH - SEED_PACKET_MARGIN_LEFT,
+    SEED_SLOT_HEIGHT
   );
 
   for (let i = 0; i < slots.length; i++) {
     const slot = slots[i];
 
     if (i === 0) {
-      drawSeedSlot(slot, board, SEED_SLOT_OPEN_IMAGE);
+      drawSeedSlot(slot, board, seedSlotContainer, SEED_SLOT_OPEN_IMAGE);
       continue;
     }
     if (i === slots.length - 1) {
-      drawSeedSlot(slot, board, SEED_SLOT_CLOSE_IMAGE);
+      drawSeedSlot(slot, board, seedSlotContainer, SEED_SLOT_CLOSE_IMAGE);
       continue;
     }
 
-    drawSeedSlot(slot, board, SEED_SLOT_CENTER_IMAGE);
+    drawSeedSlot(slot, board, seedSlotContainer, SEED_SLOT_CENTER_IMAGE);
   }
 }
 
 function updateSeedSlotContainer(_seedSlotContainer: SeedSlotContainer) {}
 
-function x(
+function pointerWithinSeedSlot(
   seedSlotContainer: SeedSlotContainer,
   board: Board,
   event: PointerEvent
@@ -196,8 +211,8 @@ function x(
   const { x, y } = boardActions.getCanvasCoordinates(canvas, event);
 
   return (
-    y >= SLOT_OFFSET_Y &&
-    y <= SLOT_OFFSET_Y + SLOT_HEIGHT &&
+    y >= SEED_SLOT_OFFSET_Y &&
+    y <= SEED_SLOT_OFFSET_Y + SEED_SLOT_HEIGHT &&
     x >= TILE_WIDTH &&
     x <= seedSlotContainer.width
   );
@@ -207,8 +222,8 @@ const seedSlotContainerActions = {
   createSeedSlotContainer,
   drawSeedSlotContainer,
   updateSeedSlotContainer,
-  x,
+  pointerWithinSeedSlot,
 };
 
-export { seedSlotContainerActions, SEED_PACKET_DEFAULT_Y };
+export { seedSlotContainerActions };
 export type { SeedSlotContainer };

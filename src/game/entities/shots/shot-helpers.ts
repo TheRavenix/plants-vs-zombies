@@ -1,4 +1,5 @@
 import { ShotDirection } from "./constants";
+
 import type { BaseShot, Shot, ShotDrawOptions } from "./types";
 
 function createShotId(): string {

@@ -15,7 +15,6 @@ import {
 import { plantActions, type Plant } from "./entities/plants";
 import { shotActions, type Shot } from "./entities/shots";
 import {
-  SEED_PACKET_DEFAULT_Y,
   seedSlotContainerActions,
   type SeedSlotContainer,
 } from "./seed-slot-container";
@@ -39,17 +38,21 @@ function createGame(): Game {
 
   zombies = zombieActions.addZombies(
     zombies,
-    createNormalZombie({
-      x: TILE_WIDTH * (BOARD_ROWS - 1),
-      y: TILE_HEIGHT * 2,
-    }),
-    createNormalZombie({
-      x: TILE_WIDTH * (BOARD_ROWS + 1),
-      y: TILE_HEIGHT * 2,
-    }),
-    createNormalZombie({
+    createFlagZombie({
       x: TILE_WIDTH * (BOARD_ROWS - 1),
       y: TILE_HEIGHT,
+    }),
+    createFlagZombie({
+      x: TILE_WIDTH * (BOARD_ROWS - 2),
+      y: TILE_HEIGHT * 2,
+    }),
+    createFlagZombie({
+      x: TILE_WIDTH * (BOARD_ROWS - 1),
+      y: TILE_HEIGHT * 3,
+    }),
+    createNormalZombie({
+      x: TILE_WIDTH * (BOARD_ROWS - 1),
+      y: TILE_HEIGHT * 2,
     }),
     createFlagZombie({
       x: TILE_WIDTH * (BOARD_ROWS - 1),
@@ -79,57 +82,67 @@ function startGame(game: Game, board: Board) {
   canvas.addEventListener("pointerdown", (e) => {
     const { x, y } = boardActions.getCanvasCoordinates(canvas, e);
 
-    if (game.seedSlotContainer.activeSlot !== null) {
-      if (x >= TILE_WIDTH && y >= TILE_HEIGHT) {
-        const closestX = closestLowerValue(
-          x,
-          board.tilePosList.map((tilePos) => tilePos.x)
-        );
-        const closestY = closestLowerValue(
-          y,
-          board.tilePosList.map((tilePos) => tilePos.y)
-        );
-
-        const plantExist = game.plants.find((plant) => {
-          return (
-            plant.x >= closestX &&
-            plant.x <= closestX + TILE_WIDTH &&
-            plant.y >= closestY &&
-            plant.y <= closestY + TILE_HEIGHT
-          );
-        });
-
-        if (plantExist !== undefined) {
-          return;
-        }
-
-        const plant = plantActions.createPlant(
-          game.seedSlotContainer.activeSlot.packet.type,
-          closestX,
-          closestY
-        );
-
-        if (plant !== null) {
-          game.plants = plantActions.addPlant(game.plants, plant);
-        }
-
-        game.seedSlotContainer.activeSlot = null;
-        game.seedSlotContainer.slots.forEach((slot2) => {
-          slot2.packet.y = SEED_PACKET_DEFAULT_Y;
-        });
-      }
-    }
-    if (seedSlotContainerActions.x(game.seedSlotContainer, board, e)) {
-      game.seedSlotContainer.slots.forEach((slot) => {
-        if (x >= slot.x && x <= slot.x + slot.width) {
-          game.seedSlotContainer.slots.forEach((slot2) => {
-            slot2.packet.y = SEED_PACKET_DEFAULT_Y;
-          });
-
-          game.seedSlotContainer.activeSlot = slot;
-          game.seedSlotContainer.activeSlot.packet.y -= 4;
-        }
+    if (
+      seedSlotContainerActions.pointerWithinSeedSlot(
+        game.seedSlotContainer,
+        board,
+        e
+      )
+    ) {
+      const activeSlotId = game.seedSlotContainer.activeSlot?.id;
+      const seedSlot = game.seedSlotContainer.slots.find((slot) => {
+        return x >= slot.packet.x && x <= slot.packet.x + slot.packet.width;
       });
+
+      if (seedSlot === undefined) {
+        return;
+      }
+
+      game.seedSlotContainer.activeSlot =
+        seedSlot.id === activeSlotId ? null : seedSlot;
+    }
+    if (game.seedSlotContainer.activeSlot !== null) {
+      const withinPlaySafeArea = boardActions.pointerWithinPlaySafeArea(
+        board,
+        e
+      );
+
+      if (!withinPlaySafeArea) {
+        return;
+      }
+
+      const closestX = closestLowerValue(
+        x,
+        board.tilePosList.map((tilePos) => tilePos.x)
+      );
+      const closestY = closestLowerValue(
+        y,
+        board.tilePosList.map((tilePos) => tilePos.y)
+      );
+      const plantExist = game.plants.find((plant) => {
+        return (
+          plant.x >= closestX &&
+          plant.x <= closestX + TILE_WIDTH &&
+          plant.y >= closestY &&
+          plant.y <= closestY + TILE_HEIGHT
+        );
+      });
+
+      if (plantExist !== undefined) {
+        return;
+      }
+
+      const plant = plantActions.createPlant(
+        game.seedSlotContainer.activeSlot.packet.type,
+        closestX,
+        closestY
+      );
+
+      if (plant !== null) {
+        game.plants = plantActions.addPlant(game.plants, plant);
+      }
+
+      game.seedSlotContainer.activeSlot = null;
     }
   });
 

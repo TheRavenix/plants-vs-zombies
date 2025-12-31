@@ -2,9 +2,11 @@ import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import {
   drawFirepeaShot,
   drawPeashot,
+  drawRicochetPeashot,
   drawSnowpeaShot,
   updateFirepeaShot,
   updatePeashot,
+  updateRicochetPeashot,
   updateSnowpeaShot,
 } from "./pea";
 import { drawShroomshot, updateShroomshot } from "./shroomshot";
@@ -30,6 +32,10 @@ function drawShot(shot: Shot, options: ShotDrawOptions) {
     case ShotType.FirepeaShot:
       drawFirepeaShot(shot, options);
       break;
+
+    case ShotType.RicochetPeashot:
+      drawRicochetPeashot(shot, options);
+      break;
   }
 }
 
@@ -49,6 +55,10 @@ function updateShot(shot: Shot, options: ShotUpdateOptions) {
 
     case ShotType.FirepeaShot:
       updateFirepeaShot(shot, options);
+      break;
+
+    case ShotType.RicochetPeashot:
+      updateRicochetPeashot(shot, options);
       break;
   }
 }

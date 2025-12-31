@@ -6,6 +6,7 @@ export enum ShotType {
   SnowpeaShot = "SnowpeaShot",
   Shroomshot = "Shroomshot",
   FirepeaShot = "FirepeaShot",
+  RicochetPeashot = "RicochetPeashot",
 }
 
 export enum ShotDirection {

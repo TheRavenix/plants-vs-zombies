@@ -17,6 +17,7 @@ import type {
   ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
+import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 
 function drawZombie(zombie: Zombie, options: ZombieDrawOptions) {
   switch (zombie.type) {
@@ -74,6 +75,27 @@ function removeOutOfHealthZombies(zombies: Zombie[]): Zombie[] {
   return zombies.filter((zombie) => zombie.health > 0);
 }
 
+function findZombiesWithinArea(
+  zombies: Zombie[],
+  x: number,
+  y: number,
+  tileRange?: number
+): Zombie[] {
+  const tileRangeX =
+    tileRange !== undefined ? TILE_WIDTH * tileRange : TILE_WIDTH;
+  const tileRangeY =
+    tileRange !== undefined ? TILE_HEIGHT * tileRange : TILE_HEIGHT;
+
+  return zombies.filter((zombie) => {
+    return (
+      zombie.x >= x - tileRangeX &&
+      zombie.x <= x + tileRangeX &&
+      zombie.y >= y - tileRangeY &&
+      zombie.y <= y + tileRangeY
+    );
+  });
+}
+
 export const zombieActions = {
   drawZombie,
   updateZombie,
@@ -83,4 +105,5 @@ export const zombieActions = {
   removeZombieById,
   findZombieById,
   removeOutOfHealthZombies,
+  findZombiesWithinArea,
 } as const;

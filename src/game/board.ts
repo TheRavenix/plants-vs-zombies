@@ -105,10 +105,18 @@ function getCanvasCoordinates(
   };
 }
 
+function pointerWithinPlaySafeArea(board: Board, event: PointerEvent): boolean {
+  const { canvas } = board;
+  const { x, y } = boardActions.getCanvasCoordinates(canvas, event);
+
+  return x >= TILE_WIDTH && y >= TILE_HEIGHT;
+}
+
 const boardActions = {
   createBoard,
   drawBoardGraphics,
   getCanvasCoordinates,
+  pointerWithinPlaySafeArea,
 } as const;
 
 export { boardActions, BOARD_ROWS, BOARD_COLS, TILE_WIDTH, TILE_HEIGHT };
