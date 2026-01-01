@@ -1,3 +1,6 @@
+import { canvasActions } from "@/game/helpers/canvas";
+import { FontSize } from "@/game/constants/font";
+
 import type {
   BaseZombie,
   Zombie,
@@ -28,11 +31,15 @@ function drawZombieType(zombie: Zombie, options: ZombieDrawOptions) {
     return;
   }
 
-  ctx.fillStyle = "#000000";
-  ctx.fillText(
+  canvasActions.drawText(
+    options.board,
     `${zombie.type} ${zombie.health}`,
     zombie.x,
-    zombie.y + zombie.height / 2
+    zombie.y + zombie.height / 2,
+    "#000000",
+    {
+      fontSize: FontSize.Xs,
+    }
   );
 }
 

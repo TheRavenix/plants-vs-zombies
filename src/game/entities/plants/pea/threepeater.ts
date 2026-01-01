@@ -9,6 +9,7 @@ import { PlantType } from "../constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
@@ -25,13 +26,20 @@ const TOUGHNESS = 300;
 const SUNCOST = 325;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
+const COOLDOWN = 7500;
 const SPRITE_WIDTH = 64;
 const SPRITE_HEIGHT = 64;
 const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
-const THREEPEATER_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-THREEPEATER_SPRITE_IMAGE.src = "./plants/pea/threepeater/Threepeater.png";
+const ThreepeaterInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
+
+SPRITE_IMAGE.src = "./plants/pea/threepeater/Threepeater.png";
 
 function createThreepeater(options: CreateThreepeaterOptions): Threepeater {
   const x = options.x + OFFSET_X;
@@ -65,7 +73,7 @@ function drawThreepeater(threepeater: Threepeater, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    THREEPEATER_SPRITE_IMAGE,
+    SPRITE_IMAGE,
     Math.round(threepeater.x),
     Math.round(threepeater.y),
     threepeater.width,
@@ -129,5 +137,5 @@ export {
   updateThreepeater,
   threepeaterTakeDamage,
 };
-export { THREEPEATER_SPRITE_IMAGE };
+export { ThreepeaterInfo };
 export type { Threepeater };

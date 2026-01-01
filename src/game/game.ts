@@ -1,5 +1,4 @@
 import {
-  BOARD_COLS,
   BOARD_ROWS,
   boardActions,
   TILE_HEIGHT,
@@ -7,17 +6,16 @@ import {
   type Board,
 } from "./board";
 import {
-  createFlagZombie,
   createNormalZombie,
   zombieActions,
   type Zombie,
 } from "./entities/zombies";
-import { plantActions, type Plant } from "./entities/plants";
+import { plantActions, PlantInfo, type Plant } from "./entities/plants";
 import { shotActions, type Shot } from "./entities/shots";
 import {
-  seedSlotContainerActions,
-  type SeedSlotContainer,
-} from "./seed-slot-container";
+  seedSlotManagerActions,
+  type SeedSlotManager,
+} from "./seed/seed-slot-manager";
 
 import { closestLowerValue } from "@/utils/math";
 
@@ -27,46 +25,36 @@ type Game = {
   zombies: Zombie[];
   plants: Plant[];
   shots: Shot[];
-  seedSlotContainer: SeedSlotContainer;
+  seedSlotManager: SeedSlotManager;
+  sunRechargeTimer: number;
 };
+
+const DEFAULT_SUN = 100;
+const SUN_PRODUCTION = 25;
+const SUN_RECHARGE_INTERVAL = 1000 * 24;
 
 function createGame(): Game {
   let zombies: Zombie[] = [];
   let plants: Plant[] = [];
   let shots: Shot[] = [];
-  const seedSlotContainer = seedSlotContainerActions.createSeedSlotContainer();
+  const seedSlotManager = seedSlotManagerActions.createSeedSlotManager();
 
   zombies = zombieActions.addZombies(
     zombies,
-    createFlagZombie({
-      x: TILE_WIDTH * (BOARD_ROWS - 1),
-      y: TILE_HEIGHT,
-    }),
-    createFlagZombie({
-      x: TILE_WIDTH * (BOARD_ROWS - 2),
-      y: TILE_HEIGHT * 2,
-    }),
-    createFlagZombie({
-      x: TILE_WIDTH * (BOARD_ROWS - 1),
-      y: TILE_HEIGHT * 3,
-    }),
     createNormalZombie({
       x: TILE_WIDTH * (BOARD_ROWS - 1),
-      y: TILE_HEIGHT * 2,
-    }),
-    createFlagZombie({
-      x: TILE_WIDTH * (BOARD_ROWS - 1),
-      y: TILE_HEIGHT * (BOARD_COLS - 1),
+      y: TILE_HEIGHT * 3,
     })
   );
 
   return {
     lastTime: 0,
-    sun: 0,
+    sun: DEFAULT_SUN,
     zombies,
     plants,
     shots,
-    seedSlotContainer,
+    seedSlotManager,
+    sunRechargeTimer: 0,
   };
 }
 
@@ -77,20 +65,18 @@ function startGame(game: Game, board: Board) {
     ctx.imageSmoothingEnabled = false;
   }
 
-  game.seedSlotContainer.game = game;
-
   canvas.addEventListener("pointerdown", (e) => {
     const { x, y } = boardActions.getCanvasCoordinates(canvas, e);
 
     if (
-      seedSlotContainerActions.pointerWithinSeedSlot(
-        game.seedSlotContainer,
+      seedSlotManagerActions.pointerWithinSeedSlot(
+        game.seedSlotManager,
         board,
         e
       )
     ) {
-      const activeSlotId = game.seedSlotContainer.activeSlot?.id;
-      const seedSlot = game.seedSlotContainer.slots.find((slot) => {
+      const selectedSlotId = game.seedSlotManager.selectedSlot?.id;
+      const seedSlot = game.seedSlotManager.slots.find((slot) => {
         return x >= slot.packet.x && x <= slot.packet.x + slot.packet.width;
       });
 
@@ -98,10 +84,10 @@ function startGame(game: Game, board: Board) {
         return;
       }
 
-      game.seedSlotContainer.activeSlot =
-        seedSlot.id === activeSlotId ? null : seedSlot;
+      game.seedSlotManager.selectedSlot =
+        seedSlot.id === selectedSlotId ? null : seedSlot;
     }
-    if (game.seedSlotContainer.activeSlot !== null) {
+    if (game.seedSlotManager.selectedSlot !== null) {
       const withinPlaySafeArea = boardActions.pointerWithinPlaySafeArea(
         board,
         e
@@ -132,17 +118,27 @@ function startGame(game: Game, board: Board) {
         return;
       }
 
+      const plantType = game.seedSlotManager.selectedSlot.packet.plantType;
+      const plantCost = PlantInfo[plantType].SunCost;
+
+      if (game.sun < plantCost) {
+        return;
+      }
+
       const plant = plantActions.createPlant(
-        game.seedSlotContainer.activeSlot.packet.type,
+        plantType,
         closestX,
-        closestY
+        closestY,
+        game
       );
 
       if (plant !== null) {
         game.plants = plantActions.addPlant(game.plants, plant);
       }
 
-      game.seedSlotContainer.activeSlot = null;
+      game.seedSlotManager.selectedSlot.packet.cooldownTimerPaused = false;
+      game.seedSlotManager.selectedSlot = null;
+      game.sun -= plantCost;
     }
   });
 
@@ -176,11 +172,15 @@ function draw(game: Game, board: Board) {
     });
   }
 
-  seedSlotContainerActions.drawSeedSlotContainer(game.seedSlotContainer, board);
+  seedSlotManagerActions.drawSeedSlotManager(game.seedSlotManager, board, game);
 }
 
 function update(deltaTime: number, game: Game, board: Board) {
-  seedSlotContainerActions.updateSeedSlotContainer(game.seedSlotContainer);
+  seedSlotManagerActions.updateSeedSlotManager(
+    game.seedSlotManager,
+    deltaTime,
+    game
+  );
 
   for (const zombie of game.zombies) {
     zombieActions.updateZombie(zombie, {
@@ -204,6 +204,13 @@ function update(deltaTime: number, game: Game, board: Board) {
   game.zombies = zombieActions.removeOutOfHealthZombies(game.zombies);
   game.plants = plantActions.removeOutOfToughnessPlants(game.plants);
   game.shots = shotActions.removeOutOfZoneShots(game.shots, board);
+
+  game.sunRechargeTimer += deltaTime;
+
+  if (game.sunRechargeTimer >= SUN_RECHARGE_INTERVAL) {
+    game.sun += SUN_PRODUCTION;
+    game.sunRechargeTimer = 0;
+  }
 }
 
 function animate(currentTime: number, game: Game, board: Board) {

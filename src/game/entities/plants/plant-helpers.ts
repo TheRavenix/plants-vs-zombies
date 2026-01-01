@@ -1,3 +1,6 @@
+import { canvasActions } from "@/game/helpers/canvas";
+import { FontSize } from "@/game/constants/font";
+
 import type { BasePlant, Plant, PlantDrawOptions } from "./types";
 
 function createPlantId(): string {
@@ -29,11 +32,15 @@ function drawPlantType(plant: Plant, options: PlantDrawOptions) {
     return;
   }
 
-  ctx.fillStyle = "#000000";
-  ctx.fillText(
+  canvasActions.drawText(
+    options.board,
     `${plant.type} ${plant.toughness}`,
     plant.x,
-    plant.y + plant.height / 2
+    plant.y + plant.height / 2,
+    "#000000",
+    {
+      fontSize: FontSize.Xs,
+    }
   );
 }
 

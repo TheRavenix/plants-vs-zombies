@@ -9,6 +9,7 @@ import { PlantType } from "../constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
@@ -25,13 +26,20 @@ const TOUGHNESS = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
+const COOLDOWN = 7500;
 const SPRITE_WIDTH = 64;
 const SPRITE_HEIGHT = 64;
 const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
-const PEASHOOTER_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-PEASHOOTER_SPRITE_IMAGE.src = "./plants/pea/peashooter/Peashooter.png";
+const PeashooterInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
+
+SPRITE_IMAGE.src = "./plants/pea/peashooter/Peashooter.png";
 
 function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   const x = options.x + OFFSET_X;
@@ -65,7 +73,7 @@ function drawPeashooter(peashooter: Peashooter, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    PEASHOOTER_SPRITE_IMAGE,
+    SPRITE_IMAGE,
     Math.round(peashooter.x),
     Math.round(peashooter.y),
     peashooter.width,
@@ -120,5 +128,5 @@ export {
   updatePeashooter,
   peashooterTakeDamage,
 };
-export { PEASHOOTER_SPRITE_IMAGE };
+export { PeashooterInfo };
 export type { Peashooter };
