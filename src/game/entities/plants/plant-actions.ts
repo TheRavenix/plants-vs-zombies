@@ -57,6 +57,7 @@ import type {
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
+import type { Game } from "@/game/game";
 
 function drawPlant(plant: Plant, options: PlantDrawOptions) {
   switch (plant.type) {
@@ -190,7 +191,12 @@ function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
   }
 }
 
-function createPlant(type: PlantType, x: number, y: number): Plant | null {
+function createPlant(
+  type: PlantType,
+  x: number,
+  y: number,
+  game: Game
+): Plant | null {
   let plant: Plant | null = null;
 
   switch (type) {
@@ -205,6 +211,7 @@ function createPlant(type: PlantType, x: number, y: number): Plant | null {
       plant = createSunflower({
         x,
         y,
+        game,
       });
       break;
 

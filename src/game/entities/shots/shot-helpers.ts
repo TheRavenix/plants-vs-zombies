@@ -1,4 +1,6 @@
+import { canvasActions } from "@/game/helpers/canvas";
 import { ShotDirection } from "./constants";
+import { FontSize } from "@/game/constants/font";
 
 import type { BaseShot, Shot, ShotDrawOptions } from "./types";
 
@@ -25,8 +27,16 @@ function drawShotType(shot: Shot, options: ShotDrawOptions) {
     return;
   }
 
-  ctx.fillStyle = "#ffffff";
-  ctx.fillText(shot.type, shot.x, shot.y + shot.height / 2);
+  canvasActions.drawText(
+    options.board,
+    shot.type,
+    shot.x,
+    shot.y + shot.height / 2,
+    "#ffffff",
+    {
+      fontSize: FontSize.Xs,
+    }
+  );
 }
 
 function syncShotHitbox(shot: BaseShot) {

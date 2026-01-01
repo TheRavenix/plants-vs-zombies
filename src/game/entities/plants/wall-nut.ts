@@ -6,6 +6,7 @@ import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "./constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
@@ -19,6 +20,14 @@ type CreateWallNutOptions = Vector2;
 
 const TOUGHNESS = 4000;
 const SUNCOST = 50;
+const COOLDOWN = 1000 * 20;
+const SPRITE_IMAGE = new Image();
+
+const WallNutInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
 
 function createWallNut(options: CreateWallNutOptions): WallNut {
   const { x, y } = options;
@@ -65,4 +74,5 @@ function wallNutTakeDamage(wallNut: WallNut, options: PlantTakeDamageOptions) {
 }
 
 export { createWallNut, drawWallNut, updateWallNut, wallNutTakeDamage };
+export { WallNutInfo };
 export type { WallNut };

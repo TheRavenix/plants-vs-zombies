@@ -8,6 +8,7 @@ import { PlantType } from "./constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
@@ -21,13 +22,20 @@ type CreateTorchwoodOptions = Vector2;
 
 const TOUGHNESS = 300;
 const SUNCOST = 175;
+const COOLDOWN = 7500;
 const SPRITE_WIDTH = 64;
 const SPRITE_HEIGHT = 64;
 const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
-const TORCHWOOD_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-TORCHWOOD_SPRITE_IMAGE.src = "./plants/torchwood/Torchwood.png";
+const TorchwoodInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
+
+SPRITE_IMAGE.src = "./plants/torchwood/Torchwood.png";
 
 function createTorchwood(options: CreateTorchwoodOptions): Torchwood {
   const x = options.x + OFFSET_X;
@@ -60,7 +68,7 @@ function drawTorchwood(torchwood: Torchwood, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    TORCHWOOD_SPRITE_IMAGE,
+    SPRITE_IMAGE,
     Math.round(torchwood.x),
     Math.round(torchwood.y),
     torchwood.width,
@@ -104,5 +112,5 @@ function torchwoodTakeDamage(
 }
 
 export { createTorchwood, drawTorchwood, updateTorchwood, torchwoodTakeDamage };
-export { TORCHWOOD_SPRITE_IMAGE };
+export { TorchwoodInfo };
 export type { Torchwood };

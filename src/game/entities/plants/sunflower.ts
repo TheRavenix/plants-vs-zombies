@@ -7,33 +7,46 @@ import { PlantType } from "./constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
 import type { Vector2 } from "@/game/types/vector";
+import type { Game } from "@/game/game";
 
 type Sunflower = {
   type: PlantType.Sunflower;
   rechargeTimer: number;
 } & BasePlant;
 
-type CreateSunflowerOptions = Vector2;
+type CreateSunflowerOptions = {
+  game: Game;
+} & Vector2;
 
 const TOUGHNESS = 300;
 const SUNCOST = 50;
 const SUN_PRODUCTION = 25;
 const RECHARGE_INTERVAL = 1000 * 24;
+const COOLDOWN = 7500;
 const SPRITE_WIDTH = 64;
 const SPRITE_HEIGHT = 64;
 const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
-const SUNFLOWER_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-SUNFLOWER_SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
+const SunflowerInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
+
+SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
+
+  options.game.sun += SUN_PRODUCTION;
 
   return {
     type: PlantType.Sunflower,
@@ -63,7 +76,7 @@ function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    SUNFLOWER_SPRITE_IMAGE,
+    SPRITE_IMAGE,
     Math.round(sunflower.x),
     Math.round(sunflower.y),
     sunflower.width,
@@ -96,5 +109,5 @@ function sunflowerTakeDamage(
 }
 
 export { createSunflower, drawSunflower, updateSunflower, sunflowerTakeDamage };
-export { SUNFLOWER_SPRITE_IMAGE };
+export { SunflowerInfo };
 export type { Sunflower };

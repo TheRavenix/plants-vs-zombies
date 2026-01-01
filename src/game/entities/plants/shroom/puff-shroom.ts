@@ -9,6 +9,7 @@ import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
@@ -25,6 +26,14 @@ const TOUGHNESS = 300;
 const SUNCOST = 0;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 4;
+const COOLDOWN = 7500;
+const SPRITE_IMAGE = new Image();
+
+const PuffshroomInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
 
 function createPuffshroom(options: CreatePuffshroomOptions): Puffshroom {
   const { x, y } = options;
@@ -109,4 +118,5 @@ export {
   updatePuffshroom,
   puffshroomTakeDamage,
 };
+export { PuffshroomInfo };
 export type { Puffshroom };

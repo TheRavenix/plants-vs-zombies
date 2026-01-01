@@ -9,6 +9,7 @@ import { PlantType } from "../constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
@@ -25,13 +26,20 @@ const TOUGHNESS = 300;
 const SUNCOST = 175;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
+const COOLDOWN = 7500;
 const SPRITE_WIDTH = 64;
 const SPRITE_HEIGHT = 64;
 const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
-const FIREPEA_SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-FIREPEA_SPRITE_IMAGE.src = "./plants/pea/firepea/Firepea.png";
+const FirepeaInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
+
+SPRITE_IMAGE.src = "./plants/pea/firepea/Firepea.png";
 
 function createFirepea(options: CreateFirepeaOptions): Firepea {
   const x = options.x + OFFSET_X;
@@ -65,7 +73,7 @@ function drawFirepea(firepea: Firepea, options: PlantDrawOptions) {
   }
 
   ctx.drawImage(
-    FIREPEA_SPRITE_IMAGE,
+    SPRITE_IMAGE,
     Math.round(firepea.x),
     Math.round(firepea.y),
     firepea.width,
@@ -112,5 +120,5 @@ function firepeaTakeDamage(firepea: Firepea, options: PlantTakeDamageOptions) {
 }
 
 export { createFirepea, drawFirepea, updateFirepea, firepeaTakeDamage };
-export { FIREPEA_SPRITE_IMAGE };
+export { FirepeaInfo };
 export type { Firepea };

@@ -30,6 +30,20 @@ function createBoard(options?: CreateBoardOptions): Board {
   const ctx = canvas.getContext("2d");
   const tilePosList: TilePosition[] = [];
 
+  const pixelifyFont = new FontFace(
+    "Pixelify",
+    "url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap)"
+  );
+
+  pixelifyFont
+    .load()
+    .then((loadedFont) => {
+      document.fonts.add(loadedFont);
+    })
+    .catch((error) => {
+      console.error("Font failed to load:", error);
+    });
+
   canvas.width = BOARD_WIDTH;
   canvas.height = BOARD_HEIGHT;
   canvas.style.touchAction = "none";

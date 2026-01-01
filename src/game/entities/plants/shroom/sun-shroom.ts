@@ -6,6 +6,7 @@ import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
 import type {
   BasePlant,
   PlantDrawOptions,
+  PlantInfoType,
   PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
@@ -26,6 +27,14 @@ const SUN_PRODUCTION_1 = 15;
 const SUN_PRODUCTION_2 = 25;
 const RECHARGE_INTERVAL = 1000 * 24;
 const UPGRADE_TIMEOUT = 1000 * 60 * 2;
+const COOLDOWN = 7500;
+const SPRITE_IMAGE = new Image();
+
+const SunshroomInfo: PlantInfoType = {
+  SunCost: SUNCOST,
+  SpriteImage: SPRITE_IMAGE,
+  Cooldown: COOLDOWN,
+};
 
 function createSunshroom(options: CreateSunshroomOptions): Sunshroom {
   const { x, y } = options;
@@ -93,4 +102,5 @@ function sunshroomTakeDamage(
 }
 
 export { createSunshroom, drawSunshroom, updateSunshroom, sunshroomTakeDamage };
+export { SunshroomInfo };
 export type { Sunshroom };

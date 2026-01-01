@@ -24,3 +24,9 @@ export type PlantUpdateOptions = {
 export type PlantTakeDamageOptions = {
   damage: number;
 };
+
+export type PlantInfoType = Readonly<{
+  SunCost: number;
+  SpriteImage: HTMLImageElement;
+  Cooldown: number;
+}>;
