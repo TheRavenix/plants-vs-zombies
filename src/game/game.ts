@@ -18,6 +18,13 @@ import {
 } from "./seed/seed-slot-manager";
 
 import { closestLowerValue } from "@/utils/math";
+import {
+  createSun,
+  drawSun,
+  sunActions,
+  updateSun,
+  type Sun,
+} from "./entities/sun";
 
 type Game = {
   lastTime: number;
@@ -25,6 +32,7 @@ type Game = {
   zombies: Zombie[];
   plants: Plant[];
   shots: Shot[];
+  suns: Sun[];
   seedSlotManager: SeedSlotManager;
   sunRechargeTimer: number;
 };
@@ -37,6 +45,7 @@ function createGame(): Game {
   let zombies: Zombie[] = [];
   let plants: Plant[] = [];
   let shots: Shot[] = [];
+  let suns: Sun[] = [];
   const seedSlotManager = seedSlotManagerActions.createSeedSlotManager();
 
   zombies = zombieActions.addZombies(
@@ -53,6 +62,7 @@ function createGame(): Game {
     zombies,
     plants,
     shots,
+    suns,
     seedSlotManager,
     sunRechargeTimer: 0,
   };
@@ -68,6 +78,19 @@ function startGame(game: Game, board: Board) {
   canvas.addEventListener("pointerdown", (e) => {
     const { x, y } = boardActions.getCanvasCoordinates(canvas, e);
 
+    if (game.suns.length > 0) {
+      if (boardActions.pointerWithinPlaySafeArea(board, e)) {
+        const toCollectSun = sunActions.findSunWithinCoordinates(
+          game.suns,
+          x,
+          y
+        );
+
+        if (toCollectSun !== undefined) {
+          sunActions.collectSun(toCollectSun, game);
+        }
+      }
+    }
     if (
       seedSlotManagerActions.pointerWithinSeedSlot(
         game.seedSlotManager,
@@ -75,10 +98,12 @@ function startGame(game: Game, board: Board) {
         e
       )
     ) {
+      // FIXME: This logic is problematic
       const selectedSlotId = game.seedSlotManager.selectedSlot?.id;
-      const seedSlot = game.seedSlotManager.slots.find((slot) => {
-        return x >= slot.packet.x && x <= slot.packet.x + slot.packet.width;
-      });
+      const seedSlot = seedSlotManagerActions.findSeedSlotWithinCoordinateX(
+        game.seedSlotManager,
+        x
+      );
 
       if (seedSlot === undefined) {
         return;
@@ -105,7 +130,7 @@ function startGame(game: Game, board: Board) {
         y,
         board.tilePosList.map((tilePos) => tilePos.y)
       );
-      const plantExist = game.plants.find((plant) => {
+      const closestPlant = game.plants.find((plant) => {
         return (
           plant.x >= closestX &&
           plant.x <= closestX + TILE_WIDTH &&
@@ -114,7 +139,7 @@ function startGame(game: Game, board: Board) {
         );
       });
 
-      if (plantExist !== undefined) {
+      if (closestPlant !== undefined) {
         return;
       }
 
@@ -171,6 +196,9 @@ function draw(game: Game, board: Board) {
       board,
     });
   }
+  for (const sun of game.suns) {
+    drawSun(sun, board);
+  }
 
   seedSlotManagerActions.drawSeedSlotManager(game.seedSlotManager, board, game);
 }
@@ -200,6 +228,9 @@ function update(deltaTime: number, game: Game, board: Board) {
       game,
     });
   }
+  for (const sun of game.suns) {
+    updateSun(sun, deltaTime);
+  }
 
   game.zombies = zombieActions.removeOutOfHealthZombies(game.zombies);
   game.plants = plantActions.removeOutOfToughnessPlants(game.plants);
@@ -208,7 +239,14 @@ function update(deltaTime: number, game: Game, board: Board) {
   game.sunRechargeTimer += deltaTime;
 
   if (game.sunRechargeTimer >= SUN_RECHARGE_INTERVAL) {
-    game.sun += SUN_PRODUCTION;
+    game.suns = sunActions.addSun(
+      game.suns,
+      createSun({
+        x: TILE_WIDTH,
+        y: TILE_HEIGHT,
+        amount: SUN_PRODUCTION,
+      })
+    );
     game.sunRechargeTimer = 0;
   }
 }
