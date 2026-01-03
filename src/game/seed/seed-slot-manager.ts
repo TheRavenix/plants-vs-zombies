@@ -262,12 +262,22 @@ function pointerWithinSeedSlot(
   );
 }
 
+function findSeedSlotWithinCoordinateX(
+  seedSlotManager: SeedSlotManager,
+  x: number
+): SeedSlot | undefined {
+  return seedSlotManager.slots.find((slot) => {
+    return x >= slot.x && x <= slot.x + slot.width;
+  });
+}
+
 const seedSlotManagerActions = {
   createSeedSlotManager,
   drawSeedSlotManager,
   updateSeedSlotManager,
   pointerWithinSeedSlot,
+  findSeedSlotWithinCoordinateX,
 };
 
 export { seedSlotManagerActions };
-export type { SeedSlotManager };
+export type { SeedSlotManager, SeedSlot };

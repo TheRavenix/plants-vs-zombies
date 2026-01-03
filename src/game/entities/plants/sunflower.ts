@@ -1,5 +1,6 @@
 import { plantHelpers } from "./plant-helpers";
 import { hitboxActions } from "@/game/helpers/hitbox";
+import { createSun, SUN_SPRITE_WIDTH, sunActions } from "../sun";
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 
 import { PlantType } from "./constants";
@@ -43,10 +44,18 @@ const SunflowerInfo: PlantInfoType = {
 SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
 
 function createSunflower(options: CreateSunflowerOptions): Sunflower {
+  const { game } = options;
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
 
-  options.game.sun += SUN_PRODUCTION;
+  game.suns = sunActions.addSun(
+    game.suns,
+    createSun({
+      x: x + SUN_SPRITE_WIDTH / 2,
+      y: y,
+      amount: SUN_PRODUCTION,
+    })
+  );
 
   return {
     type: PlantType.Sunflower,
@@ -92,7 +101,14 @@ function updateSunflower(sunflower: Sunflower, options: PlantUpdateOptions) {
   sunflower.rechargeTimer += deltaTime;
 
   if (sunflower.rechargeTimer >= RECHARGE_INTERVAL) {
-    game.sun += SUN_PRODUCTION;
+    game.suns = sunActions.addSun(
+      game.suns,
+      createSun({
+        x: sunflower.x + SUN_SPRITE_WIDTH / 2,
+        y: sunflower.y,
+        amount: SUN_PRODUCTION,
+      })
+    );
     sunflower.rechargeTimer = 0;
   }
 

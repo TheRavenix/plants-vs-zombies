@@ -2,7 +2,15 @@ import type { Board } from "@/game/board";
 import type { Size } from "@/game/types/size";
 import type { Vector2 } from "@/game/types/vector";
 
-type Sun = Vector2 & Size;
+type Sun = {
+  id: string;
+  amount: number;
+} & Vector2 &
+  Size;
+
+type CreateSunOptions = {
+  amount: number;
+} & Vector2;
 
 const SUN_SPRITE_WIDTH = 32;
 const SUN_SPRITE_HEIGHT = 32;
@@ -14,7 +22,22 @@ const SPRITE_IMAGE_SH = 17;
 
 SPRITE_IMAGE.src = "./sun/Sun.png";
 
-function drawSunImage(sun: Sun, board: Board) {
+function createSunId(): string {
+  return `SUN-${crypto.randomUUID()}`;
+}
+
+function createSun(options: CreateSunOptions): Sun {
+  return {
+    id: createSunId(),
+    amount: options.amount,
+    x: options.x,
+    y: options.y,
+    width: SUN_SPRITE_WIDTH,
+    height: SUN_SPRITE_HEIGHT,
+  };
+}
+
+function drawSunImage(sun: Vector2 & Size, board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -34,5 +57,18 @@ function drawSunImage(sun: Sun, board: Board) {
   );
 }
 
-export { drawSunImage };
+function drawSun(sun: Sun, board: Board) {
+  const { ctx } = board;
+
+  if (ctx === null) {
+    return;
+  }
+
+  drawSunImage(sun, board);
+}
+
+function updateSun(sun: Sun, deltaTime: number) {}
+
+export { createSun, drawSunImage, drawSun, updateSun };
 export { SUN_SPRITE_WIDTH, SUN_SPRITE_HEIGHT };
+export type { Sun };
