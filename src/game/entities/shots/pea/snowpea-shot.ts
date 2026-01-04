@@ -1,14 +1,18 @@
-import { shotHelpers } from "../shot-helpers";
-import { zombieActions } from "../../zombies";
-import { shotActions } from "../shot-actions";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import {
+  createShotId,
+  handleShotDirection,
+  removeShotById,
+  syncShotHitbox,
+} from "../shot-service";
+import { findZombieById } from "../../zombies";
+import { entityTakeDamage } from "../../entity-service";
 import { ShotDirection, ShotType } from "../constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type SnowpeaShot = {
+export type SnowpeaShot = {
   type: ShotType.SnowpeaShot;
 } & BaseShot;
 
@@ -29,11 +33,13 @@ const SPRITE_IMAGE_SH = 9;
 
 SPRITE_IMAGE.src = "./shots/pea/snowpea-shot/SnowpeaShot.png";
 
-function createSnowpeaShot(options: CreateSnowpeaShotOptions): SnowpeaShot {
+export function createSnowpeaShot(
+  options: CreateSnowpeaShotOptions
+): SnowpeaShot {
   const { x, y, direction = ShotDirection.Right } = options;
   return {
     type: ShotType.SnowpeaShot,
-    id: shotHelpers.createShotId(),
+    id: createShotId(),
     x,
     y,
     width: SPRITE_WIDTH,
@@ -51,7 +57,10 @@ function createSnowpeaShot(options: CreateSnowpeaShotOptions): SnowpeaShot {
   };
 }
 
-function drawSnowpeaShot(snowpeaShot: SnowpeaShot, options: ShotDrawOptions) {
+export function drawSnowpeaShot(
+  snowpeaShot: SnowpeaShot,
+  options: ShotDrawOptions
+) {
   const { board } = options;
   const { ctx } = board;
 
@@ -71,10 +80,10 @@ function drawSnowpeaShot(snowpeaShot: SnowpeaShot, options: ShotDrawOptions) {
     snowpeaShot.height
   );
 
-  hitboxActions.draw(snowpeaShot.hitbox, board);
+  drawHitbox(snowpeaShot.hitbox, board);
 }
 
-function updateSnowpeaShot(
+export function updateSnowpeaShot(
   snowpeaShot: SnowpeaShot,
   options: ShotUpdateOptions
 ) {
@@ -82,36 +91,30 @@ function updateSnowpeaShot(
   const { zombies } = game;
   const speed = snowpeaShot.speed * (deltaTime / 1000);
 
-  shotHelpers.handleShotDirection(snowpeaShot, speed);
+  handleShotDirection(snowpeaShot, speed);
 
   let deleteZombieId: string | null = null;
 
   const collisionZombie = zombies.find((zombie) => {
-    return hitboxActions.isColliding(snowpeaShot.hitbox, zombie.hitbox);
+    return isHitboxColliding(snowpeaShot.hitbox, zombie.hitbox);
   });
 
   if (collisionZombie !== undefined) {
     deleteZombieId = collisionZombie.id;
   }
   if (deleteZombieId !== null) {
-    const zombie = zombieActions.findZombieById(zombies, deleteZombieId);
+    const zombie = findZombieById(zombies, deleteZombieId);
 
     if (zombie !== undefined) {
       if (zombie.freezeAmount < 100) {
         zombie.freezeAmount += FREEZE_AMOUNT;
       }
 
-      zombieActions.zombieTakeDamage(zombie, {
-        damage: snowpeaShot.damage,
-      });
-
-      game.shots = shotActions.removeShotById(game.shots, snowpeaShot.id);
+      entityTakeDamage(zombie, snowpeaShot.damage);
+      game.shots = removeShotById(game.shots, snowpeaShot.id);
       deleteZombieId = null;
     }
   }
 
-  shotHelpers.syncShotHitbox(snowpeaShot);
+  syncShotHitbox(snowpeaShot);
 }
-
-export { createSnowpeaShot, drawSnowpeaShot, updateSnowpeaShot };
-export type { SnowpeaShot };

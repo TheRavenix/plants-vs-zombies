@@ -1,21 +1,19 @@
-import { plantHelpers } from "./plant-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-import { createSun, SUN_SPRITE_WIDTH, sunActions } from "../sun";
+import { addSun, createSun, SUN_SPRITE_WIDTH } from "../sun";
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-
+import { createPlantId, syncPlantHitbox } from "./plant-service";
+import { drawHitbox } from "@/game/helpers/hitbox";
 import { PlantType } from "./constants";
 
 import type {
   BasePlant,
   PlantDrawOptions,
   PlantInfoType,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
 import type { Vector2 } from "@/game/types/vector";
 import type { Game } from "@/game/game";
 
-type Sunflower = {
+export type Sunflower = {
   type: PlantType.Sunflower;
   rechargeTimer: number;
 } & BasePlant;
@@ -24,7 +22,7 @@ type CreateSunflowerOptions = {
   game: Game;
 } & Vector2;
 
-const TOUGHNESS = 300;
+const HEALTH = 300;
 const SUNCOST = 50;
 const SUN_PRODUCTION = 25;
 const RECHARGE_INTERVAL = 1000 * 24;
@@ -35,7 +33,7 @@ const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
 const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-const SunflowerInfo: PlantInfoType = {
+export const SunflowerInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpriteImage: SPRITE_IMAGE,
   Cooldown: COOLDOWN,
@@ -43,12 +41,12 @@ const SunflowerInfo: PlantInfoType = {
 
 SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
 
-function createSunflower(options: CreateSunflowerOptions): Sunflower {
+export function createSunflower(options: CreateSunflowerOptions): Sunflower {
   const { game } = options;
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
 
-  game.suns = sunActions.addSun(
+  game.suns = addSun(
     game.suns,
     createSun({
       x: x + SUN_SPRITE_WIDTH / 2,
@@ -59,12 +57,12 @@ function createSunflower(options: CreateSunflowerOptions): Sunflower {
 
   return {
     type: PlantType.Sunflower,
-    id: plantHelpers.createPlantId(),
+    id: createPlantId(),
     x,
     y,
     width: SPRITE_WIDTH,
     height: SPRITE_HEIGHT,
-    toughness: TOUGHNESS,
+    health: HEALTH,
     sunCost: SUNCOST,
     hitbox: {
       x,
@@ -76,7 +74,7 @@ function createSunflower(options: CreateSunflowerOptions): Sunflower {
   };
 }
 
-function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
+export function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
   const { board } = options;
   const { ctx } = board;
 
@@ -92,16 +90,19 @@ function drawSunflower(sunflower: Sunflower, options: PlantDrawOptions) {
     sunflower.height
   );
 
-  hitboxActions.draw(sunflower.hitbox, board);
+  drawHitbox(sunflower.hitbox, board);
 }
 
-function updateSunflower(sunflower: Sunflower, options: PlantUpdateOptions) {
+export function updateSunflower(
+  sunflower: Sunflower,
+  options: PlantUpdateOptions
+) {
   const { game, deltaTime } = options;
 
   sunflower.rechargeTimer += deltaTime;
 
   if (sunflower.rechargeTimer >= RECHARGE_INTERVAL) {
-    game.suns = sunActions.addSun(
+    game.suns = addSun(
       game.suns,
       createSun({
         x: sunflower.x + SUN_SPRITE_WIDTH / 2,
@@ -112,18 +113,5 @@ function updateSunflower(sunflower: Sunflower, options: PlantUpdateOptions) {
     sunflower.rechargeTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(sunflower);
+  syncPlantHitbox(sunflower);
 }
-
-function sunflowerTakeDamage(
-  sunflower: Sunflower,
-  options: PlantTakeDamageOptions
-) {
-  const { damage } = options;
-
-  sunflower.toughness -= damage;
-}
-
-export { createSunflower, drawSunflower, updateSunflower, sunflowerTakeDamage };
-export { SunflowerInfo };
-export type { Sunflower };

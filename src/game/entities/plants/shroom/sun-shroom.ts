@@ -1,18 +1,21 @@
-import { plantHelpers } from "../plant-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { drawHitbox } from "@/game/helpers/hitbox";
+import {
+  createPlantId,
+  drawPlantRect,
+  drawPlantType,
+  syncPlantHitbox,
+} from "../plant-service";
 import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
 
 import type {
   BasePlant,
   PlantDrawOptions,
   PlantInfoType,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Sunshroom = {
+export type Sunshroom = {
   type: PlantType.Sunshroom;
   rechargeTimer: number;
   upgraded: boolean;
@@ -21,7 +24,7 @@ type Sunshroom = {
 
 type CreateSunshroomOptions = Vector2;
 
-const TOUGHNESS = 300;
+const HEALTH = 300;
 const SUNCOST = 25;
 const SUN_PRODUCTION_1 = 15;
 const SUN_PRODUCTION_2 = 25;
@@ -30,22 +33,22 @@ const UPGRADE_TIMEOUT = 1000 * 60 * 2;
 const COOLDOWN = 7500;
 const SPRITE_IMAGE = new Image();
 
-const SunshroomInfo: PlantInfoType = {
+export const SunshroomInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpriteImage: SPRITE_IMAGE,
   Cooldown: COOLDOWN,
 };
 
-function createSunshroom(options: CreateSunshroomOptions): Sunshroom {
+export function createSunshroom(options: CreateSunshroomOptions): Sunshroom {
   const { x, y } = options;
   return {
     type: PlantType.Sunshroom,
-    id: plantHelpers.createPlantId(),
+    id: createPlantId(),
     x,
     y,
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    toughness: TOUGHNESS,
+    health: HEALTH,
     sunCost: SUNCOST,
     hitbox: {
       x,
@@ -59,7 +62,7 @@ function createSunshroom(options: CreateSunshroomOptions): Sunshroom {
   };
 }
 
-function drawSunshroom(sunshroom: Sunshroom, options: PlantDrawOptions) {
+export function drawSunshroom(sunshroom: Sunshroom, options: PlantDrawOptions) {
   const { board } = options;
   const { ctx } = board;
 
@@ -67,13 +70,15 @@ function drawSunshroom(sunshroom: Sunshroom, options: PlantDrawOptions) {
     return;
   }
 
-  plantHelpers.drawPlantRect(sunshroom, options);
-  plantHelpers.drawPlantType(sunshroom, options);
-
-  hitboxActions.draw(sunshroom.hitbox, board);
+  drawPlantRect(sunshroom, options);
+  drawPlantType(sunshroom, options);
+  drawHitbox(sunshroom.hitbox, board);
 }
 
-function updateSunshroom(sunshroom: Sunshroom, options: PlantUpdateOptions) {
+export function updateSunshroom(
+  sunshroom: Sunshroom,
+  options: PlantUpdateOptions
+) {
   const { game, deltaTime } = options;
 
   sunshroom.rechargeTimer += deltaTime;
@@ -85,22 +90,9 @@ function updateSunshroom(sunshroom: Sunshroom, options: PlantUpdateOptions) {
     sunshroom.upgraded = true;
   }
   if (sunshroom.rechargeTimer >= RECHARGE_INTERVAL) {
-    game.sun += sunshroom.upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1;
+    game.sunAmount += sunshroom.upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1;
     sunshroom.rechargeTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(sunshroom);
+  syncPlantHitbox(sunshroom);
 }
-
-function sunshroomTakeDamage(
-  sunshroom: Sunshroom,
-  options: PlantTakeDamageOptions
-) {
-  const { damage } = options;
-
-  sunshroom.toughness -= damage;
-}
-
-export { createSunshroom, drawSunshroom, updateSunshroom, sunshroomTakeDamage };
-export { SunshroomInfo };
-export type { Sunshroom };

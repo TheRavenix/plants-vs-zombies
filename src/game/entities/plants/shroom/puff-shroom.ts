@@ -1,50 +1,52 @@
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import { createShroomshot, SHOT_HEIGHT, shotActions } from "../../shots";
-
-import { plantHelpers } from "../plant-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { addShot, createShroomshot, SHOT_HEIGHT } from "../../shots";
+import {
+  createPlantId,
+  drawPlantRect,
+  drawPlantType,
+  syncPlantHitbox,
+} from "../plant-service";
+import { drawHitbox } from "@/game/helpers/hitbox";
 import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
 
 import type {
   BasePlant,
   PlantDrawOptions,
   PlantInfoType,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Puffshroom = {
+export type Puffshroom = {
   type: PlantType.Puffshroom;
   shotTimer: number;
 } & BasePlant;
 
 type CreatePuffshroomOptions = Vector2;
 
-const TOUGHNESS = 300;
+const HEALTH = 300;
 const SUNCOST = 0;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 4;
 const COOLDOWN = 7500;
 const SPRITE_IMAGE = new Image();
 
-const PuffshroomInfo: PlantInfoType = {
+export const PuffshroomInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpriteImage: SPRITE_IMAGE,
   Cooldown: COOLDOWN,
 };
 
-function createPuffshroom(options: CreatePuffshroomOptions): Puffshroom {
+export function createPuffshroom(options: CreatePuffshroomOptions): Puffshroom {
   const { x, y } = options;
   return {
     type: PlantType.Puffshroom,
-    id: plantHelpers.createPlantId(),
+    id: createPlantId(),
     x,
     y,
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    toughness: TOUGHNESS,
+    health: HEALTH,
     sunCost: SUNCOST,
     shotTimer: 0,
     hitbox: {
@@ -56,7 +58,10 @@ function createPuffshroom(options: CreatePuffshroomOptions): Puffshroom {
   };
 }
 
-function drawPuffshroom(puffshroom: Puffshroom, options: PlantDrawOptions) {
+export function drawPuffshroom(
+  puffshroom: Puffshroom,
+  options: PlantDrawOptions
+) {
   const { board } = options;
   const { ctx } = board;
 
@@ -64,16 +69,18 @@ function drawPuffshroom(puffshroom: Puffshroom, options: PlantDrawOptions) {
     return;
   }
 
-  plantHelpers.drawPlantRect(puffshroom, {
+  drawPlantRect(puffshroom, {
     ...options,
     fillStyle: "#E6E6FA",
   });
-  plantHelpers.drawPlantType(puffshroom, options);
-
-  hitboxActions.draw(puffshroom.hitbox, board);
+  drawPlantType(puffshroom, options);
+  drawHitbox(puffshroom.hitbox, board);
 }
 
-function updatePuffshroom(puffshroom: Puffshroom, options: PlantUpdateOptions) {
+export function updatePuffshroom(
+  puffshroom: Puffshroom,
+  options: PlantUpdateOptions
+) {
   const { deltaTime, game } = options;
 
   puffshroom.shotTimer += deltaTime;
@@ -88,7 +95,7 @@ function updatePuffshroom(puffshroom: Puffshroom, options: PlantUpdateOptions) {
     });
 
     if (ableToShoot) {
-      game.shots = shotActions.addShot(
+      game.shots = addShot(
         game.shots,
         createShroomshot({
           x: puffshroom.x + puffshroom.width,
@@ -100,23 +107,5 @@ function updatePuffshroom(puffshroom: Puffshroom, options: PlantUpdateOptions) {
     puffshroom.shotTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(puffshroom);
+  syncPlantHitbox(puffshroom);
 }
-
-function puffshroomTakeDamage(
-  puffshroom: Puffshroom,
-  options: PlantTakeDamageOptions
-) {
-  const { damage } = options;
-
-  puffshroom.toughness -= damage;
-}
-
-export {
-  createPuffshroom,
-  drawPuffshroom,
-  updatePuffshroom,
-  puffshroomTakeDamage,
-};
-export { PuffshroomInfo };
-export type { Puffshroom };

@@ -1,7 +1,13 @@
-import { zombieHelpers } from "./zombie-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-import { plantActions } from "../plants";
-
+import {
+  createZombieId,
+  drawZombieRect,
+  drawZombieType,
+  handleZombieDefaultMovement,
+  syncZombieHitbox,
+} from "./zombie-service";
+import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import { findPlantById } from "../plants";
+import { entityTakeDamage } from "../entity-service";
 import {
   ZOMBIE_HEIGHT,
   ZOMBIE_WIDTH,
@@ -13,11 +19,10 @@ import { type Vector2 } from "@/game/types/vector";
 import type {
   BaseZombie,
   ZombieDrawOptions,
-  ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
 
-type FlagZombie = {
+export type FlagZombie = {
   type: ZombieType.Flag;
 } & BaseZombie;
 
@@ -28,11 +33,11 @@ const DAMAGE = 25;
 const SPEED = 25;
 const DAMAGE_INTERVAL = 1000;
 
-function createFlagZombie(options: CreateFlagZombieOptions): FlagZombie {
+export function createFlagZombie(options: CreateFlagZombieOptions): FlagZombie {
   const { x, y } = options;
   return {
     type: ZombieType.Flag,
-    id: zombieHelpers.createZombieId(),
+    id: createZombieId(),
     state: ZombieState.Walking,
     x,
     y,
@@ -52,7 +57,10 @@ function createFlagZombie(options: CreateFlagZombieOptions): FlagZombie {
   };
 }
 
-function drawFlagZombie(flagZombie: FlagZombie, options: ZombieDrawOptions) {
+export function drawFlagZombie(
+  flagZombie: FlagZombie,
+  options: ZombieDrawOptions
+) {
   const { board } = options;
   const { ctx } = board;
 
@@ -60,13 +68,12 @@ function drawFlagZombie(flagZombie: FlagZombie, options: ZombieDrawOptions) {
     return;
   }
 
-  zombieHelpers.drawZombieRect(flagZombie, options);
-  zombieHelpers.drawZombieType(flagZombie, options);
-
-  hitboxActions.draw(flagZombie.hitbox, board);
+  drawZombieRect(flagZombie, options);
+  drawZombieType(flagZombie, options);
+  drawHitbox(flagZombie.hitbox, board);
 }
 
-function updateFlagZombie(
+export function updateFlagZombie(
   flagZombie: FlagZombie,
   options: ZombieUpdateOptions
 ) {
@@ -76,7 +83,7 @@ function updateFlagZombie(
   let eatPlantId: string | null = null;
 
   const collisionPlant = plants.find((plant) => {
-    return hitboxActions.isColliding(flagZombie.hitbox, plant.hitbox);
+    return isHitboxColliding(flagZombie.hitbox, plant.hitbox);
   });
 
   if (collisionPlant !== undefined) {
@@ -84,10 +91,10 @@ function updateFlagZombie(
   }
 
   if (flagZombie.state === ZombieState.Walking) {
-    zombieHelpers.handleZombieDefaultMovement(flagZombie, options);
+    handleZombieDefaultMovement(flagZombie, options);
 
     const isPlantCollision = plants.some((plant) => {
-      return hitboxActions.isColliding(flagZombie.hitbox, plant.hitbox);
+      return isHitboxColliding(flagZombie.hitbox, plant.hitbox);
     });
 
     if (isPlantCollision) {
@@ -99,12 +106,10 @@ function updateFlagZombie(
       flagZombie.state = ZombieState.Walking;
     }
     if (flagZombie.damageTimer >= DAMAGE_INTERVAL && eatPlantId !== null) {
-      const plant = plantActions.findPlantById(plants, eatPlantId);
+      const plant = findPlantById(plants, eatPlantId);
 
       if (plant !== undefined) {
-        plantActions.plantTakeDamage(plant, {
-          damage: flagZombie.damage,
-        });
+        entityTakeDamage(plant, flagZombie.damage);
       }
 
       flagZombie.damageTimer = 0;
@@ -113,22 +118,5 @@ function updateFlagZombie(
     flagZombie.damageTimer += deltaTime;
   }
 
-  zombieHelpers.syncZombieHitbox(flagZombie);
+  syncZombieHitbox(flagZombie);
 }
-
-function flagZombieTakeDamage(
-  flagZombie: FlagZombie,
-  options: ZombieTakeDamageOptions
-) {
-  const { damage } = options;
-
-  flagZombie.health -= damage;
-}
-
-export {
-  createFlagZombie,
-  drawFlagZombie,
-  updateFlagZombie,
-  flagZombieTakeDamage,
-};
-export type { FlagZombie };

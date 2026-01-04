@@ -1,14 +1,19 @@
-import { shotHelpers } from "./shot-helpers";
-import { zombieActions } from "./../zombies";
-import { shotActions } from "./shot-actions";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import {
+  createShotId,
+  drawShotRect,
+  handleShotDirection,
+  removeShotById,
+  syncShotHitbox,
+} from "./shot-service";
+import { findZombieById } from "../zombies";
+import { entityTakeDamage } from "../entity-service";
 import { SHOT_HEIGHT, SHOT_WIDTH, ShotDirection, ShotType } from "./constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "./types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Shroomshot = {
+export type Shroomshot = {
   type: ShotType.Shroomshot;
 } & BaseShot;
 
@@ -19,11 +24,11 @@ type CreateShroomshotOptions = {
 const DAMAGE = 20;
 const SPEED = 150;
 
-function createShroomshot(options: CreateShroomshotOptions): Shroomshot {
+export function createShroomshot(options: CreateShroomshotOptions): Shroomshot {
   const { x, y, direction = ShotDirection.Right } = options;
   return {
     type: ShotType.Shroomshot,
-    id: shotHelpers.createShotId(),
+    id: createShotId(),
     x,
     y,
     width: SHOT_WIDTH,
@@ -41,7 +46,10 @@ function createShroomshot(options: CreateShroomshotOptions): Shroomshot {
   };
 }
 
-function drawShroomshot(Shroomshot: Shroomshot, options: ShotDrawOptions) {
+export function drawShroomshot(
+  shroomshot: Shroomshot,
+  options: ShotDrawOptions
+) {
   const { board } = options;
   const { ctx } = board;
 
@@ -49,42 +57,39 @@ function drawShroomshot(Shroomshot: Shroomshot, options: ShotDrawOptions) {
     return;
   }
 
-  shotHelpers.drawShotRect(Shroomshot, options);
-
-  hitboxActions.draw(Shroomshot.hitbox, board);
+  drawShotRect(shroomshot, options);
+  drawHitbox(shroomshot.hitbox, board);
 }
 
-function updateShroomshot(Shroomshot: Shroomshot, options: ShotUpdateOptions) {
+export function updateShroomshot(
+  shroomshot: Shroomshot,
+  options: ShotUpdateOptions
+) {
   const { deltaTime, game } = options;
   const { zombies } = game;
-  const speed = Shroomshot.speed * (deltaTime / 1000);
+  const speed = shroomshot.speed * (deltaTime / 1000);
 
-  shotHelpers.handleShotDirection(Shroomshot, speed);
+  handleShotDirection(shroomshot, speed);
 
   let deleteZombieId: string | null = null;
 
   const collisionZombie = zombies.find((zombie) => {
-    return hitboxActions.isColliding(Shroomshot.hitbox, zombie.hitbox);
+    return isHitboxColliding(shroomshot.hitbox, zombie.hitbox);
   });
 
   if (collisionZombie !== undefined) {
     deleteZombieId = collisionZombie.id;
   }
   if (deleteZombieId !== null) {
-    const zombie = zombieActions.findZombieById(zombies, deleteZombieId);
+    const zombie = findZombieById(zombies, deleteZombieId);
 
     if (zombie !== undefined) {
-      zombieActions.zombieTakeDamage(zombie, {
-        damage: Shroomshot.damage,
-      });
-      game.shots = shotActions.removeShotById(game.shots, Shroomshot.id);
+      entityTakeDamage(zombie, shroomshot.damage);
+      game.shots = removeShotById(game.shots, shroomshot.id);
 
       deleteZombieId = null;
     }
   }
 
-  shotHelpers.syncShotHitbox(Shroomshot);
+  syncShotHitbox(shroomshot);
 }
-
-export { createShroomshot, drawShroomshot, updateShroomshot };
-export type { Shroomshot };

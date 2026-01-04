@@ -1,14 +1,18 @@
-import { shotHelpers } from "../shot-helpers";
-import { zombieActions } from "../../zombies";
-import { shotActions } from "../shot-actions";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import {
+  createShotId,
+  handleShotDirection,
+  removeShotById,
+  syncShotHitbox,
+} from "../shot-service";
+import { findZombieById } from "../../zombies";
+import { entityTakeDamage } from "../../entity-service";
 import { ShotDirection, ShotType } from "../constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type FirepeaShot = {
+export type FirepeaShot = {
   type: ShotType.FirepeaShot;
 } & BaseShot;
 
@@ -28,11 +32,13 @@ const SPRITE_IMAGE_SH = 9;
 
 SPRITE_IMAGE.src = "./shots/pea/firepea-shot/FirepeaShot.png";
 
-function createFirepeaShot(options: CreateFirepeaShotOptions): FirepeaShot {
+export function createFirepeaShot(
+  options: CreateFirepeaShotOptions
+): FirepeaShot {
   const { x, y, direction = ShotDirection.Right } = options;
   return {
     type: ShotType.FirepeaShot,
-    id: shotHelpers.createShotId(),
+    id: createShotId(),
     x,
     y,
     width: SPRITE_WIDTH,
@@ -50,7 +56,10 @@ function createFirepeaShot(options: CreateFirepeaShotOptions): FirepeaShot {
   };
 }
 
-function drawFirepeaShot(firepeaShot: FirepeaShot, options: ShotDrawOptions) {
+export function drawFirepeaShot(
+  firepeaShot: FirepeaShot,
+  options: ShotDrawOptions
+) {
   const { board } = options;
   const { ctx } = board;
 
@@ -70,10 +79,10 @@ function drawFirepeaShot(firepeaShot: FirepeaShot, options: ShotDrawOptions) {
     firepeaShot.height
   );
 
-  hitboxActions.draw(firepeaShot.hitbox, board);
+  drawHitbox(firepeaShot.hitbox, board);
 }
 
-function updateFirepeaShot(
+export function updateFirepeaShot(
   firepeaShot: FirepeaShot,
   options: ShotUpdateOptions
 ) {
@@ -81,32 +90,27 @@ function updateFirepeaShot(
   const { zombies } = game;
   const speed = firepeaShot.speed * (deltaTime / 1000);
 
-  shotHelpers.handleShotDirection(firepeaShot, speed);
+  handleShotDirection(firepeaShot, speed);
 
   let deleteZombieId: string | null = null;
 
   const collisionZombie = zombies.find((zombie) => {
-    return hitboxActions.isColliding(firepeaShot.hitbox, zombie.hitbox);
+    return isHitboxColliding(firepeaShot.hitbox, zombie.hitbox);
   });
 
   if (collisionZombie !== undefined) {
     deleteZombieId = collisionZombie.id;
   }
   if (deleteZombieId !== null) {
-    const zombie = zombieActions.findZombieById(zombies, deleteZombieId);
+    const zombie = findZombieById(zombies, deleteZombieId);
 
     if (zombie !== undefined) {
-      zombieActions.zombieTakeDamage(zombie, {
-        damage: firepeaShot.damage,
-      });
-      game.shots = shotActions.removeShotById(game.shots, firepeaShot.id);
+      entityTakeDamage(zombie, firepeaShot.damage);
+      game.shots = removeShotById(game.shots, firepeaShot.id);
 
       deleteZombieId = null;
     }
   }
 
-  shotHelpers.syncShotHitbox(firepeaShot);
+  syncShotHitbox(firepeaShot);
 }
-
-export { createFirepeaShot, drawFirepeaShot, updateFirepeaShot };
-export type { FirepeaShot };

@@ -4,7 +4,7 @@ import type { Vector2 } from "../types/vector";
 
 export type Hitbox = Vector2 & Size;
 
-function draw(hitbox: Hitbox, board: Board) {
+export function drawHitbox(hitbox: Hitbox, board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -17,7 +17,7 @@ function draw(hitbox: Hitbox, board: Board) {
   ctx.stroke();
 }
 
-function isColliding(a: Hitbox, b: Hitbox): boolean {
+export function isHitboxColliding(a: Hitbox, b: Hitbox): boolean {
   return (
     a.x < b.x + b.width &&
     a.x + a.width > b.x &&
@@ -25,8 +25,3 @@ function isColliding(a: Hitbox, b: Hitbox): boolean {
     a.y + a.height > b.y
   );
 }
-
-export const hitboxActions = {
-  draw,
-  isColliding,
-} as const;

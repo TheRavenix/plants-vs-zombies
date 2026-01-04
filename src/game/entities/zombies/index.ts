@@ -1,6 +1,5 @@
 export * from "./types";
 export * from "./constants";
-export * from "./zombie-helpers";
-export * from "./zombie-actions";
+export * from "./zombie-service";
 export * from "./normal-zombie";
 export * from "./flag-zombie";
