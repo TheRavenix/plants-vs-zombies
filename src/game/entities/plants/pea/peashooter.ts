@@ -1,28 +1,25 @@
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import { createPeashot, shotActions } from "../../shots";
-
-import { plantHelpers } from "../plant-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { addShot, createPeashot } from "../../shots";
+import { drawHitbox } from "@/game/helpers/hitbox";
+import { createPlantId, syncPlantHitbox } from "../plant-service";
 import { PlantType } from "../constants";
 
 import type {
   BasePlant,
   PlantDrawOptions,
   PlantInfoType,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Peashooter = {
+export type Peashooter = {
   type: PlantType.Peashooter;
   shotTimer: number;
 } & BasePlant;
 
 type CreatePeashooterOptions = Vector2;
 
-const TOUGHNESS = 300;
+const HEALTH = 300;
 const SUNCOST = 100;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
@@ -33,7 +30,7 @@ const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
 const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-const PeashooterInfo: PlantInfoType = {
+export const PeashooterInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpriteImage: SPRITE_IMAGE,
   Cooldown: COOLDOWN,
@@ -41,18 +38,18 @@ const PeashooterInfo: PlantInfoType = {
 
 SPRITE_IMAGE.src = "./plants/pea/peashooter/Peashooter.png";
 
-function createPeashooter(options: CreatePeashooterOptions): Peashooter {
+export function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
 
   return {
     type: PlantType.Peashooter,
-    id: plantHelpers.createPlantId(),
+    id: createPlantId(),
     x,
     y,
     width: SPRITE_WIDTH,
     height: SPRITE_HEIGHT,
-    toughness: TOUGHNESS,
+    health: HEALTH,
     sunCost: SUNCOST,
     hitbox: {
       x,
@@ -64,7 +61,10 @@ function createPeashooter(options: CreatePeashooterOptions): Peashooter {
   };
 }
 
-function drawPeashooter(peashooter: Peashooter, options: PlantDrawOptions) {
+export function drawPeashooter(
+  peashooter: Peashooter,
+  options: PlantDrawOptions
+) {
   const { board } = options;
   const { ctx } = board;
 
@@ -80,10 +80,13 @@ function drawPeashooter(peashooter: Peashooter, options: PlantDrawOptions) {
     peashooter.height
   );
 
-  hitboxActions.draw(peashooter.hitbox, board);
+  drawHitbox(peashooter.hitbox, board);
 }
 
-function updatePeashooter(peashooter: Peashooter, options: PlantUpdateOptions) {
+export function updatePeashooter(
+  peashooter: Peashooter,
+  options: PlantUpdateOptions
+) {
   const { deltaTime, game } = options;
 
   peashooter.shotTimer += deltaTime;
@@ -98,7 +101,7 @@ function updatePeashooter(peashooter: Peashooter, options: PlantUpdateOptions) {
     });
 
     if (ableToShoot) {
-      game.shots = shotActions.addShot(
+      game.shots = addShot(
         game.shots,
         createPeashot({
           x: peashooter.x + peashooter.width,
@@ -110,23 +113,5 @@ function updatePeashooter(peashooter: Peashooter, options: PlantUpdateOptions) {
     peashooter.shotTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(peashooter);
+  syncPlantHitbox(peashooter);
 }
-
-function peashooterTakeDamage(
-  peashooter: Peashooter,
-  options: PlantTakeDamageOptions
-) {
-  const { damage } = options;
-
-  peashooter.toughness -= damage;
-}
-
-export {
-  createPeashooter,
-  drawPeashooter,
-  updatePeashooter,
-  peashooterTakeDamage,
-};
-export { PeashooterInfo };
-export type { Peashooter };

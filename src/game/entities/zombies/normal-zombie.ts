@@ -1,7 +1,13 @@
-import { plantActions } from "../plants";
-import { zombieHelpers } from "./zombie-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import {
+  createZombieId,
+  drawZombieRect,
+  drawZombieType,
+  handleZombieDefaultMovement,
+  syncZombieHitbox,
+} from "./zombie-service";
+import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import { findPlantById } from "../plants";
+import { entityTakeDamage } from "../entity-service";
 import {
   ZOMBIE_HEIGHT,
   ZOMBIE_WIDTH,
@@ -13,11 +19,10 @@ import { type Vector2 } from "@/game/types/vector";
 import type {
   BaseZombie,
   ZombieDrawOptions,
-  ZombieTakeDamageOptions,
   ZombieUpdateOptions,
 } from "./types";
 
-type NormalZombie = {
+export type NormalZombie = {
   type: ZombieType.Normal;
 } & BaseZombie;
 
@@ -28,11 +33,13 @@ const DAMAGE = 25;
 const SPEED = 15;
 const DAMAGE_INTERVAL = 1000;
 
-function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
+export function createNormalZombie(
+  options: CreateNormalZombieOptions
+): NormalZombie {
   const { x, y } = options;
   return {
     type: ZombieType.Normal,
-    id: zombieHelpers.createZombieId(),
+    id: createZombieId(),
     state: ZombieState.Walking,
     x,
     y,
@@ -52,7 +59,7 @@ function createNormalZombie(options: CreateNormalZombieOptions): NormalZombie {
   };
 }
 
-function drawNormalZombie(
+export function drawNormalZombie(
   normalZombie: NormalZombie,
   options: ZombieDrawOptions
 ) {
@@ -63,13 +70,12 @@ function drawNormalZombie(
     return;
   }
 
-  zombieHelpers.drawZombieRect(normalZombie, options);
-  zombieHelpers.drawZombieType(normalZombie, options);
-
-  hitboxActions.draw(normalZombie.hitbox, board);
+  drawZombieRect(normalZombie, options);
+  drawZombieType(normalZombie, options);
+  drawHitbox(normalZombie.hitbox, board);
 }
 
-function updateNormalZombie(
+export function updateNormalZombie(
   normalZombie: NormalZombie,
   options: ZombieUpdateOptions
 ) {
@@ -79,7 +85,7 @@ function updateNormalZombie(
   let eatPlantId: string | null = null;
 
   const collisionPlant = plants.find((plant) => {
-    return hitboxActions.isColliding(normalZombie.hitbox, plant.hitbox);
+    return isHitboxColliding(normalZombie.hitbox, plant.hitbox);
   });
 
   if (collisionPlant !== undefined) {
@@ -87,10 +93,10 @@ function updateNormalZombie(
   }
 
   if (normalZombie.state === ZombieState.Walking) {
-    zombieHelpers.handleZombieDefaultMovement(normalZombie, options);
+    handleZombieDefaultMovement(normalZombie, options);
 
     const isPlantCollision = plants.some((plant) => {
-      return hitboxActions.isColliding(normalZombie.hitbox, plant.hitbox);
+      return isHitboxColliding(normalZombie.hitbox, plant.hitbox);
     });
 
     if (isPlantCollision) {
@@ -102,12 +108,10 @@ function updateNormalZombie(
       normalZombie.state = ZombieState.Walking;
     }
     if (normalZombie.damageTimer >= DAMAGE_INTERVAL && eatPlantId !== null) {
-      const plant = plantActions.findPlantById(plants, eatPlantId);
+      const plant = findPlantById(plants, eatPlantId);
 
       if (plant !== undefined) {
-        plantActions.plantTakeDamage(plant, {
-          damage: normalZombie.damage,
-        });
+        entityTakeDamage(plant, normalZombie.damage);
       }
 
       normalZombie.damageTimer = 0;
@@ -116,22 +120,5 @@ function updateNormalZombie(
     normalZombie.damageTimer += deltaTime;
   }
 
-  zombieHelpers.syncZombieHitbox(normalZombie);
+  syncZombieHitbox(normalZombie);
 }
-
-function normalZombieTakeDamage(
-  normalZombie: NormalZombie,
-  options: ZombieTakeDamageOptions
-) {
-  const { damage } = options;
-
-  normalZombie.health -= damage;
-}
-
-export {
-  createNormalZombie,
-  drawNormalZombie,
-  updateNormalZombie,
-  normalZombieTakeDamage,
-};
-export type { NormalZombie };

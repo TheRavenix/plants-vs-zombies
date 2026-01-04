@@ -1,13 +1,12 @@
 import { PlantInfo, type PlantType } from "../entities/plants";
 import { drawSunImage } from "../entities/sun";
-
-import { canvasActions } from "../helpers/canvas";
+import { drawCenteredText } from "../helpers/canvas";
 
 import type { Board } from "../board";
 import type { Size } from "../types/size";
 import type { Vector2 } from "../types/vector";
 
-type SeedPacket = {
+export type SeedPacket = {
   plantType: PlantType;
   status: SeedPacketStatus;
   cooldownTimer: number;
@@ -20,10 +19,10 @@ type CreateSeedPacketOptions = {
   status?: SeedPacketStatus;
 } & Vector2;
 
-const SEED_PACKET_MARGIN_LEFT = 8;
+export const SEED_PACKET_MARGIN_LEFT = 8;
 const SEED_PACKET_WIDTH = 72;
 const SEED_PACKET_HEIGHT = 72;
-const SEED_PACKET_ACTIVE_Y = 4;
+export const SEED_PACKET_ACTIVE_Y = 4;
 const SEED_PACKET_IMAGE = new Image(SEED_PACKET_WIDTH, SEED_PACKET_HEIGHT);
 const SELECTED_SEED_PACKET_IMAGE = new Image(
   SEED_PACKET_WIDTH,
@@ -34,7 +33,7 @@ const DISABLED_SEED_PACKET_IMAGE = new Image(
   SEED_PACKET_HEIGHT
 );
 
-enum SeedPacketStatus {
+export enum SeedPacketStatus {
   Active = "ACTIVE",
   Disabled = "DISABLED",
   Selected = "SELECTED",
@@ -44,7 +43,7 @@ SEED_PACKET_IMAGE.src = "./seed/seed-packet/Seed_Packet.png";
 SELECTED_SEED_PACKET_IMAGE.src = "./seed/seed-packet/Selected_Seed_Packet.png";
 DISABLED_SEED_PACKET_IMAGE.src = "./seed/seed-packet/Disabled_Seed_Packet.png";
 
-function createSeedPacket(options: CreateSeedPacketOptions): SeedPacket {
+export function createSeedPacket(options: CreateSeedPacketOptions): SeedPacket {
   const status = options.status ? options.status : SeedPacketStatus.Active;
 
   return {
@@ -59,7 +58,7 @@ function createSeedPacket(options: CreateSeedPacketOptions): SeedPacket {
   };
 }
 
-function drawSeedPacket(packet: SeedPacket, board: Board) {
+export function drawSeedPacket(packet: SeedPacket, board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -113,7 +112,7 @@ function drawSeedPacket(packet: SeedPacket, board: Board) {
     },
     board
   );
-  canvasActions.drawCenteredText(
+  drawCenteredText(
     board,
     plantInfo.SunCost.toString(),
     packet.x + packet.width / 2,
@@ -123,7 +122,3 @@ function drawSeedPacket(packet: SeedPacket, board: Board) {
     isSelected ? "#ffffff" : "#000000"
   );
 }
-
-export { createSeedPacket, drawSeedPacket };
-export { SEED_PACKET_MARGIN_LEFT, SEED_PACKET_ACTIVE_Y, SeedPacketStatus };
-export type { SeedPacket };

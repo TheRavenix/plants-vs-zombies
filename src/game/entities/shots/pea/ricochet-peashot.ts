@@ -1,14 +1,17 @@
-import { shotHelpers } from "../shot-helpers";
-import { zombieActions, type Zombie } from "../../zombies";
-import { shotActions } from "../shot-actions";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
+import {
+  findZombieById,
+  findZombiesWithinArea,
+  type Zombie,
+} from "../../zombies";
+import { createShotId, removeShotById, syncShotHitbox } from "../shot-service";
+import { entityTakeDamage } from "../../entity-service";
 import { ShotType } from "../constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type RicochetPeashot = {
+export type RicochetPeashot = {
   type: ShotType.RicochetPeashot;
   bounceTimes: number;
   lastHitZombieId: string | null;
@@ -29,13 +32,13 @@ const SPRITE_IMAGE_SH = 9;
 
 SPRITE_IMAGE.src = "./shots/pea/peashot/Peashot.png";
 
-function createRicochetPeashot(
+export function createRicochetPeashot(
   options: CreateRicochetPeashotOptions
 ): RicochetPeashot {
   const { x, y } = options;
   return {
     type: ShotType.RicochetPeashot,
-    id: shotHelpers.createShotId(),
+    id: createShotId(),
     x,
     y,
     width: SPRITE_HEIGHT,
@@ -55,7 +58,7 @@ function createRicochetPeashot(
   };
 }
 
-function drawRicochetPeashot(
+export function drawRicochetPeashot(
   ricochetpeashot: RicochetPeashot,
   options: ShotDrawOptions
 ) {
@@ -78,10 +81,10 @@ function drawRicochetPeashot(
     ricochetpeashot.height
   );
 
-  hitboxActions.draw(ricochetpeashot.hitbox, board);
+  drawHitbox(ricochetpeashot.hitbox, board);
 }
 
-function updateRicochetPeashot(
+export function updateRicochetPeashot(
   ricochetpeashot: RicochetPeashot,
   options: ShotUpdateOptions
 ) {
@@ -90,7 +93,7 @@ function updateRicochetPeashot(
   const speed = ricochetpeashot.speed * (deltaTime / 1000);
 
   if (ricochetpeashot.bounceTimes >= BOUNCE_TIMES) {
-    game.shots = shotActions.removeShotById(game.shots, ricochetpeashot.id);
+    game.shots = removeShotById(game.shots, ricochetpeashot.id);
   }
   if (ricochetpeashot.lastHitZombieId !== null) {
     if (ricochetpeashot.bounceTimes >= BOUNCE_TIMES) {
@@ -98,13 +101,13 @@ function updateRicochetPeashot(
     }
 
     let filteredZombies: Zombie[] = zombies;
-    const lastHitZombie = zombieActions.findZombieById(
+    const lastHitZombie = findZombieById(
       zombies,
       ricochetpeashot.lastHitZombieId
     );
 
     if (lastHitZombie !== undefined) {
-      filteredZombies = zombieActions.findZombiesWithinArea(
+      filteredZombies = findZombiesWithinArea(
         zombies,
         lastHitZombie.x,
         lastHitZombie.y
@@ -120,14 +123,14 @@ function updateRicochetPeashot(
         );
       }
     } else {
-      const zombiesWithinArea = zombieActions.findZombiesWithinArea(
+      const zombiesWithinArea = findZombiesWithinArea(
         filteredZombies,
         ricochetpeashot.x,
         ricochetpeashot.y
       );
 
       if (zombiesWithinArea.length <= 0) {
-        game.shots = shotActions.removeShotById(game.shots, ricochetpeashot.id);
+        game.shots = removeShotById(game.shots, ricochetpeashot.id);
         return;
       }
     }
@@ -159,22 +162,17 @@ function updateRicochetPeashot(
 
     let deleteZombieId: string | null = null;
     const collisionZombie = filteredZombies.find((zombie) => {
-      return hitboxActions.isColliding(ricochetpeashot.hitbox, zombie.hitbox);
+      return isHitboxColliding(ricochetpeashot.hitbox, zombie.hitbox);
     });
 
     if (collisionZombie !== undefined) {
       deleteZombieId = collisionZombie.id;
     }
     if (deleteZombieId !== null) {
-      const zombie = zombieActions.findZombieById(
-        filteredZombies,
-        deleteZombieId
-      );
+      const zombie = findZombieById(filteredZombies, deleteZombieId);
 
       if (zombie !== undefined) {
-        zombieActions.zombieTakeDamage(zombie, {
-          damage: ricochetpeashot.damage,
-        });
+        entityTakeDamage(zombie, ricochetpeashot.damage);
 
         ricochetpeashot.bounceTimes += 1;
         ricochetpeashot.lastHitZombieId = zombie.id;
@@ -188,19 +186,17 @@ function updateRicochetPeashot(
     let deleteZombieId: string | null = null;
 
     const collisionZombie = zombies.find((zombie) => {
-      return hitboxActions.isColliding(ricochetpeashot.hitbox, zombie.hitbox);
+      return isHitboxColliding(ricochetpeashot.hitbox, zombie.hitbox);
     });
 
     if (collisionZombie !== undefined) {
       deleteZombieId = collisionZombie.id;
     }
     if (deleteZombieId !== null) {
-      const zombie = zombieActions.findZombieById(zombies, deleteZombieId);
+      const zombie = findZombieById(zombies, deleteZombieId);
 
       if (zombie !== undefined) {
-        zombieActions.zombieTakeDamage(zombie, {
-          damage: ricochetpeashot.damage,
-        });
+        entityTakeDamage(zombie, ricochetpeashot.damage);
 
         ricochetpeashot.lastHitZombieId = zombie.id;
 
@@ -209,8 +205,5 @@ function updateRicochetPeashot(
     }
   }
 
-  shotHelpers.syncShotHitbox(ricochetpeashot);
+  syncShotHitbox(ricochetpeashot);
 }
-
-export { createRicochetPeashot, drawRicochetPeashot, updateRicochetPeashot };
-export type { RicochetPeashot };

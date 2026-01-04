@@ -1,6 +1,6 @@
 import {
   BOARD_ROWS,
-  boardActions,
+  getCanvasCoordinates,
   TILE_HEIGHT,
   TILE_WIDTH,
   type Board,
@@ -15,21 +15,20 @@ import {
   SeedPacketStatus,
   type SeedPacket,
 } from "./seed-packet";
-
-import { canvasActions } from "../helpers/canvas";
+import { drawCenteredText } from "../helpers/canvas";
 import { FontSize } from "../constants/font";
 
 import type { Game } from "../game";
 import type { Size } from "../types/size";
 import type { Vector2 } from "../types/vector";
 
-type SeedSlot = {
+export type SeedSlot = {
   id: string;
   packet: SeedPacket;
 } & Vector2 &
   Size;
 
-type SeedSlotManager = {
+export type SeedSlotManager = {
   slots: SeedSlot[];
   selectedSlot: SeedSlot | null;
 } & Vector2 &
@@ -53,7 +52,7 @@ function createSeedSlotId(): string {
   return `SEED_SLOT-${crypto.randomUUID()}`;
 }
 
-function drawSeedSlot(
+export function drawSeedSlot(
   slot: SeedSlot,
   board: Board,
   spriteImage: HTMLImageElement
@@ -74,7 +73,7 @@ function drawSeedSlot(
   drawSeedPacket(slot.packet, board);
 }
 
-function createSeedSlotManager(): SeedSlotManager {
+export function createSeedSlotManager(): SeedSlotManager {
   const slots: SeedSlot[] = [];
 
   slots.push(
@@ -138,7 +137,7 @@ function createSeedSlotManager(): SeedSlotManager {
   };
 }
 
-function drawSeedSlotManager(
+export function drawSeedSlotManager(
   seedSlotManager: SeedSlotManager,
   board: Board,
   game: Game
@@ -162,6 +161,7 @@ function drawSeedSlotManager(
     SEED_SLOT_WIDTH - SEED_PACKET_MARGIN_LEFT,
     SEED_SLOT_HEIGHT
   );
+
   drawSunImage(
     {
       x: SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + 20,
@@ -171,10 +171,9 @@ function drawSeedSlotManager(
     },
     board
   );
-
-  canvasActions.drawCenteredText(
+  drawCenteredText(
     board,
-    game.sun.toString(),
+    game.sunAmount.toString(),
     SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + SEED_SLOT_WIDTH / 2,
     SEED_SLOT_OFFSET_Y + SEED_SLOT_HEIGHT / 1.25,
     "#ffffff",
@@ -199,7 +198,7 @@ function drawSeedSlotManager(
   }
 }
 
-function updateSeedSlotManager(
+export function updateSeedSlotManager(
   seedSlotManager: SeedSlotManager,
   deltaTime: number,
   game: Game
@@ -221,7 +220,7 @@ function updateSeedSlotManager(
     } else {
       const plantSunCost = PlantInfo[packet.plantType].SunCost;
 
-      if (game.sun < plantSunCost) {
+      if (game.sunAmount < plantSunCost) {
         packet.status = SeedPacketStatus.Disabled;
       } else {
         packet.status = SeedPacketStatus.Active;
@@ -246,13 +245,13 @@ function updateSeedSlotManager(
   }
 }
 
-function pointerWithinSeedSlot(
+export function pointerWithinSeedSlot(
   seedSlotManager: SeedSlotManager,
   board: Board,
   event: PointerEvent
 ): boolean {
   const { canvas } = board;
-  const { x, y } = boardActions.getCanvasCoordinates(canvas, event);
+  const { x, y } = getCanvasCoordinates(canvas, event);
 
   return (
     y >= SEED_SLOT_OFFSET_Y &&
@@ -262,7 +261,7 @@ function pointerWithinSeedSlot(
   );
 }
 
-function findSeedSlotWithinCoordinateX(
+export function findSeedSlotWithinCoordinateX(
   seedSlotManager: SeedSlotManager,
   x: number
 ): SeedSlot | undefined {
@@ -270,14 +269,3 @@ function findSeedSlotWithinCoordinateX(
     return x >= slot.x && x <= slot.x + slot.width;
   });
 }
-
-const seedSlotManagerActions = {
-  createSeedSlotManager,
-  drawSeedSlotManager,
-  updateSeedSlotManager,
-  pointerWithinSeedSlot,
-  findSeedSlotWithinCoordinateX,
-};
-
-export { seedSlotManagerActions };
-export type { SeedSlotManager, SeedSlot };

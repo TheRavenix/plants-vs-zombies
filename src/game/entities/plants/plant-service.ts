@@ -1,9 +1,4 @@
-import {
-  createSunflower,
-  drawSunflower,
-  sunflowerTakeDamage,
-  updateSunflower,
-} from "./sunflower";
+import { createSunflower, drawSunflower, updateSunflower } from "./sunflower";
 import {
   createFirepea,
   createPeashooter,
@@ -15,51 +10,81 @@ import {
   drawRepeater,
   drawSnowpea,
   drawThreepeater,
-  firepeaTakeDamage,
-  peashooterTakeDamage,
-  repeaterTakeDamage,
-  snowpeaTakeDamage,
-  threepeaterTakeDamage,
   updateFirepea,
   updatePeashooter,
   updateRepeater,
   updateSnowpea,
   updateThreepeater,
 } from "./pea";
-import {
-  createWallNut,
-  drawWallNut,
-  updateWallNut,
-  wallNutTakeDamage,
-} from "./wall-nut";
+import { createWallNut, drawWallNut, updateWallNut } from "./wall-nut";
 import {
   createPuffshroom,
   createSunshroom,
   drawPuffshroom,
   drawSunshroom,
-  puffshroomTakeDamage,
-  sunshroomTakeDamage,
   updatePuffshroom,
   updateSunshroom,
 } from "./shroom";
-import {
-  createTorchwood,
-  drawTorchwood,
-  torchwoodTakeDamage,
-  updateTorchwood,
-} from "./torchwood";
-
+import { createTorchwood, drawTorchwood, updateTorchwood } from "./torchwood";
+import { drawText } from "@/game/helpers/canvas";
 import { PlantType } from "./constants";
+import { FontSize } from "@/game/constants/font";
 
 import type {
+  BasePlant,
   Plant,
   PlantDrawOptions,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
 import type { Game } from "@/game/game";
 
-function drawPlant(plant: Plant, options: PlantDrawOptions) {
+type DrawPlantRectOptions = {
+  fillStyle?: string;
+} & PlantDrawOptions;
+
+export function createPlantId(): string {
+  return `PLANT-${crypto.randomUUID()}`;
+}
+
+export function drawPlantRect(plant: BasePlant, options: DrawPlantRectOptions) {
+  const { ctx } = options.board;
+
+  if (ctx === null) {
+    return;
+  }
+
+  const fillStyle = options?.fillStyle ?? "#A0B09A";
+
+  ctx.fillStyle = fillStyle;
+  ctx.fillRect(plant.x, plant.y, plant.width, plant.height);
+  ctx.fill();
+}
+
+export function drawPlantType(plant: Plant, options: PlantDrawOptions) {
+  const { ctx } = options.board;
+
+  if (ctx === null) {
+    return;
+  }
+
+  drawText(
+    options.board,
+    `${plant.type} ${plant.health}`,
+    plant.x,
+    plant.y + plant.height / 2,
+    "#000000",
+    {
+      fontSize: FontSize.Xs,
+    }
+  );
+}
+
+export function syncPlantHitbox(plant: BasePlant) {
+  plant.hitbox.x = plant.x;
+  plant.hitbox.y = plant.y;
+}
+
+export function drawPlant(plant: Plant, options: PlantDrawOptions) {
   switch (plant.type) {
     case PlantType.Sunflower:
       drawSunflower(plant, options);
@@ -103,7 +128,7 @@ function drawPlant(plant: Plant, options: PlantDrawOptions) {
   }
 }
 
-function updatePlant(plant: Plant, options: PlantUpdateOptions) {
+export function updatePlant(plant: Plant, options: PlantUpdateOptions) {
   switch (plant.type) {
     case PlantType.Sunflower:
       updateSunflower(plant, options);
@@ -147,51 +172,7 @@ function updatePlant(plant: Plant, options: PlantUpdateOptions) {
   }
 }
 
-function plantTakeDamage(plant: Plant, options: PlantTakeDamageOptions) {
-  switch (plant.type) {
-    case PlantType.Sunflower:
-      sunflowerTakeDamage(plant, options);
-      break;
-
-    case PlantType.Peashooter:
-      peashooterTakeDamage(plant, options);
-      break;
-
-    case PlantType.Repeater:
-      repeaterTakeDamage(plant, options);
-      break;
-
-    case PlantType.Threepeater:
-      threepeaterTakeDamage(plant, options);
-      break;
-
-    case PlantType.Snowpea:
-      snowpeaTakeDamage(plant, options);
-      break;
-
-    case PlantType.WallNut:
-      wallNutTakeDamage(plant, options);
-      break;
-
-    case PlantType.Puffshroom:
-      puffshroomTakeDamage(plant, options);
-      break;
-
-    case PlantType.Sunshroom:
-      sunshroomTakeDamage(plant, options);
-      break;
-
-    case PlantType.Torchwood:
-      torchwoodTakeDamage(plant, options);
-      break;
-
-    case PlantType.Firepea:
-      firepeaTakeDamage(plant, options);
-      break;
-  }
-}
-
-function createPlant(
+export function createPlant(
   type: PlantType,
   x: number,
   y: number,
@@ -275,34 +256,22 @@ function createPlant(
   return plant;
 }
 
-function addPlant(plants: Plant[], plant: Plant): Plant[] {
+export function addPlant(plants: Plant[], plant: Plant): Plant[] {
   return [...plants, plant];
 }
 
-function addPlants(plants: Plant[], ...toAdd: Plant[]): Plant[] {
+export function addPlants(plants: Plant[], ...toAdd: Plant[]): Plant[] {
   return [...plants, ...toAdd];
 }
 
-function removePlantById(plants: Plant[], id: string): Plant[] {
+export function removePlantById(plants: Plant[], id: string): Plant[] {
   return plants.filter((plant) => plant.id !== id);
 }
 
-function findPlantById(plants: Plant[], id: string): Plant | undefined {
+export function findPlantById(plants: Plant[], id: string): Plant | undefined {
   return plants.find((plant) => plant.id === id);
 }
 
-function removeOutOfToughnessPlants(plants: Plant[]): Plant[] {
-  return plants.filter((plant) => plant.toughness > 0);
+export function removeOutOfHealthPlants(plants: Plant[]): Plant[] {
+  return plants.filter((plant) => plant.health > 0);
 }
-
-export const plantActions = {
-  drawPlant,
-  updatePlant,
-  plantTakeDamage,
-  createPlant,
-  addPlant,
-  addPlants,
-  removePlantById,
-  findPlantById,
-  removeOutOfToughnessPlants,
-} as const;

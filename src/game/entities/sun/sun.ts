@@ -1,8 +1,9 @@
 import type { Board } from "@/game/board";
+import type { Game } from "@/game/game";
 import type { Size } from "@/game/types/size";
 import type { Vector2 } from "@/game/types/vector";
 
-type Sun = {
+export type Sun = {
   id: string;
   amount: number;
 } & Vector2 &
@@ -12,8 +13,8 @@ type CreateSunOptions = {
   amount: number;
 } & Vector2;
 
-const SUN_SPRITE_WIDTH = 32;
-const SUN_SPRITE_HEIGHT = 32;
+export const SUN_SPRITE_WIDTH = 32;
+export const SUN_SPRITE_HEIGHT = 32;
 const SPRITE_IMAGE = new Image(SUN_SPRITE_WIDTH, SUN_SPRITE_HEIGHT);
 const SPRITE_IMAGE_SX = 7;
 const SPRITE_IMAGE_SY = 7;
@@ -26,7 +27,7 @@ function createSunId(): string {
   return `SUN-${crypto.randomUUID()}`;
 }
 
-function createSun(options: CreateSunOptions): Sun {
+export function createSun(options: CreateSunOptions): Sun {
   return {
     id: createSunId(),
     amount: options.amount,
@@ -37,7 +38,7 @@ function createSun(options: CreateSunOptions): Sun {
   };
 }
 
-function drawSunImage(sun: Vector2 & Size, board: Board) {
+export function drawSunImage(sun: Vector2 & Size, board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -57,7 +58,7 @@ function drawSunImage(sun: Vector2 & Size, board: Board) {
   );
 }
 
-function drawSun(sun: Sun, board: Board) {
+export function drawSun(sun: Sun, board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -67,8 +68,36 @@ function drawSun(sun: Sun, board: Board) {
   drawSunImage(sun, board);
 }
 
-function updateSun(sun: Sun, deltaTime: number) {}
+export function updateSun(_sun: Sun, _deltaTime: number) {}
 
-export { createSun, drawSunImage, drawSun, updateSun };
-export { SUN_SPRITE_WIDTH, SUN_SPRITE_HEIGHT };
-export type { Sun };
+export function addSun(suns: Sun[], sun: Sun): Sun[] {
+  return [...suns, sun];
+}
+
+export function removeSunById(suns: Sun[], id: string): Sun[] {
+  return suns.filter((sun) => sun.id !== id);
+}
+
+export function findSunById(suns: Sun[], id: string): Sun | undefined {
+  return suns.find((sun) => sun.id === id);
+}
+
+export function findSunWithinCoordinates(
+  suns: Sun[],
+  x: number,
+  y: number
+): Sun | undefined {
+  return suns.find((sun) => {
+    return (
+      x >= sun.x &&
+      x <= sun.x + sun.width &&
+      y >= sun.y &&
+      y <= sun.y + sun.height
+    );
+  });
+}
+
+export function collectSun(sun: Sun, game: Game) {
+  game.sunAmount += sun.amount;
+  game.suns = removeSunById(game.suns, sun.id);
+}

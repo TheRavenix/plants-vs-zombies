@@ -4,18 +4,19 @@ import type { Vector2 } from "@/game/types/vector";
 import type { Size } from "@/game/types/size";
 import type { Board } from "@/game/board";
 import type { Game } from "@/game/game";
+import type { HasHealth } from "../../types";
 
 export type BaseZombie = {
   id: string;
   state: ZombieState;
-  health: number;
   damage: number;
   speed: number;
   hitbox: Hitbox;
   damageTimer: number;
   freezeAmount: number;
 } & Vector2 &
-  Size;
+  Size &
+  HasHealth;
 
 export type ZombieDrawOptions = {
   board: Board;

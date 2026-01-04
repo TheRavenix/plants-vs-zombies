@@ -1,34 +1,57 @@
 import {
   BOARD_ROWS,
-  boardActions,
+  drawBoard,
+  getCanvasCoordinates,
+  pointerWithinPlaySafeArea,
   TILE_HEIGHT,
   TILE_WIDTH,
   type Board,
 } from "./board";
 import {
+  addZombies,
   createNormalZombie,
-  zombieActions,
+  drawZombie,
+  removeOutOfHealthZombies,
+  updateZombie,
   type Zombie,
 } from "./entities/zombies";
-import { plantActions, PlantInfo, type Plant } from "./entities/plants";
-import { shotActions, type Shot } from "./entities/shots";
 import {
-  seedSlotManagerActions,
+  addPlant,
+  createPlant,
+  drawPlant,
+  PlantInfo,
+  removeOutOfHealthPlants,
+  updatePlant,
+  type Plant,
+} from "./entities/plants";
+import {
+  drawShot,
+  removeOutOfZoneShots,
+  updateShot,
+  type Shot,
+} from "./entities/shots";
+import {
+  createSeedSlotManager,
+  drawSeedSlotManager,
+  findSeedSlotWithinCoordinateX,
+  pointerWithinSeedSlot,
+  updateSeedSlotManager,
   type SeedSlotManager,
 } from "./seed/seed-slot-manager";
-
 import { closestLowerValue } from "@/utils/math";
 import {
+  addSun,
+  collectSun,
   createSun,
   drawSun,
-  sunActions,
+  findSunWithinCoordinates,
   updateSun,
   type Sun,
 } from "./entities/sun";
 
-type Game = {
+export type Game = {
   lastTime: number;
-  sun: number;
+  sunAmount: number;
   zombies: Zombie[];
   plants: Plant[];
   shots: Shot[];
@@ -37,18 +60,18 @@ type Game = {
   sunRechargeTimer: number;
 };
 
-const DEFAULT_SUN = 100;
+const DEFAULT_SUN_AMOUNT = 100;
 const SUN_PRODUCTION = 25;
 const SUN_RECHARGE_INTERVAL = 1000 * 24;
 
-function createGame(): Game {
+export function createGame(): Game {
   let zombies: Zombie[] = [];
   let plants: Plant[] = [];
   let shots: Shot[] = [];
   let suns: Sun[] = [];
-  const seedSlotManager = seedSlotManagerActions.createSeedSlotManager();
+  const seedSlotManager = createSeedSlotManager();
 
-  zombies = zombieActions.addZombies(
+  zombies = addZombies(
     zombies,
     createNormalZombie({
       x: TILE_WIDTH * (BOARD_ROWS - 1),
@@ -58,7 +81,7 @@ function createGame(): Game {
 
   return {
     lastTime: 0,
-    sun: DEFAULT_SUN,
+    sunAmount: DEFAULT_SUN_AMOUNT,
     zombies,
     plants,
     shots,
@@ -68,7 +91,7 @@ function createGame(): Game {
   };
 }
 
-function startGame(game: Game, board: Board) {
+export function startGame(game: Game, board: Board) {
   const { canvas, ctx } = board;
 
   if (ctx !== null) {
@@ -76,34 +99,22 @@ function startGame(game: Game, board: Board) {
   }
 
   canvas.addEventListener("pointerdown", (e) => {
-    const { x, y } = boardActions.getCanvasCoordinates(canvas, e);
+    const { x, y } = getCanvasCoordinates(canvas, e);
 
     if (game.suns.length > 0) {
-      if (boardActions.pointerWithinPlaySafeArea(board, e)) {
-        const toCollectSun = sunActions.findSunWithinCoordinates(
-          game.suns,
-          x,
-          y
-        );
+      if (pointerWithinPlaySafeArea(board, e)) {
+        const toCollectSun = findSunWithinCoordinates(game.suns, x, y);
 
         if (toCollectSun !== undefined) {
-          sunActions.collectSun(toCollectSun, game);
+          collectSun(toCollectSun, game);
+          return;
         }
       }
     }
-    if (
-      seedSlotManagerActions.pointerWithinSeedSlot(
-        game.seedSlotManager,
-        board,
-        e
-      )
-    ) {
+    if (pointerWithinSeedSlot(game.seedSlotManager, board, e)) {
       // FIXME: This logic is problematic
       const selectedSlotId = game.seedSlotManager.selectedSlot?.id;
-      const seedSlot = seedSlotManagerActions.findSeedSlotWithinCoordinateX(
-        game.seedSlotManager,
-        x
-      );
+      const seedSlot = findSeedSlotWithinCoordinateX(game.seedSlotManager, x);
 
       if (seedSlot === undefined) {
         return;
@@ -113,10 +124,7 @@ function startGame(game: Game, board: Board) {
         seedSlot.id === selectedSlotId ? null : seedSlot;
     }
     if (game.seedSlotManager.selectedSlot !== null) {
-      const withinPlaySafeArea = boardActions.pointerWithinPlaySafeArea(
-        board,
-        e
-      );
+      const withinPlaySafeArea = pointerWithinPlaySafeArea(board, e);
 
       if (!withinPlaySafeArea) {
         return;
@@ -146,31 +154,26 @@ function startGame(game: Game, board: Board) {
       const plantType = game.seedSlotManager.selectedSlot.packet.plantType;
       const plantCost = PlantInfo[plantType].SunCost;
 
-      if (game.sun < plantCost) {
+      if (game.sunAmount < plantCost) {
         return;
       }
 
-      const plant = plantActions.createPlant(
-        plantType,
-        closestX,
-        closestY,
-        game
-      );
+      const plant = createPlant(plantType, closestX, closestY, game);
 
       if (plant !== null) {
-        game.plants = plantActions.addPlant(game.plants, plant);
+        game.plants = addPlant(game.plants, plant);
       }
 
       game.seedSlotManager.selectedSlot.packet.cooldownTimerPaused = false;
       game.seedSlotManager.selectedSlot = null;
-      game.sun -= plantCost;
+      game.sunAmount -= plantCost;
     }
   });
 
-  requestAnimationFrame((currentTime) => animate(currentTime, game, board));
+  requestAnimationFrame((currentTime) => animateGame(game, currentTime, board));
 }
 
-function draw(game: Game, board: Board) {
+function drawGame(game: Game, board: Board) {
   const { canvas, ctx } = board;
 
   if (ctx === null) {
@@ -179,20 +182,20 @@ function draw(game: Game, board: Board) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  boardActions.drawBoardGraphics(board);
+  drawBoard(board);
 
   for (const plant of game.plants) {
-    plantActions.drawPlant(plant, {
+    drawPlant(plant, {
       board,
     });
   }
   for (const zombie of game.zombies) {
-    zombieActions.drawZombie(zombie, {
+    drawZombie(zombie, {
       board,
     });
   }
   for (const shot of game.shots) {
-    shotActions.drawShot(shot, {
+    drawShot(shot, {
       board,
     });
   }
@@ -200,30 +203,26 @@ function draw(game: Game, board: Board) {
     drawSun(sun, board);
   }
 
-  seedSlotManagerActions.drawSeedSlotManager(game.seedSlotManager, board, game);
+  drawSeedSlotManager(game.seedSlotManager, board, game);
 }
 
-function update(deltaTime: number, game: Game, board: Board) {
-  seedSlotManagerActions.updateSeedSlotManager(
-    game.seedSlotManager,
-    deltaTime,
-    game
-  );
+function updateGame(game: Game, deltaTime: number, board: Board) {
+  updateSeedSlotManager(game.seedSlotManager, deltaTime, game);
 
   for (const zombie of game.zombies) {
-    zombieActions.updateZombie(zombie, {
+    updateZombie(zombie, {
       deltaTime,
       game,
     });
   }
   for (const plant of game.plants) {
-    plantActions.updatePlant(plant, {
+    updatePlant(plant, {
       deltaTime,
       game,
     });
   }
   for (const shot of game.shots) {
-    shotActions.updateShot(shot, {
+    updateShot(shot, {
       deltaTime,
       game,
     });
@@ -232,14 +231,14 @@ function update(deltaTime: number, game: Game, board: Board) {
     updateSun(sun, deltaTime);
   }
 
-  game.zombies = zombieActions.removeOutOfHealthZombies(game.zombies);
-  game.plants = plantActions.removeOutOfToughnessPlants(game.plants);
-  game.shots = shotActions.removeOutOfZoneShots(game.shots, board);
+  game.zombies = removeOutOfHealthZombies(game.zombies);
+  game.plants = removeOutOfHealthPlants(game.plants);
+  game.shots = removeOutOfZoneShots(game.shots, board);
 
   game.sunRechargeTimer += deltaTime;
 
   if (game.sunRechargeTimer >= SUN_RECHARGE_INTERVAL) {
-    game.suns = sunActions.addSun(
+    game.suns = addSun(
       game.suns,
       createSun({
         x: TILE_WIDTH,
@@ -251,23 +250,15 @@ function update(deltaTime: number, game: Game, board: Board) {
   }
 }
 
-function animate(currentTime: number, game: Game, board: Board) {
+function animateGame(game: Game, currentTime: number, board: Board) {
   const deltaTime = currentTime - game.lastTime;
 
   game.lastTime = currentTime;
 
-  draw(game, board);
-  update(deltaTime, game, board);
+  drawGame(game, board);
+  updateGame(game, deltaTime, board);
 
   requestAnimationFrame((newCurrentTime) =>
-    animate(newCurrentTime, game, board)
+    animateGame(game, newCurrentTime, board)
   );
 }
-
-const gameActions = {
-  createGame,
-  startGame,
-} as const;
-
-export { gameActions };
-export type { Game };

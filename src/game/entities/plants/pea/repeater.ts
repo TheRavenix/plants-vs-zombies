@@ -1,27 +1,25 @@
-import { plantHelpers } from "../plant-helpers";
-import { createPeashot, shotActions } from "../../shots";
+import { addShots, createPeashot } from "../../shots";
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { createPlantId, syncPlantHitbox } from "../plant-service";
+import { drawHitbox } from "@/game/helpers/hitbox";
 import { PlantType } from "../constants";
 
 import type {
   BasePlant,
   PlantDrawOptions,
   PlantInfoType,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Repeater = {
+export type Repeater = {
   type: PlantType.Repeater;
   shotTimer: number;
 } & BasePlant;
 
 type CreateRepeaterOptions = Vector2;
 
-const TOUGHNESS = 300;
+const HEALTH = 300;
 const SUNCOST = 200;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
@@ -32,7 +30,7 @@ const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
 const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-const RepeaterInfo: PlantInfoType = {
+export const RepeaterInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpriteImage: SPRITE_IMAGE,
   Cooldown: COOLDOWN,
@@ -40,18 +38,18 @@ const RepeaterInfo: PlantInfoType = {
 
 SPRITE_IMAGE.src = "./plants/pea/repeater/Repeater.png";
 
-function createRepeater(options: CreateRepeaterOptions): Repeater {
+export function createRepeater(options: CreateRepeaterOptions): Repeater {
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
 
   return {
     type: PlantType.Repeater,
-    id: plantHelpers.createPlantId(),
+    id: createPlantId(),
     x,
     y,
     width: SPRITE_WIDTH,
     height: SPRITE_HEIGHT,
-    toughness: TOUGHNESS,
+    health: HEALTH,
     sunCost: SUNCOST,
     hitbox: {
       x,
@@ -63,7 +61,7 @@ function createRepeater(options: CreateRepeaterOptions): Repeater {
   };
 }
 
-function drawRepeater(repeater: Repeater, options: PlantDrawOptions) {
+export function drawRepeater(repeater: Repeater, options: PlantDrawOptions) {
   const { board } = options;
   const { ctx } = board;
 
@@ -79,10 +77,13 @@ function drawRepeater(repeater: Repeater, options: PlantDrawOptions) {
     repeater.height
   );
 
-  hitboxActions.draw(repeater.hitbox, board);
+  drawHitbox(repeater.hitbox, board);
 }
 
-function updateRepeater(repeater: Repeater, options: PlantUpdateOptions) {
+export function updateRepeater(
+  repeater: Repeater,
+  options: PlantUpdateOptions
+) {
   const { deltaTime, game } = options;
 
   repeater.shotTimer += deltaTime;
@@ -97,7 +98,7 @@ function updateRepeater(repeater: Repeater, options: PlantUpdateOptions) {
     });
 
     if (ableToShoot) {
-      game.shots = shotActions.addShots(
+      game.shots = addShots(
         game.shots,
         createPeashot({
           x: repeater.x + repeater.width,
@@ -113,18 +114,5 @@ function updateRepeater(repeater: Repeater, options: PlantUpdateOptions) {
     repeater.shotTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(repeater);
+  syncPlantHitbox(repeater);
 }
-
-function repeaterTakeDamage(
-  repeater: Repeater,
-  options: PlantTakeDamageOptions
-) {
-  const { damage } = options;
-
-  repeater.toughness -= damage;
-}
-
-export { createRepeater, drawRepeater, updateRepeater, repeaterTakeDamage };
-export { RepeaterInfo };
-export type { Repeater };

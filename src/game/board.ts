@@ -2,7 +2,7 @@ import type { Vector2 } from "./types/vector";
 
 type TilePosition = Vector2;
 
-type Board = {
+export type Board = {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | null;
   tilePosList: TilePosition[];
@@ -13,10 +13,10 @@ type CreateBoardOptions = {
   center?: boolean;
 };
 
-const TILE_WIDTH = 96;
-const TILE_HEIGHT = 96;
-const BOARD_ROWS = 10;
-const BOARD_COLS = 6;
+export const TILE_WIDTH = 96;
+export const TILE_HEIGHT = 96;
+export const BOARD_ROWS = 10;
+export const BOARD_COLS = 6;
 const BOARD_WIDTH = BOARD_ROWS * TILE_WIDTH;
 const BOARD_HEIGHT = BOARD_COLS * TILE_HEIGHT;
 const GRASS_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
@@ -25,7 +25,7 @@ const WALL_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
 GRASS_IMAGE.src = "./grass/Grass.png";
 WALL_IMAGE.src = "./wall/Wall.png";
 
-function createBoard(options?: CreateBoardOptions): Board {
+export function createBoard(options?: CreateBoardOptions): Board {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const tilePosList: TilePosition[] = [];
@@ -76,7 +76,7 @@ function createBoard(options?: CreateBoardOptions): Board {
   };
 }
 
-function drawBoardGraphics(board: Board) {
+export function drawBoard(board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -107,7 +107,7 @@ function drawBoardGraphics(board: Board) {
   }
 }
 
-function getCanvasCoordinates(
+export function getCanvasCoordinates(
   canvas: HTMLCanvasElement,
   event: PointerEvent
 ): Vector2 {
@@ -119,19 +119,12 @@ function getCanvasCoordinates(
   };
 }
 
-function pointerWithinPlaySafeArea(board: Board, event: PointerEvent): boolean {
+export function pointerWithinPlaySafeArea(
+  board: Board,
+  event: PointerEvent
+): boolean {
   const { canvas } = board;
-  const { x, y } = boardActions.getCanvasCoordinates(canvas, event);
+  const { x, y } = getCanvasCoordinates(canvas, event);
 
   return x >= TILE_WIDTH && y >= TILE_HEIGHT;
 }
-
-const boardActions = {
-  createBoard,
-  drawBoardGraphics,
-  getCanvasCoordinates,
-  pointerWithinPlaySafeArea,
-} as const;
-
-export { boardActions, BOARD_ROWS, BOARD_COLS, TILE_WIDTH, TILE_HEIGHT };
-export type { Board };

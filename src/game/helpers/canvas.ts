@@ -6,7 +6,7 @@ type DrawTextFont = {
   fontFamily?: FontFamily;
 };
 
-function drawText(
+export function drawText(
   board: Board,
   text: string,
   x: number,
@@ -30,7 +30,7 @@ function drawText(
   ctx.fillText(text, x, y);
 }
 
-function drawCenteredText(
+export function drawCenteredText(
   board: Board,
   text: string,
   x: number,
@@ -53,8 +53,3 @@ function drawCenteredText(
 
   ctx.restore();
 }
-
-export const canvasActions = {
-  drawText,
-  drawCenteredText,
-} as const;

@@ -1,28 +1,25 @@
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import { createFirepeaShot, shotActions } from "../../shots";
-
-import { plantHelpers } from "../plant-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-
+import { addShot, createFirepeaShot } from "../../shots";
+import { createPlantId, syncPlantHitbox } from "../plant-service";
+import { drawHitbox } from "@/game/helpers/hitbox";
 import { PlantType } from "../constants";
 
 import type {
   BasePlant,
   PlantDrawOptions,
   PlantInfoType,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "../types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Firepea = {
+export type Firepea = {
   type: PlantType.Firepea;
   shotTimer: number;
 } & BasePlant;
 
 type CreateFirepeaOptions = Vector2;
 
-const TOUGHNESS = 300;
+const HEALTH = 300;
 const SUNCOST = 175;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
@@ -33,7 +30,7 @@ const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
 const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-const FirepeaInfo: PlantInfoType = {
+export const FirepeaInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpriteImage: SPRITE_IMAGE,
   Cooldown: COOLDOWN,
@@ -41,18 +38,18 @@ const FirepeaInfo: PlantInfoType = {
 
 SPRITE_IMAGE.src = "./plants/pea/firepea/Firepea.png";
 
-function createFirepea(options: CreateFirepeaOptions): Firepea {
+export function createFirepea(options: CreateFirepeaOptions): Firepea {
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
 
   return {
     type: PlantType.Firepea,
-    id: plantHelpers.createPlantId(),
+    id: createPlantId(),
     x,
     y,
     width: SPRITE_WIDTH,
     height: SPRITE_HEIGHT,
-    toughness: TOUGHNESS,
+    health: HEALTH,
     sunCost: SUNCOST,
     hitbox: {
       x,
@@ -64,7 +61,7 @@ function createFirepea(options: CreateFirepeaOptions): Firepea {
   };
 }
 
-function drawFirepea(firepea: Firepea, options: PlantDrawOptions) {
+export function drawFirepea(firepea: Firepea, options: PlantDrawOptions) {
   const { board } = options;
   const { ctx } = board;
 
@@ -80,10 +77,10 @@ function drawFirepea(firepea: Firepea, options: PlantDrawOptions) {
     firepea.height
   );
 
-  hitboxActions.draw(firepea.hitbox, board);
+  drawHitbox(firepea.hitbox, board);
 }
 
-function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
+export function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
   const { deltaTime, game } = options;
 
   firepea.shotTimer += deltaTime;
@@ -98,7 +95,7 @@ function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
     });
 
     if (ableToShoot) {
-      game.shots = shotActions.addShot(
+      game.shots = addShot(
         game.shots,
         createFirepeaShot({
           x: firepea.x + firepea.width,
@@ -110,15 +107,5 @@ function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
     firepea.shotTimer = 0;
   }
 
-  plantHelpers.syncPlantHitbox(firepea);
+  syncPlantHitbox(firepea);
 }
-
-function firepeaTakeDamage(firepea: Firepea, options: PlantTakeDamageOptions) {
-  const { damage } = options;
-
-  firepea.toughness -= damage;
-}
-
-export { createFirepea, drawFirepea, updateFirepea, firepeaTakeDamage };
-export { FirepeaInfo };
-export type { Firepea };

@@ -1,26 +1,24 @@
-import { plantHelpers } from "./plant-helpers";
-import { hitboxActions } from "@/game/helpers/hitbox";
-import { createFirepeaShot, shotActions, ShotType } from "../shots";
+import { addShot, createFirepeaShot, removeShotById, ShotType } from "../shots";
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-
+import { createPlantId, syncPlantHitbox } from "./plant-service";
+import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
 import { PlantType } from "./constants";
 
 import type {
   BasePlant,
   PlantDrawOptions,
   PlantInfoType,
-  PlantTakeDamageOptions,
   PlantUpdateOptions,
 } from "./types";
 import type { Vector2 } from "@/game/types/vector";
 
-type Torchwood = {
+export type Torchwood = {
   type: PlantType.Torchwood;
 } & BasePlant;
 
 type CreateTorchwoodOptions = Vector2;
 
-const TOUGHNESS = 300;
+const HEALTH = 300;
 const SUNCOST = 175;
 const COOLDOWN = 7500;
 const SPRITE_WIDTH = 64;
@@ -29,7 +27,7 @@ const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
 const SPRITE_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
 
-const TorchwoodInfo: PlantInfoType = {
+export const TorchwoodInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpriteImage: SPRITE_IMAGE,
   Cooldown: COOLDOWN,
@@ -37,18 +35,18 @@ const TorchwoodInfo: PlantInfoType = {
 
 SPRITE_IMAGE.src = "./plants/torchwood/Torchwood.png";
 
-function createTorchwood(options: CreateTorchwoodOptions): Torchwood {
+export function createTorchwood(options: CreateTorchwoodOptions): Torchwood {
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
 
   return {
     type: PlantType.Torchwood,
-    id: plantHelpers.createPlantId(),
+    id: createPlantId(),
     x,
     y,
     width: SPRITE_WIDTH,
     height: SPRITE_HEIGHT,
-    toughness: TOUGHNESS,
+    health: HEALTH,
     sunCost: SUNCOST,
     hitbox: {
       x,
@@ -59,7 +57,7 @@ function createTorchwood(options: CreateTorchwoodOptions): Torchwood {
   };
 }
 
-function drawTorchwood(torchwood: Torchwood, options: PlantDrawOptions) {
+export function drawTorchwood(torchwood: Torchwood, options: PlantDrawOptions) {
   const { board } = options;
   const { ctx } = board;
 
@@ -75,20 +73,23 @@ function drawTorchwood(torchwood: Torchwood, options: PlantDrawOptions) {
     torchwood.height
   );
 
-  hitboxActions.draw(torchwood.hitbox, board);
+  drawHitbox(torchwood.hitbox, board);
 }
 
-function updateTorchwood(torchwood: Torchwood, options: PlantUpdateOptions) {
+export function updateTorchwood(
+  torchwood: Torchwood,
+  options: PlantUpdateOptions
+) {
   const { game } = options;
 
   const shot = game.shots.find((shot) => {
-    return hitboxActions.isColliding(torchwood.hitbox, shot.hitbox);
+    return isHitboxColliding(torchwood.hitbox, shot.hitbox);
   });
 
   if (shot !== undefined) {
     if (shot.type === ShotType.Peashot) {
-      game.shots = shotActions.removeShotById(game.shots, shot.id);
-      game.shots = shotActions.addShot(
+      game.shots = removeShotById(game.shots, shot.id);
+      game.shots = addShot(
         game.shots,
         createFirepeaShot({
           x: shot.x,
@@ -99,18 +100,5 @@ function updateTorchwood(torchwood: Torchwood, options: PlantUpdateOptions) {
     }
   }
 
-  plantHelpers.syncPlantHitbox(torchwood);
+  syncPlantHitbox(torchwood);
 }
-
-function torchwoodTakeDamage(
-  torchwood: Torchwood,
-  options: PlantTakeDamageOptions
-) {
-  const { damage } = options;
-
-  torchwood.toughness -= damage;
-}
-
-export { createTorchwood, drawTorchwood, updateTorchwood, torchwoodTakeDamage };
-export { TorchwoodInfo };
-export type { Torchwood };
