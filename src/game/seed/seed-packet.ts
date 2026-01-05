@@ -9,6 +9,7 @@ import type { Vector2 } from "../types/vector";
 export type SeedPacket = {
   plantType: PlantType;
   status: SeedPacketStatus;
+  spriteImage: HTMLImageElement;
   cooldownTimer: number;
   cooldownTimerPaused: boolean;
 } & Vector2 &
@@ -49,6 +50,7 @@ export function createSeedPacket(options: CreateSeedPacketOptions): SeedPacket {
   return {
     plantType: options.plantType,
     status,
+    spriteImage: SEED_PACKET_IMAGE,
     x: options.x,
     y: options.y,
     width: SEED_PACKET_WIDTH,
@@ -65,26 +67,11 @@ export function drawSeedPacket(packet: SeedPacket, board: Board) {
     return;
   }
 
-  let packetImage = SEED_PACKET_IMAGE;
   const plantInfo = PlantInfo[packet.plantType];
   const isSelected = packet.status === SeedPacketStatus.Selected;
 
-  switch (packet.status) {
-    case SeedPacketStatus.Active:
-      packetImage = SEED_PACKET_IMAGE;
-      break;
-
-    case SeedPacketStatus.Disabled:
-      packetImage = DISABLED_SEED_PACKET_IMAGE;
-      break;
-
-    case SeedPacketStatus.Selected:
-      packetImage = SELECTED_SEED_PACKET_IMAGE;
-      break;
-  }
-
   ctx.drawImage(
-    packetImage,
+    packet.spriteImage,
     Math.round(packet.x),
     Math.round(isSelected ? packet.y - SEED_PACKET_ACTIVE_Y : packet.y),
     packet.width,
@@ -121,4 +108,20 @@ export function drawSeedPacket(packet: SeedPacket, board: Board) {
       : packet.y + packet.height - 10,
     isSelected ? "#ffffff" : "#000000"
   );
+}
+
+export function updateSeedPacket(packet: SeedPacket, _deltaTime: number) {
+  switch (packet.status) {
+    case SeedPacketStatus.Active:
+      packet.spriteImage = SEED_PACKET_IMAGE;
+      break;
+
+    case SeedPacketStatus.Disabled:
+      packet.spriteImage = DISABLED_SEED_PACKET_IMAGE;
+      break;
+
+    case SeedPacketStatus.Selected:
+      packet.spriteImage = SELECTED_SEED_PACKET_IMAGE;
+      break;
+  }
 }

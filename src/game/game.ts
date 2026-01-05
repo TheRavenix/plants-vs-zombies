@@ -38,7 +38,6 @@ import {
   updateSeedSlotManager,
   type SeedSlotManager,
 } from "./seed/seed-slot-manager";
-import { closestLowerValue } from "@/utils/math";
 import {
   addSun,
   collectSun,
@@ -48,6 +47,10 @@ import {
   updateSun,
   type Sun,
 } from "./entities/sun";
+import { SeedPacketStatus } from "./seed";
+import { closestLowerValue } from "@/utils/math";
+
+import type { Vector2 } from "./types/vector";
 
 export type Game = {
   lastTime: number;
@@ -99,75 +102,11 @@ export function startGame(game: Game, board: Board) {
   }
 
   canvas.addEventListener("pointerdown", (e) => {
-    const { x, y } = getCanvasCoordinates(canvas, e);
+    const coords = getCanvasCoordinates(canvas, e);
 
-    if (game.suns.length > 0) {
-      if (pointerWithinPlaySafeArea(board, e)) {
-        const toCollectSun = findSunWithinCoordinates(game.suns, x, y);
-
-        if (toCollectSun !== undefined) {
-          collectSun(toCollectSun, game);
-          return;
-        }
-      }
-    }
-    if (pointerWithinSeedSlot(game.seedSlotManager, board, e)) {
-      // FIXME: This logic is problematic
-      const selectedSlotId = game.seedSlotManager.selectedSlot?.id;
-      const seedSlot = findSeedSlotWithinCoordinateX(game.seedSlotManager, x);
-
-      if (seedSlot === undefined) {
-        return;
-      }
-
-      game.seedSlotManager.selectedSlot =
-        seedSlot.id === selectedSlotId ? null : seedSlot;
-    }
-    if (game.seedSlotManager.selectedSlot !== null) {
-      const withinPlaySafeArea = pointerWithinPlaySafeArea(board, e);
-
-      if (!withinPlaySafeArea) {
-        return;
-      }
-
-      const closestX = closestLowerValue(
-        x,
-        board.tilePosList.map((tilePos) => tilePos.x)
-      );
-      const closestY = closestLowerValue(
-        y,
-        board.tilePosList.map((tilePos) => tilePos.y)
-      );
-      const closestPlant = game.plants.find((plant) => {
-        return (
-          plant.x >= closestX &&
-          plant.x <= closestX + TILE_WIDTH &&
-          plant.y >= closestY &&
-          plant.y <= closestY + TILE_HEIGHT
-        );
-      });
-
-      if (closestPlant !== undefined) {
-        return;
-      }
-
-      const plantType = game.seedSlotManager.selectedSlot.packet.plantType;
-      const plantCost = PlantInfo[plantType].SunCost;
-
-      if (game.sunAmount < plantCost) {
-        return;
-      }
-
-      const plant = createPlant(plantType, closestX, closestY, game);
-
-      if (plant !== null) {
-        game.plants = addPlant(game.plants, plant);
-      }
-
-      game.seedSlotManager.selectedSlot.packet.cooldownTimerPaused = false;
-      game.seedSlotManager.selectedSlot = null;
-      game.sunAmount -= plantCost;
-    }
+    handleSunCollect(game, board, e, coords);
+    handleSeedSlotSelect(game.seedSlotManager, board, e, coords);
+    handlePlacePlant(game, board, e, coords);
   });
 
   requestAnimationFrame((currentTime) => animateGame(game, currentTime, board));
@@ -261,4 +200,114 @@ function animateGame(game: Game, currentTime: number, board: Board) {
   requestAnimationFrame((newCurrentTime) =>
     animateGame(game, newCurrentTime, board)
   );
+}
+
+function handleSunCollect(
+  game: Game,
+  board: Board,
+  e: PointerEvent,
+  coords: Vector2
+) {
+  const { suns } = game;
+
+  if (suns.length <= 0) {
+    return;
+  }
+  if (!pointerWithinPlaySafeArea(board, e)) {
+    return;
+  }
+
+  const toCollectSun = findSunWithinCoordinates(suns, coords.x, coords.y);
+
+  if (toCollectSun === undefined) {
+    return;
+  }
+
+  collectSun(toCollectSun, game);
+}
+
+function handleSeedSlotSelect(
+  seedSlotManager: SeedSlotManager,
+  board: Board,
+  e: PointerEvent,
+  coords: Vector2
+) {
+  if (!pointerWithinSeedSlot(seedSlotManager, board, e)) {
+    return;
+  }
+
+  // FIXME: This logic is problematic
+  const selectedSlotId = seedSlotManager.selectedSlot?.id;
+  const seedSlot = findSeedSlotWithinCoordinateX(seedSlotManager, coords.x);
+
+  if (seedSlot === undefined) {
+    return;
+  }
+  if (seedSlot.id === selectedSlotId) {
+    seedSlotManager.selectedSlot = null;
+  } else {
+    seedSlotManager.selectedSlot = seedSlot;
+  }
+}
+
+function handlePlacePlant(
+  game: Game,
+  board: Board,
+  e: PointerEvent,
+  coords: Vector2
+) {
+  const { seedSlotManager } = game;
+
+  if (seedSlotManager.selectedSlot === null) {
+    return;
+  }
+
+  const withinPlaySafeArea = pointerWithinPlaySafeArea(board, e);
+
+  if (!withinPlaySafeArea) {
+    return;
+  }
+  if (
+    seedSlotManager.selectedSlot.packet.status === SeedPacketStatus.Disabled
+  ) {
+    return;
+  }
+
+  const closestX = closestLowerValue(
+    coords.x,
+    board.tilePosList.map((tilePos) => tilePos.x)
+  );
+  const closestY = closestLowerValue(
+    coords.y,
+    board.tilePosList.map((tilePos) => tilePos.y)
+  );
+  const closestPlant = game.plants.find((plant) => {
+    return (
+      plant.x >= closestX &&
+      plant.x <= closestX + TILE_WIDTH &&
+      plant.y >= closestY &&
+      plant.y <= closestY + TILE_HEIGHT
+    );
+  });
+
+  if (closestPlant !== undefined) {
+    return;
+  }
+
+  const plantType = seedSlotManager.selectedSlot.packet.plantType;
+  const plantCost = PlantInfo[plantType].SunCost;
+
+  if (game.sunAmount < plantCost) {
+    return;
+  }
+
+  const plant = createPlant(plantType, closestX, closestY, game);
+
+  if (plant !== null) {
+    game.plants = addPlant(game.plants, plant);
+  }
+
+  seedSlotManager.selectedSlot.packet.cooldownTimerPaused = false;
+  seedSlotManager.selectedSlot = null;
+  game.sunAmount -= plantCost;
 }
