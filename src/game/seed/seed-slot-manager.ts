@@ -13,6 +13,7 @@ import {
   SEED_PACKET_ACTIVE_Y,
   SEED_PACKET_MARGIN_LEFT,
   SeedPacketStatus,
+  updateSeedPacket,
   type SeedPacket,
 } from "./seed-packet";
 import { drawCenteredText } from "../helpers/canvas";
@@ -203,45 +204,11 @@ export function updateSeedSlotManager(
   deltaTime: number,
   game: Game
 ) {
-  const selectedSlot = seedSlotManager.selectedSlot;
+  handleSeedPacketStatus(game);
+  handleSeedPacketCooldown(seedSlotManager, deltaTime);
 
   for (const slot of seedSlotManager.slots) {
-    const packet = slot.packet;
-
-    if (selectedSlot !== null) {
-      if (packet.status === SeedPacketStatus.Disabled) {
-        continue;
-      }
-      if (slot.id === selectedSlot.id) {
-        packet.status = SeedPacketStatus.Selected;
-      } else {
-        packet.status = SeedPacketStatus.Active;
-      }
-    } else {
-      const plantSunCost = PlantInfo[packet.plantType].SunCost;
-
-      if (game.sunAmount < plantSunCost) {
-        packet.status = SeedPacketStatus.Disabled;
-      } else {
-        packet.status = SeedPacketStatus.Active;
-      }
-    }
-  }
-  for (const slot of seedSlotManager.slots) {
-    const packet = slot.packet;
-
-    if (packet.cooldownTimerPaused) {
-      continue;
-    }
-
-    packet.cooldownTimer += deltaTime;
-
-    if (packet.cooldownTimer < PlantInfo[packet.plantType].Cooldown) {
-      packet.status = SeedPacketStatus.Disabled;
-    } else {
-      packet.cooldownTimerPaused = true;
-      packet.cooldownTimer = 0;
-    }
+    updateSeedPacket(slot.packet, deltaTime);
   }
 }
 
@@ -268,4 +235,53 @@ export function findSeedSlotWithinCoordinateX(
   return seedSlotManager.slots.find((slot) => {
     return x >= slot.x && x <= slot.x + slot.width;
   });
+}
+
+function handleSeedPacketStatus(game: Game) {
+  const selectedSlot = game.seedSlotManager.selectedSlot;
+
+  for (const slot of game.seedSlotManager.slots) {
+    const packet = slot.packet;
+
+    if (selectedSlot !== null) {
+      if (packet.status === SeedPacketStatus.Disabled) {
+        continue;
+      }
+      if (slot.id === selectedSlot.id) {
+        packet.status = SeedPacketStatus.Selected;
+      } else {
+        packet.status = SeedPacketStatus.Active;
+      }
+    } else {
+      const plantSunCost = PlantInfo[packet.plantType].SunCost;
+
+      if (game.sunAmount < plantSunCost) {
+        packet.status = SeedPacketStatus.Disabled;
+      } else {
+        packet.status = SeedPacketStatus.Active;
+      }
+    }
+  }
+}
+
+function handleSeedPacketCooldown(
+  seedSlotManager: SeedSlotManager,
+  deltaTime: number
+) {
+  for (const slot of seedSlotManager.slots) {
+    const packet = slot.packet;
+
+    if (packet.cooldownTimerPaused) {
+      continue;
+    }
+
+    packet.cooldownTimer += deltaTime;
+
+    if (packet.cooldownTimer < PlantInfo[packet.plantType].Cooldown) {
+      packet.status = SeedPacketStatus.Disabled;
+    } else {
+      packet.cooldownTimerPaused = true;
+      packet.cooldownTimer = 0;
+    }
+  }
 }
