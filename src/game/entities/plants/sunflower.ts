@@ -11,7 +11,7 @@ import type {
   PlantUpdateOptions,
 } from "./types";
 import type { Vector2 } from "@/game/types/vector";
-import type { Game } from "@/game/game";
+import type { Level } from "@/game/level";
 
 export type Sunflower = {
   type: PlantType.Sunflower;
@@ -19,7 +19,7 @@ export type Sunflower = {
 } & BasePlant;
 
 type CreateSunflowerOptions = {
-  game: Game;
+  level: Level;
 } & Vector2;
 
 const HEALTH = 300;
@@ -42,12 +42,12 @@ export const SunflowerInfo: PlantInfoType = {
 SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
 
 export function createSunflower(options: CreateSunflowerOptions): Sunflower {
-  const { game } = options;
+  const { level } = options;
   const x = options.x + OFFSET_X;
   const y = options.y + OFFSET_Y;
 
-  game.suns = addSun(
-    game.suns,
+  level.suns = addSun(
+    level.suns,
     createSun({
       x: x + SUN_SPRITE_WIDTH / 2,
       y: y,
@@ -97,13 +97,13 @@ export function updateSunflower(
   sunflower: Sunflower,
   options: PlantUpdateOptions
 ) {
-  const { game, deltaTime } = options;
+  const { level, deltaTime } = options;
 
   sunflower.rechargeTimer += deltaTime;
 
   if (sunflower.rechargeTimer >= RECHARGE_INTERVAL) {
-    game.suns = addSun(
-      game.suns,
+    level.suns = addSun(
+      level.suns,
       createSun({
         x: sunflower.x + SUN_SPRITE_WIDTH / 2,
         y: sunflower.y,

@@ -80,17 +80,17 @@ export function updateTorchwood(
   torchwood: Torchwood,
   options: PlantUpdateOptions
 ) {
-  const { game } = options;
+  const { level } = options;
 
-  const shot = game.shots.find((shot) => {
+  const shot = level.shots.find((shot) => {
     return isHitboxColliding(torchwood.hitbox, shot.hitbox);
   });
 
   if (shot !== undefined) {
     if (shot.type === ShotType.Peashot) {
-      game.shots = removeShotById(game.shots, shot.id);
-      game.shots = addShot(
-        game.shots,
+      level.shots = removeShotById(level.shots, shot.id);
+      level.shots = addShot(
+        level.shots,
         createFirepeaShot({
           x: shot.x,
           y: shot.y,

@@ -2,7 +2,6 @@ import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
 import {
   createShotId,
   handleShotDirection,
-  removeShotById,
   syncShotHitbox,
 } from "../shot-service";
 import { findZombieById } from "../../zombies";
@@ -53,6 +52,7 @@ export function createFirepeaShot(
       height: SPRITE_HEIGHT,
     },
     direction,
+    active: true,
   };
 }
 
@@ -86,8 +86,8 @@ export function updateFirepeaShot(
   firepeaShot: FirepeaShot,
   options: ShotUpdateOptions
 ) {
-  const { deltaTime, game } = options;
-  const { zombies } = game;
+  const { deltaTime, level } = options;
+  const { zombies } = level;
   const speed = firepeaShot.speed * (deltaTime / 1000);
 
   handleShotDirection(firepeaShot, speed);
@@ -106,8 +106,8 @@ export function updateFirepeaShot(
 
     if (zombie !== undefined) {
       entityTakeDamage(zombie, firepeaShot.damage);
-      game.shots = removeShotById(game.shots, firepeaShot.id);
 
+      firepeaShot.active = false;
       deleteZombieId = null;
     }
   }

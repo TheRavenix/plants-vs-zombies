@@ -84,12 +84,12 @@ export function updateRepeater(
   repeater: Repeater,
   options: PlantUpdateOptions
 ) {
-  const { deltaTime, game } = options;
+  const { deltaTime, level } = options;
 
   repeater.shotTimer += deltaTime;
 
   if (repeater.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombies.some((zombie) => {
+    const ableToShoot = level.zombies.some((zombie) => {
       return (
         repeater.y >= zombie.y &&
         repeater.y <= zombie.y + TILE_HEIGHT &&
@@ -98,8 +98,8 @@ export function updateRepeater(
     });
 
     if (ableToShoot) {
-      game.shots = addShots(
-        game.shots,
+      level.shots = addShots(
+        level.shots,
         createPeashot({
           x: repeater.x + repeater.width,
           y: repeater.y,

@@ -3,7 +3,6 @@ import {
   createShotId,
   drawShotRect,
   handleShotDirection,
-  removeShotById,
   syncShotHitbox,
 } from "./shot-service";
 import { findZombieById } from "../zombies";
@@ -43,6 +42,7 @@ export function createShroomshot(options: CreateShroomshotOptions): Shroomshot {
       height: SHOT_HEIGHT,
     },
     direction,
+    active: true,
   };
 }
 
@@ -65,8 +65,8 @@ export function updateShroomshot(
   shroomshot: Shroomshot,
   options: ShotUpdateOptions
 ) {
-  const { deltaTime, game } = options;
-  const { zombies } = game;
+  const { deltaTime, level } = options;
+  const { zombies } = level;
   const speed = shroomshot.speed * (deltaTime / 1000);
 
   handleShotDirection(shroomshot, speed);
@@ -85,8 +85,8 @@ export function updateShroomshot(
 
     if (zombie !== undefined) {
       entityTakeDamage(zombie, shroomshot.damage);
-      game.shots = removeShotById(game.shots, shroomshot.id);
 
+      shroomshot.active = false;
       deleteZombieId = null;
     }
   }

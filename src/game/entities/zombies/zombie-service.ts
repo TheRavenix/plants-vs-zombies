@@ -1,6 +1,14 @@
 import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import { drawNormalZombie, updateNormalZombie } from "./normal-zombie";
-import { drawFlagZombie, updateFlagZombie } from "./flag-zombie";
+import {
+  createBasicZombie,
+  drawBasicZombie,
+  updateBasicZombie,
+} from "./basic-zombie";
+import {
+  createFlagZombie,
+  drawFlagZombie,
+  updateFlagZombie,
+} from "./flag-zombie";
 import { drawText } from "@/game/helpers/canvas";
 import { FontSize } from "@/game/constants/font";
 import { ZombieType } from "./constants";
@@ -63,8 +71,8 @@ export function syncZombieHitbox(zombie: BaseZombie) {
 
 export function drawZombie(zombie: Zombie, options: ZombieDrawOptions) {
   switch (zombie.type) {
-    case ZombieType.Normal:
-      drawNormalZombie(zombie, options);
+    case ZombieType.Basic:
+      drawBasicZombie(zombie, options);
       break;
 
     case ZombieType.Flag:
@@ -75,14 +83,40 @@ export function drawZombie(zombie: Zombie, options: ZombieDrawOptions) {
 
 export function updateZombie(zombie: Zombie, options: ZombieUpdateOptions) {
   switch (zombie.type) {
-    case ZombieType.Normal:
-      updateNormalZombie(zombie, options);
+    case ZombieType.Basic:
+      updateBasicZombie(zombie, options);
       break;
 
     case ZombieType.Flag:
       updateFlagZombie(zombie, options);
       break;
   }
+}
+
+export function createZombie(
+  type: ZombieType,
+  x: number,
+  y: number
+): Zombie | null {
+  let zombie: Zombie | null = null;
+
+  switch (type) {
+    case ZombieType.Basic:
+      zombie = createBasicZombie({
+        x,
+        y,
+      });
+      break;
+
+    case ZombieType.Flag:
+      zombie = createFlagZombie({
+        x,
+        y,
+      });
+      break;
+  }
+
+  return zombie;
 }
 
 export function addZombie(zombies: Zombie[], zombie: Zombie): Zombie[] {

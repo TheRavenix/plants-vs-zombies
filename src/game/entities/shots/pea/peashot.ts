@@ -2,7 +2,6 @@ import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
 import {
   createShotId,
   handleShotDirection,
-  removeShotById,
   syncShotHitbox,
 } from "../shot-service";
 import { findZombieById } from "../../zombies";
@@ -51,6 +50,7 @@ export function createPeashot(options: CreatePeashotOptions): Peashot {
       height: SPRITE_HEIGHT,
     },
     direction,
+    active: true,
   };
 }
 
@@ -78,8 +78,8 @@ export function drawPeashot(peashot: Peashot, options: ShotDrawOptions) {
 }
 
 export function updatePeashot(peashot: Peashot, options: ShotUpdateOptions) {
-  const { deltaTime, game } = options;
-  const { zombies } = game;
+  const { deltaTime, level } = options;
+  const { zombies } = level;
   const speed = peashot.speed * (deltaTime / 1000);
 
   handleShotDirection(peashot, speed);
@@ -98,8 +98,8 @@ export function updatePeashot(peashot: Peashot, options: ShotUpdateOptions) {
 
     if (zombie !== undefined) {
       entityTakeDamage(zombie, peashot.damage);
-      game.shots = removeShotById(game.shots, peashot.id);
 
+      peashot.active = false;
       deleteZombieId = null;
     }
   }

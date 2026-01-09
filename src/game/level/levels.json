@@ -1,0 +1,60 @@
+[
+  {
+    "id": "level_1_5",
+    "name": "The Night Shift",
+    "difficulty": 2,
+    "config": {
+      "initialSun": 50,
+      "lanes": 5,
+      "background": "night_lawn",
+      "canSpawnSunFromSky": false,
+      "forcedSeeds": ["puff-shroom", "sun-shroom"],
+      "bannedSeeds": ["sunflower"]
+    },
+    "timelines": [
+      {
+        "id": "TIMELINE_1",
+        "timeTrigger": 1,
+        "action": "spawn",
+        "zombies": [{ "type": "BASIC_ZOMBIE", "lane": 2 }]
+      },
+      {
+        "id": "TIMELINE_2",
+        "timeTrigger": 3,
+        "action": "spawn",
+        "zombies": [
+          { "type": "BASIC_ZOMBIE", "lane": 1 },
+          { "type": "BASIC_ZOMBIE", "lane": 4 }
+        ]
+      },
+      {
+        "id": "TIMELINE_3",
+        "timeTrigger": 5,
+        "action": "spawn",
+        "zombies": [
+          { "type": "FLAG_ZOMBIE", "lane": 1 },
+          { "type": "BASIC_ZOMBIE", "lane": 3 }
+        ]
+      },
+      {
+        "id": "TIMELINE_4",
+        "timeTrigger": 8,
+        "action": "event",
+        "eventType": "HUGE_WAVE",
+        "message": "A huge wave of zombies is approaching!",
+        "zombies": [
+          { "type": "FLAG_ZOMBIE", "lane": 2 },
+          { "type": "FLAG_ZOMBIE", "lane": 1 },
+          { "type": "FLAG_ZOMBIE", "lane": 1 },
+          { "type": "BASIC_ZOMBIE", "lane": 2 },
+          { "type": "BASIC_ZOMBIE", "lane": 3 },
+          { "type": "FLAG_ZOMBIE", "lane": 4 }
+        ]
+      }
+    ],
+    "winConditions": {
+      "type": "clear_all_waves",
+      "reward": "TORCHWOOD"
+    }
+  }
+]

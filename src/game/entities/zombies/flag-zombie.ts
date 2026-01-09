@@ -77,8 +77,8 @@ export function updateFlagZombie(
   flagZombie: FlagZombie,
   options: ZombieUpdateOptions
 ) {
-  const { game, deltaTime } = options;
-  const { plants } = game;
+  const { level, deltaTime } = options;
+  const { plants } = level;
 
   let eatPlantId: string | null = null;
 

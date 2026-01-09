@@ -1,9 +1,9 @@
 import type { Board } from "@/game/board";
-import type { Game } from "@/game/game";
 import type { Hitbox } from "@/game/helpers/hitbox";
 import type { Size } from "@/game/types/size";
 import type { Vector2 } from "@/game/types/vector";
 import type { HasHealth } from "../../types";
+import type { Level } from "@/game/level";
 
 export type BasePlant = {
   id: string;
@@ -19,7 +19,7 @@ export type PlantDrawOptions = {
 
 export type PlantUpdateOptions = {
   deltaTime: number;
-  game: Game;
+  level: Level;
 };
 
 export type PlantTakeDamageOptions = {

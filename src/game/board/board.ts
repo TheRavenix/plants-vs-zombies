@@ -1,4 +1,4 @@
-import type { Vector2 } from "./types/vector";
+import type { Vector2 } from "../types/vector";
 
 type TilePosition = Vector2;
 
@@ -15,21 +15,15 @@ type CreateBoardOptions = {
 
 export const TILE_WIDTH = 96;
 export const TILE_HEIGHT = 96;
-export const BOARD_ROWS = 10;
-export const BOARD_COLS = 6;
-const BOARD_WIDTH = BOARD_ROWS * TILE_WIDTH;
-const BOARD_HEIGHT = BOARD_COLS * TILE_HEIGHT;
-const GRASS_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
-const WALL_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
-
-GRASS_IMAGE.src = "./grass/Grass.png";
-WALL_IMAGE.src = "./wall/Wall.png";
+export const BOARD_ROWS = 6;
+export const BOARD_COLS = 10;
+export const BOARD_WIDTH = BOARD_COLS * TILE_WIDTH;
+export const BOARD_HEIGHT = BOARD_ROWS * TILE_HEIGHT;
 
 export function createBoard(options?: CreateBoardOptions): Board {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const tilePosList: TilePosition[] = [];
-
   const pixelifyFont = new FontFace(
     "Pixelify",
     "url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap)"
@@ -60,11 +54,11 @@ export function createBoard(options?: CreateBoardOptions): Board {
     }
   }
 
-  for (let row = 0; row < BOARD_ROWS; row++) {
-    for (let col = 0; col < BOARD_COLS; col++) {
+  for (let col = 0; col < BOARD_COLS; col++) {
+    for (let row = 0; row < BOARD_ROWS; row++) {
       tilePosList.push({
-        x: row * TILE_WIDTH,
-        y: col * TILE_HEIGHT,
+        x: col * TILE_WIDTH,
+        y: row * TILE_HEIGHT,
       });
     }
   }
@@ -74,37 +68,6 @@ export function createBoard(options?: CreateBoardOptions): Board {
     ctx,
     tilePosList,
   };
-}
-
-export function drawBoard(board: Board) {
-  const { ctx } = board;
-
-  if (ctx === null) {
-    return;
-  }
-
-  for (let row = 0; row < BOARD_ROWS; row++) {
-    for (let col = 0; col < BOARD_COLS; col++) {
-      if (row === 0 || col === 0) {
-        ctx.drawImage(
-          WALL_IMAGE,
-          Math.round(row * TILE_WIDTH),
-          Math.round(col * TILE_HEIGHT),
-          TILE_WIDTH,
-          TILE_HEIGHT
-        );
-        continue;
-      }
-
-      ctx.drawImage(
-        GRASS_IMAGE,
-        Math.round(row * TILE_WIDTH),
-        Math.round(col * TILE_HEIGHT),
-        TILE_WIDTH,
-        TILE_HEIGHT
-      );
-    }
-  }
 }
 
 export function getCanvasCoordinates(

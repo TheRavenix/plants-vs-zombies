@@ -36,7 +36,7 @@ import type {
   PlantDrawOptions,
   PlantUpdateOptions,
 } from "./types";
-import type { Game } from "@/game/game";
+import type { Level } from "@/game/level";
 
 type DrawPlantRectOptions = {
   fillStyle?: string;
@@ -176,7 +176,7 @@ export function createPlant(
   type: PlantType,
   x: number,
   y: number,
-  game: Game
+  level: Level
 ): Plant | null {
   let plant: Plant | null = null;
 
@@ -192,7 +192,7 @@ export function createPlant(
       plant = createSunflower({
         x,
         y,
-        game,
+        level,
       });
       break;
 

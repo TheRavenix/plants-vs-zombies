@@ -1,4 +1,4 @@
+import type { BasicZombie } from "../basic-zombie";
 import type { FlagZombie } from "../flag-zombie";
-import type { NormalZombie } from "../normal-zombie";
 
-export type Zombie = NormalZombie | FlagZombie;
+export type Zombie = BasicZombie | FlagZombie;

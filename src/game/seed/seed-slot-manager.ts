@@ -19,9 +19,9 @@ import {
 import { drawCenteredText } from "../helpers/canvas";
 import { FontSize } from "../constants/font";
 
-import type { Game } from "../game";
 import type { Size } from "../types/size";
 import type { Vector2 } from "../types/vector";
+import type { Level } from "../level";
 
 export type SeedSlot = {
   id: string;
@@ -141,7 +141,7 @@ export function createSeedSlotManager(): SeedSlotManager {
 export function drawSeedSlotManager(
   seedSlotManager: SeedSlotManager,
   board: Board,
-  game: Game
+  level: Level
 ) {
   const { x, y, width, height, slots } = seedSlotManager;
   const { ctx } = board;
@@ -174,7 +174,7 @@ export function drawSeedSlotManager(
   );
   drawCenteredText(
     board,
-    game.sunAmount.toString(),
+    level.sunAmount.toString(),
     SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + SEED_SLOT_WIDTH / 2,
     SEED_SLOT_OFFSET_Y + SEED_SLOT_HEIGHT / 1.25,
     "#ffffff",
@@ -202,9 +202,9 @@ export function drawSeedSlotManager(
 export function updateSeedSlotManager(
   seedSlotManager: SeedSlotManager,
   deltaTime: number,
-  game: Game
+  level: Level
 ) {
-  handleSeedPacketStatus(game);
+  handleSeedPacketStatus(level);
   handleSeedPacketCooldown(seedSlotManager, deltaTime);
 
   for (const slot of seedSlotManager.slots) {
@@ -237,10 +237,10 @@ export function findSeedSlotWithinCoordinateX(
   });
 }
 
-function handleSeedPacketStatus(game: Game) {
-  const selectedSlot = game.seedSlotManager.selectedSlot;
+function handleSeedPacketStatus(level: Level) {
+  const selectedSlot = level.seedSlotManager.selectedSlot;
 
-  for (const slot of game.seedSlotManager.slots) {
+  for (const slot of level.seedSlotManager.slots) {
     const packet = slot.packet;
 
     if (selectedSlot !== null) {
@@ -255,7 +255,7 @@ function handleSeedPacketStatus(game: Game) {
     } else {
       const plantSunCost = PlantInfo[packet.plantType].SunCost;
 
-      if (game.sunAmount < plantSunCost) {
+      if (level.sunAmount < plantSunCost) {
         packet.status = SeedPacketStatus.Disabled;
       } else {
         packet.status = SeedPacketStatus.Active;

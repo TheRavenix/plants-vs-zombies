@@ -89,18 +89,18 @@ export function updateThreepeater(
   threepeater: Threepeater,
   options: PlantUpdateOptions
 ) {
-  const { deltaTime, game } = options;
+  const { deltaTime, level } = options;
 
   threepeater.shotTimer += deltaTime;
 
   if (threepeater.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombies.some((zombie) => {
+    const ableToShoot = level.zombies.some((zombie) => {
       return zombie.x <= threepeater.x + RANGE;
     });
 
     if (ableToShoot) {
-      game.shots = addShots(
-        game.shots,
+      level.shots = addShots(
+        level.shots,
         createPeashot({
           x: threepeater.x + threepeater.width,
           y: threepeater.y,
