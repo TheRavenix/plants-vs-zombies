@@ -81,12 +81,12 @@ export function drawSnowpea(snowpea: Snowpea, options: PlantDrawOptions) {
 }
 
 export function updateSnowpea(snowpea: Snowpea, options: PlantUpdateOptions) {
-  const { deltaTime, game } = options;
+  const { deltaTime, level } = options;
 
   snowpea.shotTimer += deltaTime;
 
   if (snowpea.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombies.some((zombie) => {
+    const ableToShoot = level.zombies.some((zombie) => {
       return (
         snowpea.y >= zombie.y &&
         snowpea.y <= zombie.y + TILE_HEIGHT &&
@@ -95,8 +95,8 @@ export function updateSnowpea(snowpea: Snowpea, options: PlantUpdateOptions) {
     });
 
     if (ableToShoot) {
-      game.shots = addShot(
-        game.shots,
+      level.shots = addShot(
+        level.shots,
         createSnowpeaShot({
           x: snowpea.x + snowpea.width,
           y: snowpea.y,

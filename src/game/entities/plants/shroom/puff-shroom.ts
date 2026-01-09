@@ -81,12 +81,12 @@ export function updatePuffshroom(
   puffshroom: Puffshroom,
   options: PlantUpdateOptions
 ) {
-  const { deltaTime, game } = options;
+  const { deltaTime, level } = options;
 
   puffshroom.shotTimer += deltaTime;
 
   if (puffshroom.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombies.some((zombie) => {
+    const ableToShoot = level.zombies.some((zombie) => {
       return (
         puffshroom.y >= zombie.y &&
         puffshroom.y <= zombie.y + TILE_HEIGHT &&
@@ -95,8 +95,8 @@ export function updatePuffshroom(
     });
 
     if (ableToShoot) {
-      game.shots = addShot(
-        game.shots,
+      level.shots = addShot(
+        level.shots,
         createShroomshot({
           x: puffshroom.x + puffshroom.width,
           y: puffshroom.y + SHOT_HEIGHT / 2,

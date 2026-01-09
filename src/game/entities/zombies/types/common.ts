@@ -3,8 +3,8 @@ import type { ZombieState } from "../constants";
 import type { Vector2 } from "@/game/types/vector";
 import type { Size } from "@/game/types/size";
 import type { Board } from "@/game/board";
-import type { Game } from "@/game/game";
 import type { HasHealth } from "../../types";
+import type { Level } from "@/game/level";
 
 export type BaseZombie = {
   id: string;
@@ -24,7 +24,7 @@ export type ZombieDrawOptions = {
 
 export type ZombieUpdateOptions = {
   deltaTime: number;
-  game: Game;
+  level: Level;
 };
 
 export type ZombieTakeDamageOptions = {

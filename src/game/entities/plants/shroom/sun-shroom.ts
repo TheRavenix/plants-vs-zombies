@@ -79,7 +79,7 @@ export function updateSunshroom(
   sunshroom: Sunshroom,
   options: PlantUpdateOptions
 ) {
-  const { game, deltaTime } = options;
+  const { level, deltaTime } = options;
 
   sunshroom.rechargeTimer += deltaTime;
 
@@ -90,7 +90,7 @@ export function updateSunshroom(
     sunshroom.upgraded = true;
   }
   if (sunshroom.rechargeTimer >= RECHARGE_INTERVAL) {
-    game.sunAmount += sunshroom.upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1;
+    level.sunAmount += sunshroom.upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1;
     sunshroom.rechargeTimer = 0;
   }
 

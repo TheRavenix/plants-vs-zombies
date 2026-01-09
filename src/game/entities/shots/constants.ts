@@ -2,11 +2,11 @@ export const SHOT_WIDTH = 32;
 export const SHOT_HEIGHT = 32;
 
 export enum ShotType {
-  Peashot = "Peashot",
-  SnowpeaShot = "SnowpeaShot",
-  Shroomshot = "Shroomshot",
-  FirepeaShot = "FirepeaShot",
-  RicochetPeashot = "RicochetPeashot",
+  Peashot = "PEASHOT",
+  SnowpeaShot = "SNOWPEA_SHOT",
+  Shroomshot = "SHROOMSHOT",
+  FirepeaShot = "FIREPEA_SHOT",
+  RicochetPeashot = "RICOCHET_PEASHOT",
 }
 
 export enum ShotDirection {

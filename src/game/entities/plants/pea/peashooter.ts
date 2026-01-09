@@ -20,10 +20,10 @@ export type Peashooter = {
 type CreatePeashooterOptions = Vector2;
 
 const HEALTH = 300;
-const SUNCOST = 100;
+const SUNCOST = 0;
 const SHOT_INTERVAL = 1500;
 const RANGE = TILE_WIDTH * 7;
-const COOLDOWN = 7500;
+const COOLDOWN = 0;
 const SPRITE_WIDTH = 64;
 const SPRITE_HEIGHT = 64;
 const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
@@ -87,12 +87,12 @@ export function updatePeashooter(
   peashooter: Peashooter,
   options: PlantUpdateOptions
 ) {
-  const { deltaTime, game } = options;
+  const { deltaTime, level } = options;
 
   peashooter.shotTimer += deltaTime;
 
   if (peashooter.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombies.some((zombie) => {
+    const ableToShoot = level.zombies.some((zombie) => {
       return (
         peashooter.y >= zombie.y &&
         peashooter.y <= zombie.y + TILE_HEIGHT &&
@@ -101,8 +101,8 @@ export function updatePeashooter(
     });
 
     if (ableToShoot) {
-      game.shots = addShot(
-        game.shots,
+      level.shots = addShot(
+        level.shots,
         createPeashot({
           x: peashooter.x + peashooter.width,
           y: peashooter.y,

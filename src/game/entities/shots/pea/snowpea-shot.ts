@@ -2,7 +2,6 @@ import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
 import {
   createShotId,
   handleShotDirection,
-  removeShotById,
   syncShotHitbox,
 } from "../shot-service";
 import { findZombieById } from "../../zombies";
@@ -54,6 +53,7 @@ export function createSnowpeaShot(
       height: SPRITE_HEIGHT,
     },
     direction,
+    active: true,
   };
 }
 
@@ -87,8 +87,8 @@ export function updateSnowpeaShot(
   snowpeaShot: SnowpeaShot,
   options: ShotUpdateOptions
 ) {
-  const { deltaTime, game } = options;
-  const { zombies } = game;
+  const { deltaTime, level } = options;
+  const { zombies } = level;
   const speed = snowpeaShot.speed * (deltaTime / 1000);
 
   handleShotDirection(snowpeaShot, speed);
@@ -111,7 +111,8 @@ export function updateSnowpeaShot(
       }
 
       entityTakeDamage(zombie, snowpeaShot.damage);
-      game.shots = removeShotById(game.shots, snowpeaShot.id);
+
+      snowpeaShot.active = false;
       deleteZombieId = null;
     }
   }

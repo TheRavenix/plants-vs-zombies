@@ -81,12 +81,12 @@ export function drawFirepea(firepea: Firepea, options: PlantDrawOptions) {
 }
 
 export function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
-  const { deltaTime, game } = options;
+  const { deltaTime, level } = options;
 
   firepea.shotTimer += deltaTime;
 
   if (firepea.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = game.zombies.some((zombie) => {
+    const ableToShoot = level.zombies.some((zombie) => {
       return (
         firepea.y >= zombie.y &&
         firepea.y <= zombie.y + TILE_HEIGHT &&
@@ -95,8 +95,8 @@ export function updateFirepea(firepea: Firepea, options: PlantUpdateOptions) {
     });
 
     if (ableToShoot) {
-      game.shots = addShot(
-        game.shots,
+      level.shots = addShot(
+        level.shots,
         createFirepeaShot({
           x: firepea.x + firepea.width,
           y: firepea.y,

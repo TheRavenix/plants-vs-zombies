@@ -157,3 +157,7 @@ export function removeOutOfZoneShots(shots: Shot[], board: Board): Shot[] {
     );
   });
 }
+
+export function removeInactiveShots(shots: Shot[]): Shot[] {
+  return shots.filter((shot) => shot.active);
+}

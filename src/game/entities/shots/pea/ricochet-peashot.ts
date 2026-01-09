@@ -4,7 +4,7 @@ import {
   findZombiesWithinArea,
   type Zombie,
 } from "../../zombies";
-import { createShotId, removeShotById, syncShotHitbox } from "../shot-service";
+import { createShotId, syncShotHitbox } from "../shot-service";
 import { entityTakeDamage } from "../../entity-service";
 import { ShotType } from "../constants";
 
@@ -55,6 +55,7 @@ export function createRicochetPeashot(
     direction: undefined,
     bounceTimes: 0,
     lastHitZombieId: null,
+    active: true,
   };
 }
 
@@ -88,12 +89,12 @@ export function updateRicochetPeashot(
   ricochetpeashot: RicochetPeashot,
   options: ShotUpdateOptions
 ) {
-  const { deltaTime, game } = options;
-  const { zombies } = game;
+  const { deltaTime, level } = options;
+  const { zombies } = level;
   const speed = ricochetpeashot.speed * (deltaTime / 1000);
 
   if (ricochetpeashot.bounceTimes >= BOUNCE_TIMES) {
-    game.shots = removeShotById(game.shots, ricochetpeashot.id);
+    ricochetpeashot.active = false;
   }
   if (ricochetpeashot.lastHitZombieId !== null) {
     if (ricochetpeashot.bounceTimes >= BOUNCE_TIMES) {
@@ -130,7 +131,7 @@ export function updateRicochetPeashot(
       );
 
       if (zombiesWithinArea.length <= 0) {
-        game.shots = removeShotById(game.shots, ricochetpeashot.id);
+        ricochetpeashot.active = false;
         return;
       }
     }

@@ -1,5 +1,5 @@
 import type { Board } from "@/game/board";
-import type { Game } from "@/game/game";
+import type { Level } from "@/game/level";
 import type { Size } from "@/game/types/size";
 import type { Vector2 } from "@/game/types/vector";
 
@@ -97,7 +97,7 @@ export function findSunWithinCoordinates(
   });
 }
 
-export function collectSun(sun: Sun, game: Game) {
-  game.sunAmount += sun.amount;
-  game.suns = removeSunById(game.suns, sun.id);
+export function collectSun(sun: Sun, level: Level) {
+  level.sunAmount += sun.amount;
+  level.suns = removeSunById(level.suns, sun.id);
 }
