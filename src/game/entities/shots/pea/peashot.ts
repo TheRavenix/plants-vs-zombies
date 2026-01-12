@@ -9,7 +9,7 @@ import { entityTakeDamage } from "../../entity-service";
 import { ShotDirection, ShotType } from "../constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
-import type { Vector2 } from "@/game/types/vector";
+import type { Vector2 } from "@/game/types/math";
 
 export type Peashot = {
   type: ShotType.Peashot;
@@ -19,7 +19,7 @@ type CreatePeashotOptions = {
   direction?: ShotDirection;
 } & Vector2;
 
-const DAMAGE = 20;
+const DAMAGE = 2;
 const SPEED = 150;
 const SPRITE_WIDTH = 24;
 const SPRITE_HEIGHT = 24;

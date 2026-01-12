@@ -10,7 +10,7 @@ import { entityTakeDamage } from "../entity-service";
 import { SHOT_HEIGHT, SHOT_WIDTH, ShotDirection, ShotType } from "./constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "./types";
-import type { Vector2 } from "@/game/types/vector";
+import type { Vector2 } from "@/game/types/math";
 
 export type Shroomshot = {
   type: ShotType.Shroomshot;

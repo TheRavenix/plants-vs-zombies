@@ -1,4 +1,4 @@
-import type { Vector2 } from "../types/vector";
+import type { Vector2 } from "../types/math";
 
 type TilePosition = Vector2;
 
@@ -82,7 +82,7 @@ export function getCanvasCoordinates(
   };
 }
 
-export function pointerWithinPlaySafeArea(
+export function isPointerInPlaySafeArea(
   board: Board,
   event: PointerEvent
 ): boolean {

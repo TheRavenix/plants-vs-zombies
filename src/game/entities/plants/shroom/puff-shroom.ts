@@ -15,7 +15,7 @@ import type {
   PlantInfoType,
   PlantUpdateOptions,
 } from "../types";
-import type { Vector2 } from "@/game/types/vector";
+import type { Vector2 } from "@/game/types/math";
 
 export type Puffshroom = {
   type: PlantType.Puffshroom;

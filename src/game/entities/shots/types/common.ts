@@ -1,7 +1,6 @@
 import type { Hitbox } from "@/game/helpers/hitbox";
 import type { ShotDirection } from "../constants";
-import type { Vector2 } from "@/game/types/vector";
-import type { Size } from "@/game/types/size";
+import type { Rect } from "@/game/types/math";
 import type { Board } from "@/game/board";
 import type { Level } from "@/game/level";
 
@@ -13,8 +12,7 @@ export type BaseShot = {
   fillStyle: string;
   direction?: ShotDirection;
   active: boolean;
-} & Vector2 &
-  Size;
+} & Rect;
 
 export type ShotDrawOptions = {
   board: Board;

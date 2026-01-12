@@ -3,8 +3,7 @@ import { drawSunImage } from "../entities/sun";
 import { drawCenteredText } from "../helpers/canvas";
 
 import type { Board } from "../board";
-import type { Size } from "../types/size";
-import type { Vector2 } from "../types/vector";
+import type { Vector2, Rect } from "../types/math";
 
 export type SeedPacket = {
   plantType: PlantType;
@@ -12,8 +11,7 @@ export type SeedPacket = {
   spriteImage: HTMLImageElement;
   cooldownTimer: number;
   cooldownTimerPaused: boolean;
-} & Vector2 &
-  Size;
+} & Rect;
 
 type CreateSeedPacketOptions = {
   plantType: PlantType;

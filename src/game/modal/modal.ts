@@ -1,12 +1,21 @@
-import { BOARD_HEIGHT, BOARD_WIDTH, type Board } from "../board";
-import { drawButton, drawCenteredText, type Button } from "../helpers/canvas";
+import {
+  BOARD_HEIGHT,
+  BOARD_WIDTH,
+  getCanvasCoordinates,
+  type Board,
+} from "../board";
+import {
+  drawButton,
+  drawCenteredText,
+  isPointInRect,
+  type Button,
+} from "../helpers/canvas";
 
 export type Modal = {
   id: string;
   title: string;
   description: string;
   actions: Button<unknown>[];
-  active: boolean;
 };
 
 type CreateModalOptions = {
@@ -30,7 +39,6 @@ export function createModal(options: CreateModalOptions): Modal {
     title: options.title,
     description: options.description,
     actions: options.actions,
-    active: true,
   };
 }
 
@@ -75,8 +83,24 @@ export function drawModal(modal: Modal, board: Board) {
   }
 }
 
-export function updateModal(_modal: Modal, _deltaTime: number) {}
+export function isPointerInModalCloseArea(
+  _modal: Modal,
+  board: Board,
+  event: PointerEvent
+): boolean {
+  const { canvas } = board;
+  const { x, y } = getCanvasCoordinates(canvas, event);
 
-export function removeInactiveModals(modals: Modal[]): Modal[] {
-  return modals.filter((modal) => modal.active);
+  return !isPointInRect(
+    {
+      x,
+      y,
+    },
+    {
+      x: MODAL_X,
+      y: MODAL_Y,
+      width: MODAL_WIDTH,
+      height: MODAL_HEIGHT,
+    }
+  );
 }

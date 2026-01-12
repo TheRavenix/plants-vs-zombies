@@ -10,7 +10,7 @@ import { GameScene, setGameScene, type Game } from "../game";
 import { drawButton, type Button } from "../helpers/canvas";
 
 import type { Cleanup } from "../types/cleanup";
-import type { Vector2 } from "../types/vector";
+import type { Vector2 } from "../types/math";
 
 export type MainMenu = {};
 

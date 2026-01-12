@@ -1,7 +1,6 @@
 import type { Board } from "../board";
 import { FontFamily, FontSize } from "../constants/font";
-import type { Size } from "../types/size";
-import type { Vector2 } from "../types/vector";
+import type { Vector2, Rect } from "../types/math";
 
 type DrawTextFont = {
   fontSize?: FontSize;
@@ -20,8 +19,7 @@ export type Button<T> = {
   text: string;
   fill: DrawButtonFillStyle;
   font?: DrawTextFont;
-} & Vector2 &
-  Size;
+} & Rect;
 
 export function drawText(
   board: Board,
@@ -104,4 +102,13 @@ export function drawButton(
   });
 
   ctx.restore();
+}
+
+export function isPointInRect(point: Vector2, rect: Rect): boolean {
+  return (
+    point.x >= rect.x &&
+    point.x <= rect.x + rect.width &&
+    point.y >= rect.y &&
+    point.y <= rect.y + rect.height
+  );
 }
