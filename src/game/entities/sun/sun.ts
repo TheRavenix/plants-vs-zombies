@@ -1,13 +1,11 @@
 import type { Board } from "@/game/board";
 import type { Level } from "@/game/level";
-import type { Size } from "@/game/types/size";
-import type { Vector2 } from "@/game/types/vector";
+import type { Rect, Vector2 } from "@/game/types/math";
 
 export type Sun = {
   id: string;
   amount: number;
-} & Vector2 &
-  Size;
+} & Rect;
 
 type CreateSunOptions = {
   amount: number;
@@ -38,7 +36,7 @@ export function createSun(options: CreateSunOptions): Sun {
   };
 }
 
-export function drawSunImage(sun: Vector2 & Size, board: Board) {
+export function drawSunImage(rect: Rect, board: Board) {
   const { ctx } = board;
 
   if (ctx === null) {
@@ -51,10 +49,10 @@ export function drawSunImage(sun: Vector2 & Size, board: Board) {
     SPRITE_IMAGE_SY,
     SPRITE_IMAGE_SW,
     SPRITE_IMAGE_SH,
-    Math.round(sun.x),
-    Math.round(sun.y),
-    sun.width,
-    sun.height
+    Math.round(rect.x),
+    Math.round(rect.y),
+    rect.width,
+    rect.height
   );
 }
 
@@ -80,21 +78,6 @@ export function removeSunById(suns: Sun[], id: string): Sun[] {
 
 export function findSunById(suns: Sun[], id: string): Sun | undefined {
   return suns.find((sun) => sun.id === id);
-}
-
-export function findSunWithinCoordinates(
-  suns: Sun[],
-  x: number,
-  y: number
-): Sun | undefined {
-  return suns.find((sun) => {
-    return (
-      x >= sun.x &&
-      x <= sun.x + sun.width &&
-      y >= sun.y &&
-      y <= sun.y + sun.height
-    );
-  });
 }
 
 export function collectSun(sun: Sun, level: Level) {

@@ -9,7 +9,7 @@ import { entityTakeDamage } from "../../entity-service";
 import { ShotDirection, ShotType } from "../constants";
 
 import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
-import type { Vector2 } from "@/game/types/vector";
+import type { Vector2 } from "@/game/types/math";
 
 export type FirepeaShot = {
   type: ShotType.FirepeaShot;

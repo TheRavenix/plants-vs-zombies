@@ -15,7 +15,7 @@ import {
   ZombieType,
 } from "./constants";
 
-import { type Vector2 } from "@/game/types/vector";
+import { type Vector2 } from "@/game/types/math";
 import type {
   BaseZombie,
   ZombieDrawOptions,

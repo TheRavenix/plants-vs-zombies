@@ -3,7 +3,7 @@ import {
   BOARD_ROWS,
   BOARD_WIDTH,
   getCanvasCoordinates,
-  pointerWithinPlaySafeArea,
+  isPointerInPlaySafeArea,
   TILE_HEIGHT,
   TILE_WIDTH,
   type Board,
@@ -33,8 +33,6 @@ import {
 import {
   createSeedSlotManager,
   drawSeedSlotManager,
-  findSeedSlotWithinCoordinateX,
-  pointerWithinSeedSlot,
   updateSeedSlotManager,
   type SeedSlotManager,
 } from "../seed/seed-slot-manager";
@@ -43,7 +41,6 @@ import {
   collectSun,
   createSun,
   drawSun,
-  findSunWithinCoordinates,
   updateSun,
   type Sun,
 } from "../entities/sun";
@@ -54,16 +51,15 @@ import {
   type SeedPacket,
 } from "../seed";
 import { closestLowerValue } from "@/utils/math";
-import { drawButton, type Button } from "../helpers/canvas";
+import { drawButton, isPointInRect, type Button } from "../helpers/canvas";
 import {
   createModal,
   drawModal,
-  removeInactiveModals,
-  updateModal,
+  isPointerInModalCloseArea,
   type Modal,
 } from "../modal";
 
-import type { Vector2 } from "../types/vector";
+import type { Vector2 } from "../types/math";
 import type { Cleanup } from "../types/cleanup";
 import type { LevelBlueprintManager } from "./level-blueprint-manager";
 import type { Game } from "../game";
@@ -80,7 +76,8 @@ export type Level = {
   time: number;
   gameOver: boolean;
   rewardPacket: SeedPacket | null;
-  modals: Modal[];
+  activeModal: Modal | null;
+  isPaused: boolean;
 };
 
 type CreateLevelOptions = {
@@ -118,10 +115,6 @@ GRASS_IMAGE.src = "./grass/Grass.png";
 GRASS_2_IMAGE.src = "./grass/Grass_2.png";
 WALL_IMAGE.src = "./wall/Wall.png";
 
-function hasActiveModals(level: Level): boolean {
-  return level.modals.some((modal) => modal.active);
-}
-
 export function createLevel(options: CreateLevelOptions): Level {
   return {
     sunAmount: DEFAULT_SUN_AMOUNT,
@@ -135,7 +128,8 @@ export function createLevel(options: CreateLevelOptions): Level {
     levelBlueprintManager: options.levelBlueprintManager,
     gameOver: false,
     rewardPacket: null,
-    modals: [],
+    activeModal: null,
+    isPaused: false,
   };
 }
 
@@ -149,12 +143,32 @@ export function startLevel(level: Level, board: Board, game: Game): Cleanup {
   function handlePointerDownEvent(e: PointerEvent) {
     const coords = getCanvasCoordinates(canvas, e);
 
-    if (hasActiveModals(level)) {
+    if (
+      level.activeModal !== null &&
+      isPointerInModalCloseArea(level.activeModal, board, e)
+    ) {
+      setActiveModal(level, null);
+      return;
+    }
+    if (level.isPaused) {
+      return;
+    }
+    if (
+      level.rewardPacket !== null &&
+      isPointInRect(coords, level.rewardPacket)
+    ) {
+      console.log("first");
+      const modal = createModal({
+        title: "Reward",
+        description: level.rewardPacket.plantType,
+        actions: [],
+      });
+      setActiveModal(level, modal);
       return;
     }
     if (!level.gameOver) {
       handleSunCollect(level, board, e, coords);
-      handleSeedSlotSelect(level.seedSlotManager, board, e, coords);
+      handleSeedSlotSelect(level.seedSlotManager, coords);
       handlePlacePlant(level, board, e, coords);
     }
 
@@ -236,19 +250,13 @@ export function drawLevel(level: Level, board: Board) {
     drawSeedPacket(level.rewardPacket, board);
   }
 
-  for (const modal of level.modals) {
-    drawModal(modal, board);
+  if (level.activeModal !== null) {
+    drawModal(level.activeModal, board);
   }
 }
 
 export function updateLevel(level: Level, deltaTime: number, board: Board) {
-  for (const modal of level.modals) {
-    updateModal(modal, deltaTime);
-  }
-
-  level.modals = removeInactiveModals(level.modals);
-
-  if (hasActiveModals(level)) {
+  if (level.isPaused) {
     return;
   }
 
@@ -301,6 +309,10 @@ export function updateLevel(level: Level, deltaTime: number, board: Board) {
     updateSeedPacket(level.rewardPacket, deltaTime);
   }
 
+  if (level.activeModal !== null) {
+    level.isPaused = true;
+  }
+
   // FOR TESTING ONLY
   // TODO: Remove Dangerous Code
   level.gameOver = level.zombies.some((zombie) => zombie.x < TILE_WIDTH);
@@ -317,11 +329,11 @@ function handleSunCollect(
   if (suns.length <= 0) {
     return;
   }
-  if (!pointerWithinPlaySafeArea(board, e)) {
+  if (!isPointerInPlaySafeArea(board, e)) {
     return;
   }
 
-  const toCollectSun = findSunWithinCoordinates(suns, coords.x, coords.y);
+  const toCollectSun = suns.find((sun) => isPointInRect(coords, sun));
 
   if (toCollectSun === undefined) {
     return;
@@ -332,17 +344,17 @@ function handleSunCollect(
 
 function handleSeedSlotSelect(
   seedSlotManager: SeedSlotManager,
-  board: Board,
-  e: PointerEvent,
   coords: Vector2
 ) {
-  if (!pointerWithinSeedSlot(seedSlotManager, board, e)) {
+  if (!isPointInRect(coords, seedSlotManager)) {
     return;
   }
 
   // FIXME: This logic is problematic
   const selectedSlotId = seedSlotManager.selectedSlot?.id;
-  const seedSlot = findSeedSlotWithinCoordinateX(seedSlotManager, coords.x);
+  const seedSlot = seedSlotManager.slots.find((slot) =>
+    isPointInRect(coords, slot.packet)
+  );
 
   if (seedSlot === undefined) {
     return;
@@ -366,9 +378,9 @@ function handlePlacePlant(
     return;
   }
 
-  const withinPlaySafeArea = pointerWithinPlaySafeArea(board, e);
+  const inPlaySafeArea = isPointerInPlaySafeArea(board, e);
 
-  if (!withinPlaySafeArea) {
+  if (!inPlaySafeArea) {
     return;
   }
   if (
@@ -434,10 +446,12 @@ function handleButtonClick(id: ButtonId, game: Game) {
         description: "Description",
         actions: [],
       });
-      game.level.modals.push(modal);
-      setTimeout(() => {
-        modal.active = false;
-      }, 2500);
+      setActiveModal(game.level, modal);
       break;
   }
+}
+
+function setActiveModal(level: Level, modal: Modal | null) {
+  level.activeModal = modal;
+  level.isPaused = level.activeModal !== null;
 }

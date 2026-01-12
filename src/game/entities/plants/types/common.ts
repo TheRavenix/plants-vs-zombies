@@ -1,7 +1,6 @@
 import type { Board } from "@/game/board";
 import type { Hitbox } from "@/game/helpers/hitbox";
-import type { Size } from "@/game/types/size";
-import type { Vector2 } from "@/game/types/vector";
+import type { Rect } from "@/game/types/math";
 import type { HasHealth } from "../../types";
 import type { Level } from "@/game/level";
 
@@ -9,8 +8,7 @@ export type BasePlant = {
   id: string;
   sunCost: number;
   hitbox: Hitbox;
-} & Vector2 &
-  Size &
+} & Rect &
   HasHealth;
 
 export type PlantDrawOptions = {

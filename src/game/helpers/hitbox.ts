@@ -1,8 +1,7 @@
 import type { Board } from "../board";
-import type { Size } from "../types/size";
-import type { Vector2 } from "../types/vector";
+import type { Rect } from "../types/math";
 
-export type Hitbox = Vector2 & Size;
+export type Hitbox = Rect;
 
 export function drawHitbox(hitbox: Hitbox, board: Board) {
   const { ctx } = board;

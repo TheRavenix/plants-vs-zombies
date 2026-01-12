@@ -1,10 +1,4 @@
-import {
-  BOARD_ROWS,
-  getCanvasCoordinates,
-  TILE_HEIGHT,
-  TILE_WIDTH,
-  type Board,
-} from "../board";
+import { BOARD_ROWS, TILE_HEIGHT, TILE_WIDTH, type Board } from "../board";
 import { PlantInfo, PlantType } from "../entities/plants";
 import { drawSunImage } from "../entities/sun";
 import {
@@ -19,21 +13,18 @@ import {
 import { drawCenteredText } from "../helpers/canvas";
 import { FontSize } from "../constants/font";
 
-import type { Size } from "../types/size";
-import type { Vector2 } from "../types/vector";
+import type { Rect } from "../types/math";
 import type { Level } from "../level";
 
 export type SeedSlot = {
   id: string;
   packet: SeedPacket;
-} & Vector2 &
-  Size;
+} & Rect;
 
 export type SeedSlotManager = {
   slots: SeedSlot[];
   selectedSlot: SeedSlot | null;
-} & Vector2 &
-  Size;
+} & Rect;
 
 const SEED_SLOT_WIDTH = 80 + SEED_PACKET_MARGIN_LEFT;
 const SEED_SLOT_HEIGHT = 80;
@@ -210,31 +201,6 @@ export function updateSeedSlotManager(
   for (const slot of seedSlotManager.slots) {
     updateSeedPacket(slot.packet, deltaTime);
   }
-}
-
-export function pointerWithinSeedSlot(
-  seedSlotManager: SeedSlotManager,
-  board: Board,
-  event: PointerEvent
-): boolean {
-  const { canvas } = board;
-  const { x, y } = getCanvasCoordinates(canvas, event);
-
-  return (
-    y >= SEED_SLOT_OFFSET_Y &&
-    y <= SEED_SLOT_OFFSET_Y + SEED_SLOT_HEIGHT &&
-    x >= TILE_WIDTH &&
-    x <= seedSlotManager.width
-  );
-}
-
-export function findSeedSlotWithinCoordinateX(
-  seedSlotManager: SeedSlotManager,
-  x: number
-): SeedSlot | undefined {
-  return seedSlotManager.slots.find((slot) => {
-    return x >= slot.x && x <= slot.x + slot.width;
-  });
 }
 
 function handleSeedPacketStatus(level: Level) {
