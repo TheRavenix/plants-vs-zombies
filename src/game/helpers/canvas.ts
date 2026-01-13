@@ -14,8 +14,8 @@ type DrawButtonFillStyle = {
   text: string;
 };
 
-export type Button<T> = {
-  id: T;
+export type Button = {
+  id: string;
   text: string;
   fill: DrawButtonFillStyle;
   font?: DrawTextFont;
