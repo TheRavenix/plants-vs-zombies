@@ -55,14 +55,16 @@ import { drawButton, isPointInRect, type Button } from "../helpers/canvas";
 import {
   createModal,
   drawModal,
+  getModalButtonRect,
   isPointerInModalCloseArea,
+  updateModal,
   type Modal,
 } from "../modal";
 
 import type { Vector2 } from "../types/math";
 import type { Cleanup } from "../types/cleanup";
 import type { LevelBlueprintManager } from "./level-blueprint-manager";
-import type { Game } from "../game";
+import { GameScene, setGameScene, type Game } from "../game";
 
 export type Level = {
   sunAmount: number;
@@ -95,7 +97,14 @@ enum ButtonId {
   Menu = "MENU",
 }
 
-const buttons: Button<ButtonId>[] = [
+enum ModalButtonId {
+  ExitToMap = "EXIT_TO_MAP",
+  Restart = "RESTART",
+  Resume = "RESUME",
+  Continue = "CONTINUE",
+}
+
+const buttons: Button[] = [
   {
     id: ButtonId.Menu,
     x: BOARD_WIDTH - 75,
@@ -143,12 +152,22 @@ export function startLevel(level: Level, board: Board, game: Game): Cleanup {
   function handlePointerDownEvent(e: PointerEvent) {
     const coords = getCanvasCoordinates(canvas, e);
 
-    if (
-      level.activeModal !== null &&
-      isPointerInModalCloseArea(level.activeModal, board, e)
-    ) {
-      setActiveModal(level, null);
-      return;
+    if (level.activeModal !== null) {
+      if (isPointerInModalCloseArea(level.activeModal, board, e)) {
+        setActiveModal(level, null);
+        return;
+      }
+
+      const modalButton = level.activeModal.buttons.find((_, index) =>
+        isPointInRect(
+          coords,
+          getModalButtonRect(index, level.activeModal!.buttons)
+        )
+      );
+
+      if (modalButton !== undefined) {
+        handleModalButtonClick(modalButton.id, game, board);
+      }
     }
     if (level.isPaused) {
       return;
@@ -157,11 +176,15 @@ export function startLevel(level: Level, board: Board, game: Game): Cleanup {
       level.rewardPacket !== null &&
       isPointInRect(coords, level.rewardPacket)
     ) {
-      console.log("first");
       const modal = createModal({
         title: "Reward",
         description: level.rewardPacket.plantType,
-        actions: [],
+        buttons: [
+          {
+            id: ModalButtonId.Continue,
+            text: "Continue",
+          },
+        ],
       });
       setActiveModal(level, modal);
       return;
@@ -172,7 +195,7 @@ export function startLevel(level: Level, board: Board, game: Game): Cleanup {
       handlePlacePlant(level, board, e, coords);
     }
 
-    const button = getClickedButton(coords);
+    const button = buttons.find((btn) => isPointInRect(coords, btn));
 
     if (button !== undefined) {
       handleButtonClick(button.id, game);
@@ -256,6 +279,10 @@ export function drawLevel(level: Level, board: Board) {
 }
 
 export function updateLevel(level: Level, deltaTime: number, board: Board) {
+  if (level.activeModal !== null) {
+    updateModal(level.activeModal, deltaTime);
+  }
+
   if (level.isPaused) {
     return;
   }
@@ -428,25 +455,40 @@ function handlePlacePlant(
   level.sunAmount -= plantCost;
 }
 
-function getClickedButton(coords: Vector2): Button<ButtonId> | undefined {
-  return buttons.find(
-    (button) =>
-      coords.x >= button.x &&
-      coords.x <= button.x + button.width &&
-      coords.y >= button.y &&
-      coords.y <= button.y + button.height
-  );
-}
-
-function handleButtonClick(id: ButtonId, game: Game) {
+function handleButtonClick(id: string, game: Game) {
   switch (id) {
     case ButtonId.Menu:
       const modal = createModal({
-        title: "Modal",
-        description: "Description",
-        actions: [],
+        title: "Game Paused",
+        description: "Click To Resume Game",
+        buttons: [
+          {
+            id: ModalButtonId.ExitToMap,
+            text: "Exit To Map",
+          },
+          {
+            id: ModalButtonId.Restart,
+            text: "Restart",
+          },
+          {
+            id: ModalButtonId.Resume,
+            text: "Resume",
+          },
+        ],
       });
       setActiveModal(game.level, modal);
+      break;
+  }
+}
+
+function handleModalButtonClick(id: string, game: Game, board: Board) {
+  switch (id) {
+    case ModalButtonId.ExitToMap:
+      setGameScene(game, GameScene.MainMenu, board);
+      break;
+
+    case ModalButtonId.Resume:
+      setActiveModal(game.level, null);
       break;
   }
 }

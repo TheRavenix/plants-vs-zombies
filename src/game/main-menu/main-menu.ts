@@ -26,7 +26,7 @@ enum ButtonId {
   Settings = "SETTINGS",
 }
 
-const buttons: Button<ButtonId>[] = [
+const buttons: Button[] = [
   {
     id: ButtonId.Play,
     x: 50,
@@ -120,7 +120,7 @@ export function drawMainMenu(_mainMenu: MainMenu, board: Board) {
   }
 }
 
-function getClickedButton(coords: Vector2): Button<ButtonId> | undefined {
+function getClickedButton(coords: Vector2): Button | undefined {
   return buttons.find(
     (button) =>
       coords.x >= button.x &&
@@ -130,7 +130,7 @@ function getClickedButton(coords: Vector2): Button<ButtonId> | undefined {
   );
 }
 
-function handleButtonClick(id: ButtonId, game: Game, board: Board) {
+function handleButtonClick(id: string, game: Game, board: Board) {
   switch (id) {
     case ButtonId.Play:
       setGameScene(game, GameScene.Level, board);
