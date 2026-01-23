@@ -2,13 +2,15 @@ import type { Vector2 } from "../types/math";
 
 type TilePosition = Vector2;
 
-export type Board = {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D | null;
-  tilePosList: TilePosition[];
-};
+export interface Board {
+  readonly canvas: HTMLCanvasElement;
+  readonly ctx: CanvasRenderingContext2D | null;
+  readonly tilePosList: TilePosition[];
+  getCanvasCoordinates(event: PointerEvent): Vector2;
+  isPointerInPlaySafeArea(event: PointerEvent): boolean;
+}
 
-type CreateBoardOptions = {
+type Options = {
   root?: Element | null;
   center?: boolean;
 };
@@ -20,13 +22,13 @@ export const BOARD_COLS = 10;
 export const BOARD_WIDTH = BOARD_COLS * TILE_WIDTH;
 export const BOARD_HEIGHT = BOARD_ROWS * TILE_HEIGHT;
 
-export function createBoard(options?: CreateBoardOptions): Board {
+export function createBoard(options?: Options): Board {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const tilePosList: TilePosition[] = [];
   const pixelifyFont = new FontFace(
     "Pixelify",
-    "url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap)"
+    "url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap)",
   );
 
   pixelifyFont
@@ -63,31 +65,32 @@ export function createBoard(options?: CreateBoardOptions): Board {
     }
   }
 
+  function getCanvasCoordinates(event: PointerEvent) {
+    const rect = canvas.getBoundingClientRect();
+
+    return {
+      x: (event.clientX - rect.left) * (canvas.width / rect.width),
+      y: (event.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  }
+
+  function isPointerInPlaySafeArea(event: PointerEvent) {
+    const { x, y } = getCanvasCoordinates(event);
+
+    return x >= TILE_WIDTH && y >= TILE_HEIGHT;
+  }
+
   return {
-    canvas,
-    ctx,
-    tilePosList,
+    get canvas() {
+      return canvas;
+    },
+    get ctx() {
+      return ctx;
+    },
+    get tilePosList() {
+      return tilePosList;
+    },
+    getCanvasCoordinates,
+    isPointerInPlaySafeArea,
   };
-}
-
-export function getCanvasCoordinates(
-  canvas: HTMLCanvasElement,
-  event: PointerEvent
-): Vector2 {
-  const rect = canvas.getBoundingClientRect();
-
-  return {
-    x: (event.clientX - rect.left) * (canvas.width / rect.width),
-    y: (event.clientY - rect.top) * (canvas.height / rect.height),
-  };
-}
-
-export function isPointerInPlaySafeArea(
-  board: Board,
-  event: PointerEvent
-): boolean {
-  const { canvas } = board;
-  const { x, y } = getCanvasCoordinates(canvas, event);
-
-  return x >= TILE_WIDTH && y >= TILE_HEIGHT;
 }

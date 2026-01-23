@@ -1,24 +1,24 @@
-import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
-import {
-  createShotId,
-  handleShotDirection,
-  syncShotHitbox,
-} from "../shot-service";
-import { findZombieById } from "../../zombies";
-import { entityTakeDamage } from "../../entity-service";
+import { createShotId, handleShotDirection } from "../shot-service";
 import { ShotDirection, ShotType } from "../constants";
+import { createPosition } from "@/game/features/position";
+import { createSize } from "@/game/features/size";
+import { createHitbox } from "@/game/features/hitbox";
 
-import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
+import type { BaseShot } from "../types";
 import type { Vector2 } from "@/game/types/math";
+import type { LevelContext } from "@/game/level";
+import type { Board } from "@/game/board";
 
-export type Peashot = {
-  type: ShotType.Peashot;
-} & BaseShot;
+export interface Peashot extends BaseShot {
+  readonly type: ShotType.Peashot;
+}
 
-type CreatePeashotOptions = {
+type Options = {
   direction?: ShotDirection;
+  ctx: LevelContext;
 } & Vector2;
 
+const TYPE = ShotType.Peashot as const;
 const DAMAGE = 20;
 const SPEED = 150;
 const SPRITE_WIDTH = 24;
@@ -31,78 +31,104 @@ const SPRITE_IMAGE_SH = 9;
 
 SPRITE_IMAGE.src = "./shots/pea/peashot/Peashot.png";
 
-export function createPeashot(options: CreatePeashotOptions): Peashot {
-  const { x, y, direction = ShotDirection.Right } = options;
-  return {
-    type: ShotType.Peashot,
-    id: createShotId(),
-    x,
-    y,
-    width: SPRITE_HEIGHT,
-    height: SPRITE_HEIGHT,
-    damage: DAMAGE,
-    speed: SPEED,
-    fillStyle: "#A0B09A",
-    hitbox: {
-      x,
-      y,
-      width: SPRITE_WIDTH,
-      height: SPRITE_HEIGHT,
-    },
-    direction,
-    active: true,
-  };
-}
-
-export function drawPeashot(peashot: Peashot, options: ShotDrawOptions) {
-  const { board } = options;
-  const { ctx } = board;
-
-  if (ctx === null) {
-    return;
-  }
-
-  ctx.drawImage(
-    SPRITE_IMAGE,
-    SPRITE_IMAGE_SX,
-    SPRITE_IMAGE_SY,
-    SPRITE_IMAGE_SW,
-    SPRITE_IMAGE_SH,
-    Math.round(peashot.x),
-    Math.round(peashot.y),
-    peashot.width,
-    peashot.height
-  );
-
-  drawHitbox(peashot.hitbox, board);
-}
-
-export function updatePeashot(peashot: Peashot, options: ShotUpdateOptions) {
-  const { deltaTime, level } = options;
-  const { zombies } = level;
-  const speed = peashot.speed * (deltaTime / 1000);
-
-  handleShotDirection(peashot, speed);
-
-  let deleteZombieId: string | null = null;
-
-  const collisionZombie = zombies.find((zombie) => {
-    return isHitboxColliding(peashot.hitbox, zombie.hitbox);
+export function createPeashot(options: Options): Peashot {
+  const { ctx } = options;
+  const id = createShotId();
+  const position = createPosition({
+    x: options.x,
+    y: options.y,
   });
+  const size = createSize({
+    width: SPRITE_WIDTH,
+    height: SPRITE_HEIGHT,
+  });
+  const hitbox = createHitbox({
+    x: position.x,
+    y: position.y,
+    width: size.width,
+    height: size.height,
+  });
+  let damage = DAMAGE;
+  let active = true;
+  let speed = SPEED;
+  let direction = options.direction || ShotDirection.Right;
 
-  if (collisionZombie !== undefined) {
-    deleteZombieId = collisionZombie.id;
-  }
-  if (deleteZombieId !== null) {
-    const zombie = findZombieById(zombies, deleteZombieId);
+  function draw(board: Board) {
+    const { ctx } = board;
 
-    if (zombie !== undefined) {
-      entityTakeDamage(zombie, peashot.damage);
-
-      peashot.active = false;
-      deleteZombieId = null;
+    if (ctx === null) {
+      return;
     }
+
+    ctx.drawImage(
+      SPRITE_IMAGE,
+      SPRITE_IMAGE_SX,
+      SPRITE_IMAGE_SY,
+      SPRITE_IMAGE_SW,
+      SPRITE_IMAGE_SH,
+      Math.round(position.x),
+      Math.round(position.y),
+      size.width,
+      size.height,
+    );
+    hitbox.draw(board);
   }
 
-  syncShotHitbox(peashot);
+  function update(deltaTime: number) {
+    handleShotDirection(direction, position, speed, deltaTime);
+
+    let deleteZombieId: string | null = null;
+
+    const collisionZombie = ctx.zombies.find((zombie) => {
+      return hitbox.isColliding(zombie.hitbox);
+    });
+
+    if (collisionZombie !== undefined) {
+      deleteZombieId = collisionZombie.id;
+    }
+    if (deleteZombieId !== null) {
+      const zombie = ctx.findZombieById(deleteZombieId);
+
+      if (zombie !== undefined) {
+        zombie.health.takeDamage(damage);
+
+        active = false;
+        deleteZombieId = null;
+      }
+    }
+
+    hitbox.position.set(position.x, position.y);
+  }
+
+  return {
+    get type() {
+      return TYPE;
+    },
+    get id() {
+      return id;
+    },
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get hitbox() {
+      return hitbox;
+    },
+    get damage() {
+      return damage;
+    },
+    get speed() {
+      return speed;
+    },
+    get active() {
+      return active;
+    },
+    get direction() {
+      return direction;
+    },
+    draw,
+    update,
+  };
 }

@@ -1,24 +1,26 @@
-import { addShots, createPeashot } from "../../shots";
-import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import { createPlantId, syncPlantHitbox } from "../plant-service";
-import { drawHitbox } from "@/game/helpers/hitbox";
-import { PlantType } from "../constants";
+import { createPeashot } from "../../shots";
+import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
+import { createPlantId } from "../plant-service";
+import { PlantType } from "../constants/plant-type";
+import { createHitbox } from "@/game/features/hitbox";
+import { createPosition } from "@/game/features/position";
+import { createSize } from "@/game/features/size";
+import { createHealth } from "@/game/features/health";
 
-import type {
-  BasePlant,
-  PlantDrawOptions,
-  PlantInfoType,
-  PlantUpdateOptions,
-} from "../types";
+import type { BasePlant, PlantInfoType } from "../types";
 import type { Vector2 } from "@/game/types/math";
+import type { LevelContext } from "@/game/level";
 
-export type Repeater = {
-  type: PlantType.Repeater;
-  shotTimer: number;
-} & BasePlant;
+export interface Repeater extends BasePlant {
+  readonly type: PlantType.Repeater;
+  readonly shotTimer: number;
+}
 
-type CreateRepeaterOptions = Vector2;
+type Options = {
+  ctx: LevelContext;
+} & Vector2;
 
+const TYPE = PlantType.Repeater as const;
 const HEALTH = 300;
 const SUNCOST = 200;
 const SHOT_INTERVAL = 1500;
@@ -38,81 +40,104 @@ export const RepeaterInfo: PlantInfoType = {
 
 SPRITE_IMAGE.src = "./plants/pea/repeater/Repeater.png";
 
-export function createRepeater(options: CreateRepeaterOptions): Repeater {
-  const x = options.x + OFFSET_X;
-  const y = options.y + OFFSET_Y;
-
-  return {
-    type: PlantType.Repeater,
-    id: createPlantId(),
-    x,
-    y,
+export function createRepeater(options: Options): Repeater {
+  const { ctx } = options;
+  const id = createPlantId();
+  const position = createPosition({
+    x: options.x + OFFSET_X,
+    y: options.y + OFFSET_Y,
+  });
+  const size = createSize({
     width: SPRITE_WIDTH,
     height: SPRITE_HEIGHT,
-    health: HEALTH,
-    sunCost: SUNCOST,
-    hitbox: {
-      x,
-      y,
-      width: SPRITE_WIDTH,
-      height: SPRITE_HEIGHT,
-    },
-    shotTimer: 0,
-  };
-}
+  });
+  const health = createHealth({
+    hp: HEALTH,
+  });
+  const hitbox = createHitbox({
+    x: position.x,
+    y: position.y,
+    width: size.width,
+    height: size.height,
+  });
+  let shotTimer = 0;
 
-export function drawRepeater(repeater: Repeater, options: PlantDrawOptions) {
-  const { board } = options;
-  const { ctx } = board;
+  function draw(board: Board) {
+    const { ctx } = board;
 
-  if (ctx === null) {
-    return;
-  }
-
-  ctx.drawImage(
-    SPRITE_IMAGE,
-    Math.round(repeater.x),
-    Math.round(repeater.y),
-    repeater.width,
-    repeater.height
-  );
-
-  drawHitbox(repeater.hitbox, board);
-}
-
-export function updateRepeater(
-  repeater: Repeater,
-  options: PlantUpdateOptions
-) {
-  const { deltaTime, level } = options;
-
-  repeater.shotTimer += deltaTime;
-
-  if (repeater.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = level.zombies.some((zombie) => {
-      return (
-        repeater.y >= zombie.y &&
-        repeater.y <= zombie.y + TILE_HEIGHT &&
-        zombie.x <= repeater.x + RANGE
-      );
-    });
-
-    if (ableToShoot) {
-      level.shots = addShots(
-        level.shots,
-        createPeashot({
-          x: repeater.x + repeater.width,
-          y: repeater.y,
-        }),
-        createPeashot({
-          x: repeater.x + repeater.width + TILE_WIDTH / 2,
-          y: repeater.y,
-        })
-      );
+    if (ctx === null) {
+      return;
     }
 
-    repeater.shotTimer = 0;
+    ctx.drawImage(
+      SPRITE_IMAGE,
+      Math.round(position.x),
+      Math.round(position.y),
+      size.width,
+      size.height,
+    );
+    hitbox.draw(board);
   }
 
-  syncPlantHitbox(repeater);
+  function update(deltaTime: number) {
+    shotTimer += deltaTime;
+
+    if (shotTimer >= SHOT_INTERVAL) {
+      const ableToShoot = ctx.zombies.some((zombie) => {
+        return (
+          position.y >= zombie.position.y &&
+          position.y <= zombie.position.y + TILE_HEIGHT &&
+          zombie.position.x <= position.x + RANGE
+        );
+      });
+
+      if (ableToShoot) {
+        ctx.addShot(
+          createPeashot({
+            x: position.x + size.width,
+            y: position.y,
+            ctx,
+          }),
+          createPeashot({
+            x: position.x + size.width + TILE_WIDTH / 2,
+            y: position.y,
+            ctx,
+          }),
+        );
+      }
+
+      shotTimer = 0;
+    }
+
+    hitbox.position.set(position.x, position.y);
+  }
+
+  return {
+    get type() {
+      return TYPE;
+    },
+    get id() {
+      return id;
+    },
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get health() {
+      return health;
+    },
+    get sunCost() {
+      return SUNCOST;
+    },
+    get hitbox() {
+      return hitbox;
+    },
+    get shotTimer() {
+      return shotTimer;
+    },
+    draw,
+    update,
+  };
 }

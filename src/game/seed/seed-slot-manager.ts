@@ -1,30 +1,41 @@
 import { BOARD_ROWS, TILE_HEIGHT, TILE_WIDTH, type Board } from "../board";
-import { PlantInfo, PlantType } from "../entities/plants";
+import { PlantInfo } from "../entities/plants";
 import { drawSunImage } from "../entities/sun";
 import {
   createSeedPacket,
-  drawSeedPacket,
   SEED_PACKET_ACTIVE_Y,
   SEED_PACKET_MARGIN_LEFT,
   SeedPacketStatus,
-  updateSeedPacket,
   type SeedPacket,
 } from "./seed-packet";
 import { drawCenteredText } from "../helpers/canvas";
 import { FontSize } from "../constants/font";
+import { createPosition, type Position } from "../features/position";
+import { createSize, type Size } from "../features/size";
+import { PlantType } from "../entities/plants/constants/plant-type";
 
 import type { Rect } from "../types/math";
-import type { Level } from "../level";
+import type { LevelContext } from "../level";
+import type { Drawable } from "../types/drawable";
+import type { Updatable } from "../types/updatable";
 
+// TODO: Rect type shouldn't be used here
 export type SeedSlot = {
   id: string;
   packet: SeedPacket;
 } & Rect;
 
-export type SeedSlotManager = {
-  slots: SeedSlot[];
-  selectedSlot: SeedSlot | null;
-} & Rect;
+export interface SeedSlotManager extends Drawable, Updatable {
+  readonly position: Position;
+  readonly size: Size;
+  readonly slots: SeedSlot[];
+  readonly selectedSlot: SeedSlot | null;
+  setSelectedSlot(slot: SeedSlot | null): void;
+}
+
+type Options = {
+  ctx: LevelContext;
+};
 
 const SEED_SLOT_WIDTH = 80 + SEED_PACKET_MARGIN_LEFT;
 const SEED_SLOT_HEIGHT = 80;
@@ -40,33 +51,18 @@ SEED_SLOT_OPEN_IMAGE.src = "./seed/seed-slot/Seed_Slot_Open.png";
 SEED_SLOT_CENTER_IMAGE.src = "./seed/seed-slot/Seed_Slot_Center.png";
 SEED_SLOT_CLOSE_IMAGE.src = "./seed/seed-slot/Seed_Slot_Close.png";
 
-function createSeedSlotId(): string {
-  return `SEED_SLOT-${crypto.randomUUID()}`;
-}
-
-export function drawSeedSlot(
-  slot: SeedSlot,
-  board: Board,
-  spriteImage: HTMLImageElement
-) {
-  const { ctx } = board;
-
-  if (ctx === null) {
-    return;
-  }
-
-  ctx.drawImage(
-    spriteImage,
-    Math.round(slot.x),
-    Math.round(slot.y),
-    slot.width,
-    slot.height
-  );
-  drawSeedPacket(slot.packet, board);
-}
-
-export function createSeedSlotManager(): SeedSlotManager {
+export function createSeedSlotManager(options: Options): SeedSlotManager {
+  const { ctx: levelContext } = options;
+  const position = createPosition({
+    x: 0,
+    y: SEED_SLOT_OFFSET_Y,
+  });
+  const size = createSize({
+    width: TILE_WIDTH * BOARD_ROWS,
+    height: SEED_SLOT_HEIGHT,
+  });
   const slots: SeedSlot[] = [];
+  let selectedSlot: SeedSlot | null = null;
 
   slots.push(
     {
@@ -116,97 +112,128 @@ export function createSeedSlotManager(): SeedSlotManager {
         x: TILE_WIDTH + SEED_SLOT_WIDTH * 3 + SEED_PACKET_MARGIN_LEFT,
         y: SEED_SLOT_OFFSET_Y + SEED_PACKET_ACTIVE_Y,
       }),
-    }
+    },
   );
 
+  function draw(board: Board) {
+    const { ctx } = board;
+
+    if (ctx === null) {
+      return;
+    }
+
+    ctx.fillStyle = "transparent";
+    // ctx.fillStyle = "red";
+    ctx.fillRect(position.x, position.y, size.width, size.height);
+    ctx.fill();
+
+    ctx.drawImage(
+      SEED_SLOT_FULL_IMAGE,
+      Math.round(SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2),
+      Math.round(SEED_SLOT_OFFSET_Y),
+      SEED_SLOT_WIDTH - SEED_PACKET_MARGIN_LEFT,
+      SEED_SLOT_HEIGHT,
+    );
+
+    drawSunImage(
+      {
+        x: SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + 20,
+        y: SEED_SLOT_OFFSET_Y + 4,
+        width: 40,
+        height: 40,
+      },
+      board,
+    );
+    drawCenteredText(
+      board,
+      levelContext.sunAmount.toString(),
+      SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + SEED_SLOT_WIDTH / 2,
+      SEED_SLOT_OFFSET_Y + SEED_SLOT_HEIGHT / 1.25,
+      "#ffffff",
+      {
+        fontSize: FontSize.TwoXl,
+      },
+    );
+
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+
+      if (i === 0) {
+        drawSeedSlot(slot, board, SEED_SLOT_OPEN_IMAGE);
+        continue;
+      }
+      if (i === slots.length - 1) {
+        drawSeedSlot(slot, board, SEED_SLOT_CLOSE_IMAGE);
+        continue;
+      }
+
+      drawSeedSlot(slot, board, SEED_SLOT_CENTER_IMAGE);
+    }
+  }
+
+  function update(deltaTime: number) {
+    handleSeedPacketStatus(selectedSlot, slots, levelContext);
+    handleSeedPacketCooldown(slots, deltaTime);
+
+    for (const slot of slots) {
+      slot.packet.update(deltaTime);
+    }
+  }
+
+  function setSelectedSlot(slot: SeedSlot | null) {
+    selectedSlot = slot;
+  }
+
   return {
-    x: 0,
-    y: SEED_SLOT_OFFSET_Y,
-    width: TILE_WIDTH * BOARD_ROWS,
-    height: SEED_SLOT_HEIGHT,
-    slots,
-    selectedSlot: null,
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get slots() {
+      return slots;
+    },
+    get selectedSlot() {
+      return selectedSlot;
+    },
+    draw,
+    update,
+    setSelectedSlot,
   };
 }
 
-export function drawSeedSlotManager(
-  seedSlotManager: SeedSlotManager,
+function createSeedSlotId(): string {
+  return `SEED_SLOT-${crypto.randomUUID()}`;
+}
+
+function drawSeedSlot(
+  slot: SeedSlot,
   board: Board,
-  level: Level
+  spriteImage: HTMLImageElement,
 ) {
-  const { x, y, width, height, slots } = seedSlotManager;
   const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
-  ctx.fillStyle = "transparent";
-  // ctx.fillStyle = "red";
-  ctx.fillRect(x, y, width, height);
-  ctx.fill();
-
   ctx.drawImage(
-    SEED_SLOT_FULL_IMAGE,
-    Math.round(SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2),
-    Math.round(SEED_SLOT_OFFSET_Y),
-    SEED_SLOT_WIDTH - SEED_PACKET_MARGIN_LEFT,
-    SEED_SLOT_HEIGHT
+    spriteImage,
+    Math.round(slot.x),
+    Math.round(slot.y),
+    slot.width,
+    slot.height,
   );
-
-  drawSunImage(
-    {
-      x: SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + 20,
-      y: SEED_SLOT_OFFSET_Y + 4,
-      width: 40,
-      height: 40,
-    },
-    board
-  );
-  drawCenteredText(
-    board,
-    level.sunAmount.toString(),
-    SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + SEED_SLOT_WIDTH / 2,
-    SEED_SLOT_OFFSET_Y + SEED_SLOT_HEIGHT / 1.25,
-    "#ffffff",
-    {
-      fontSize: FontSize.TwoXl,
-    }
-  );
-
-  for (let i = 0; i < slots.length; i++) {
-    const slot = slots[i];
-
-    if (i === 0) {
-      drawSeedSlot(slot, board, SEED_SLOT_OPEN_IMAGE);
-      continue;
-    }
-    if (i === slots.length - 1) {
-      drawSeedSlot(slot, board, SEED_SLOT_CLOSE_IMAGE);
-      continue;
-    }
-
-    drawSeedSlot(slot, board, SEED_SLOT_CENTER_IMAGE);
-  }
+  slot.packet.draw(board);
 }
 
-export function updateSeedSlotManager(
-  seedSlotManager: SeedSlotManager,
-  deltaTime: number,
-  level: Level
+function handleSeedPacketStatus(
+  selectedSlot: SeedSlot | null,
+  slots: SeedSlot[],
+  ctx: LevelContext,
 ) {
-  handleSeedPacketStatus(level);
-  handleSeedPacketCooldown(seedSlotManager, deltaTime);
-
-  for (const slot of seedSlotManager.slots) {
-    updateSeedPacket(slot.packet, deltaTime);
-  }
-}
-
-function handleSeedPacketStatus(level: Level) {
-  const selectedSlot = level.seedSlotManager.selectedSlot;
-
-  for (const slot of level.seedSlotManager.slots) {
+  for (const slot of slots) {
     const packet = slot.packet;
 
     if (selectedSlot !== null) {
@@ -214,40 +241,37 @@ function handleSeedPacketStatus(level: Level) {
         continue;
       }
       if (slot.id === selectedSlot.id) {
-        packet.status = SeedPacketStatus.Selected;
+        packet.setStatus(SeedPacketStatus.Selected);
       } else {
-        packet.status = SeedPacketStatus.Active;
+        packet.setStatus(SeedPacketStatus.Active);
       }
     } else {
       const plantSunCost = PlantInfo[packet.plantType].SunCost;
 
-      if (level.sunAmount < plantSunCost) {
-        packet.status = SeedPacketStatus.Disabled;
+      if (ctx.sunAmount < plantSunCost) {
+        packet.setStatus(SeedPacketStatus.Disabled);
       } else {
-        packet.status = SeedPacketStatus.Active;
+        packet.setStatus(SeedPacketStatus.Active);
       }
     }
   }
 }
 
-function handleSeedPacketCooldown(
-  seedSlotManager: SeedSlotManager,
-  deltaTime: number
-) {
-  for (const slot of seedSlotManager.slots) {
+function handleSeedPacketCooldown(slots: SeedSlot[], deltaTime: number) {
+  for (const slot of slots) {
     const packet = slot.packet;
 
     if (packet.cooldownTimerPaused) {
       continue;
     }
 
-    packet.cooldownTimer += deltaTime;
+    packet.setCooldownTimer(packet.cooldownTimer + deltaTime);
 
     if (packet.cooldownTimer < PlantInfo[packet.plantType].Cooldown) {
-      packet.status = SeedPacketStatus.Disabled;
+      packet.setStatus(SeedPacketStatus.Disabled);
     } else {
-      packet.cooldownTimerPaused = true;
-      packet.cooldownTimer = 0;
+      packet.setCooldownTimerPaused(true);
+      packet.setCooldownTimer(0);
     }
   }
 }

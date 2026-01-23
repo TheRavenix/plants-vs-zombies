@@ -1,24 +1,27 @@
-import { drawHitbox, isHitboxColliding } from "@/game/helpers/hitbox";
-import {
-  findZombieById,
-  findZombiesWithinArea,
-  type Zombie,
-} from "../../zombies";
-import { createShotId, syncShotHitbox } from "../shot-service";
-import { entityTakeDamage } from "../../entity-service";
-import { ShotType } from "../constants";
+import { findZombiesWithinArea } from "../../zombies";
+import { createShotId } from "../shot-service";
+import { ShotDirection, ShotType } from "../constants";
+import { createPosition } from "@/game/features/position";
+import { createSize } from "@/game/features/size";
+import { createHitbox } from "@/game/features/hitbox";
 
-import type { BaseShot, ShotDrawOptions, ShotUpdateOptions } from "../types";
+import type { BaseShot } from "../types";
 import type { Vector2 } from "@/game/types/math";
+import type { LevelContext } from "@/game/level";
+import type { Board } from "@/game/board";
+import type { Zombie } from "../../zombies/types/zombie";
 
-export type RicochetPeashot = {
-  type: ShotType.RicochetPeashot;
-  bounceTimes: number;
-  lastHitZombieId: string | null;
-} & BaseShot;
+export interface RicochetPeashot extends BaseShot {
+  readonly type: ShotType.RicochetPeashot;
+  readonly bounceTimes: number;
+  readonly lastHitZombieId: string | null;
+}
 
-type CreateRicochetPeashotOptions = Vector2;
+type Options = {
+  ctx: LevelContext;
+} & Vector2;
 
+const TYPE = ShotType.RicochetPeashot as const;
 const DAMAGE = 20;
 const SPEED = 150;
 const SPRITE_WIDTH = 24;
@@ -32,179 +35,209 @@ const SPRITE_IMAGE_SH = 9;
 
 SPRITE_IMAGE.src = "./shots/pea/peashot/Peashot.png";
 
-export function createRicochetPeashot(
-  options: CreateRicochetPeashotOptions
-): RicochetPeashot {
-  const { x, y } = options;
-  return {
-    type: ShotType.RicochetPeashot,
-    id: createShotId(),
-    x,
-    y,
-    width: SPRITE_HEIGHT,
+export function createRicochetPeashot(options: Options): RicochetPeashot {
+  const { ctx } = options;
+  const id = createShotId();
+  const position = createPosition({
+    x: options.x,
+    y: options.y,
+  });
+  const size = createSize({
+    width: SPRITE_WIDTH,
     height: SPRITE_HEIGHT,
-    damage: DAMAGE,
-    speed: SPEED,
-    fillStyle: "#A0B09A",
-    hitbox: {
-      x,
-      y,
-      width: SPRITE_WIDTH,
-      height: SPRITE_HEIGHT,
-    },
-    direction: undefined,
-    bounceTimes: 0,
-    lastHitZombieId: null,
-    active: true,
-  };
-}
+  });
+  const hitbox = createHitbox({
+    x: position.x,
+    y: position.y,
+    width: size.width,
+    height: size.height,
+  });
+  let damage = DAMAGE;
+  let active = true;
+  let speed = SPEED;
+  let bounceTimes = 0;
+  let lastHitZombieId: string | null = null;
+  let direction: ShotDirection | undefined = undefined;
 
-export function drawRicochetPeashot(
-  ricochetpeashot: RicochetPeashot,
-  options: ShotDrawOptions
-) {
-  const { board } = options;
-  const { ctx } = board;
+  function draw(board: Board) {
+    const { ctx } = board;
 
-  if (ctx === null) {
-    return;
-  }
-
-  ctx.drawImage(
-    SPRITE_IMAGE,
-    SPRITE_IMAGE_SX,
-    SPRITE_IMAGE_SY,
-    SPRITE_IMAGE_SW,
-    SPRITE_IMAGE_SH,
-    Math.round(ricochetpeashot.x),
-    Math.round(ricochetpeashot.y),
-    ricochetpeashot.width,
-    ricochetpeashot.height
-  );
-
-  drawHitbox(ricochetpeashot.hitbox, board);
-}
-
-export function updateRicochetPeashot(
-  ricochetpeashot: RicochetPeashot,
-  options: ShotUpdateOptions
-) {
-  const { deltaTime, level } = options;
-  const { zombies } = level;
-  const speed = ricochetpeashot.speed * (deltaTime / 1000);
-
-  if (ricochetpeashot.bounceTimes >= BOUNCE_TIMES) {
-    ricochetpeashot.active = false;
-  }
-  if (ricochetpeashot.lastHitZombieId !== null) {
-    if (ricochetpeashot.bounceTimes >= BOUNCE_TIMES) {
+    if (ctx === null) {
       return;
     }
 
-    let filteredZombies: Zombie[] = zombies;
-    const lastHitZombie = findZombieById(
-      zombies,
-      ricochetpeashot.lastHitZombieId
+    ctx.drawImage(
+      SPRITE_IMAGE,
+      SPRITE_IMAGE_SX,
+      SPRITE_IMAGE_SY,
+      SPRITE_IMAGE_SW,
+      SPRITE_IMAGE_SH,
+      Math.round(position.x),
+      Math.round(position.y),
+      size.width,
+      size.height,
     );
+    hitbox.draw(board);
+  }
 
-    if (lastHitZombie !== undefined) {
-      filteredZombies = findZombiesWithinArea(
-        zombies,
-        lastHitZombie.x,
-        lastHitZombie.y
-      );
+  // TODO: Minimize this code
+  function update(deltaTime: number) {
+    const finalSpeed = speed * (deltaTime / 1000);
 
-      const filteredZombiesNoLastHit = filteredZombies.filter(
-        (zombie) => zombie.id !== lastHitZombie.id
-      );
-
-      if (filteredZombiesNoLastHit.length > 0) {
-        filteredZombies = filteredZombies.filter(
-          (zombie) => zombie.id !== lastHitZombie.id
-        );
-      }
-    } else {
-      const zombiesWithinArea = findZombiesWithinArea(
-        filteredZombies,
-        ricochetpeashot.x,
-        ricochetpeashot.y
-      );
-
-      if (zombiesWithinArea.length <= 0) {
-        ricochetpeashot.active = false;
+    if (bounceTimes >= BOUNCE_TIMES) {
+      active = false;
+    }
+    if (lastHitZombieId !== null) {
+      if (bounceTimes >= BOUNCE_TIMES) {
         return;
       }
-    }
 
-    if (filteredZombies.length > 0) {
-      let closestZombie = filteredZombies[0];
-      let minDistance = Infinity;
+      let filteredZombies: Zombie[] = [...ctx.zombies];
+      const lastHitZombie = ctx.findZombieById(lastHitZombieId);
 
-      for (const zombie of filteredZombies) {
-        const dx = zombie.x - ricochetpeashot.x;
-        const dy = zombie.y - ricochetpeashot.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      if (lastHitZombie !== undefined) {
+        filteredZombies = findZombiesWithinArea(
+          [...ctx.zombies],
+          lastHitZombie.position.x,
+          lastHitZombie.position.y,
+        );
 
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestZombie = zombie;
+        const filteredZombiesNoLastHit = filteredZombies.filter(
+          (zombie) => zombie.id !== lastHitZombie.id,
+        );
+
+        if (filteredZombiesNoLastHit.length > 0) {
+          filteredZombies = filteredZombies.filter(
+            (zombie) => zombie.id !== lastHitZombie.id,
+          );
+        }
+      } else {
+        const zombiesWithinArea = findZombiesWithinArea(
+          filteredZombies,
+          position.x,
+          position.y,
+        );
+
+        if (zombiesWithinArea.length <= 0) {
+          active = false;
+          return;
         }
       }
 
-      if (Math.abs(ricochetpeashot.x - closestZombie.x) > speed) {
-        ricochetpeashot.x +=
-          ricochetpeashot.x > closestZombie.x ? -speed : speed;
+      if (filteredZombies.length > 0) {
+        let closestZombie = filteredZombies[0];
+        let minDistance = Infinity;
+
+        for (const zombie of filteredZombies) {
+          const dx = zombie.position.x - position.x;
+          const dy = zombie.position.y - position.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestZombie = zombie;
+          }
+        }
+
+        if (Math.abs(position.x - closestZombie.position.x) > finalSpeed) {
+          position.setX(
+            position.x + position.x > closestZombie.position.x
+              ? -finalSpeed
+              : finalSpeed,
+          );
+        }
+        if (Math.abs(position.y - closestZombie.position.y) > finalSpeed) {
+          position.setY(
+            position.y + position.y > closestZombie.position.y
+              ? -finalSpeed
+              : finalSpeed,
+          );
+        }
       }
-      if (Math.abs(ricochetpeashot.y - closestZombie.y) > speed) {
-        ricochetpeashot.y +=
-          ricochetpeashot.y > closestZombie.y ? -speed : speed;
+
+      let deleteZombieId: string | null = null;
+      const collisionZombie = filteredZombies.find((zombie) => {
+        return hitbox.isColliding(zombie.hitbox);
+      });
+
+      if (collisionZombie !== undefined) {
+        deleteZombieId = collisionZombie.id;
+      }
+      if (deleteZombieId !== null) {
+        const zombie = ctx.findZombieById(deleteZombieId);
+
+        if (zombie !== undefined) {
+          zombie.health.takeDamage(damage);
+
+          bounceTimes += 1;
+          lastHitZombieId = zombie.id;
+
+          deleteZombieId = null;
+        }
+      }
+    } else {
+      position.setX(position.x + finalSpeed);
+
+      let deleteZombieId: string | null = null;
+
+      const collisionZombie = ctx.zombies.find((zombie) => {
+        return hitbox.isColliding(zombie.hitbox);
+      });
+
+      if (collisionZombie !== undefined) {
+        deleteZombieId = collisionZombie.id;
+      }
+      if (deleteZombieId !== null) {
+        const zombie = ctx.findZombieById(deleteZombieId);
+
+        if (zombie !== undefined) {
+          zombie.health.takeDamage(damage);
+
+          lastHitZombieId = zombie.id;
+
+          deleteZombieId = null;
+        }
       }
     }
 
-    let deleteZombieId: string | null = null;
-    const collisionZombie = filteredZombies.find((zombie) => {
-      return isHitboxColliding(ricochetpeashot.hitbox, zombie.hitbox);
-    });
-
-    if (collisionZombie !== undefined) {
-      deleteZombieId = collisionZombie.id;
-    }
-    if (deleteZombieId !== null) {
-      const zombie = findZombieById(filteredZombies, deleteZombieId);
-
-      if (zombie !== undefined) {
-        entityTakeDamage(zombie, ricochetpeashot.damage);
-
-        ricochetpeashot.bounceTimes += 1;
-        ricochetpeashot.lastHitZombieId = zombie.id;
-
-        deleteZombieId = null;
-      }
-    }
-  } else {
-    ricochetpeashot.x += speed;
-
-    let deleteZombieId: string | null = null;
-
-    const collisionZombie = zombies.find((zombie) => {
-      return isHitboxColliding(ricochetpeashot.hitbox, zombie.hitbox);
-    });
-
-    if (collisionZombie !== undefined) {
-      deleteZombieId = collisionZombie.id;
-    }
-    if (deleteZombieId !== null) {
-      const zombie = findZombieById(zombies, deleteZombieId);
-
-      if (zombie !== undefined) {
-        entityTakeDamage(zombie, ricochetpeashot.damage);
-
-        ricochetpeashot.lastHitZombieId = zombie.id;
-
-        deleteZombieId = null;
-      }
-    }
+    hitbox.position.set(position.x, position.y);
   }
 
-  syncShotHitbox(ricochetpeashot);
+  return {
+    get type() {
+      return TYPE;
+    },
+    get id() {
+      return id;
+    },
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get hitbox() {
+      return hitbox;
+    },
+    get damage() {
+      return damage;
+    },
+    get speed() {
+      return speed;
+    },
+    get active() {
+      return active;
+    },
+    get direction() {
+      return direction;
+    },
+    get bounceTimes() {
+      return bounceTimes;
+    },
+    get lastHitZombieId() {
+      return lastHitZombieId;
+    },
+    draw,
+    update,
+  };
 }

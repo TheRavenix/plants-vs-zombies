@@ -3,9 +3,9 @@ export type Vector2 = {
   y: number;
 };
 
-export type Size = {
+export type Dimensions = {
   width: number;
   height: number;
 };
 
-export type Rect = Vector2 & Size;
+export type Rect = Vector2 & Dimensions;
