@@ -1,6 +1,6 @@
 import { createFirepeaShot, ShotType } from "../shots";
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
-import { createPlantId } from "./plant-service";
+import { createPlantId } from "./service";
 import { createHitbox } from "@/game/features/hitbox";
 import { PlantType } from "./constants/plant-type";
 import { createPosition } from "@/game/features/position";

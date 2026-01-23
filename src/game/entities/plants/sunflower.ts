@@ -1,6 +1,6 @@
 import { createSun, SUN_SPRITE_WIDTH } from "../sun";
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
-import { createPlantId } from "./plant-service";
+import { createPlantId } from "./service";
 import { createHitbox } from "@/game/features/hitbox";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";

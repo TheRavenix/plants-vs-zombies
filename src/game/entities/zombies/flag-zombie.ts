@@ -3,7 +3,7 @@ import {
   drawZombieRect,
   drawZombieType,
   handleZombieDefaultMovement,
-} from "./zombie-service";
+} from "./service";
 import {
   ZOMBIE_HEIGHT,
   ZOMBIE_WIDTH,

@@ -34,8 +34,8 @@ export function createHitbox(options: Options): Hitbox {
       return;
     }
 
-    // ctx.strokeStyle = "transparent";
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = "transparent";
+    // ctx.strokeStyle = "red";
     ctx.strokeRect(position.x, position.y, size.width, size.height);
     ctx.stroke();
   }

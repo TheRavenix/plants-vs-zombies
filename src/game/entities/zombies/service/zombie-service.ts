@@ -1,15 +1,12 @@
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
-import { createBasicZombie } from "./basic-zombie";
-import { createFlagZombie } from "./flag-zombie";
 import { drawText } from "@/game/helpers/canvas";
 import { FontSize } from "@/game/constants/font";
-import { ZombieType } from "./constants";
 
-import type { Zombie } from "./types/zombie";
 import type { Position } from "@/game/features/position";
 import type { Size } from "@/game/features/size";
 import type { Health } from "@/game/features/health";
-import type { LevelContext } from "@/game/level";
+import type { ZombieType } from "../constants";
+import type { Zombie } from "../types/zombie";
 
 export function createZombieId(): string {
   return `ZOMBIE-${crypto.randomUUID()}`;
@@ -61,35 +58,6 @@ export function handleZombieDefaultMovement(
   const freezedSpeed = (speed * freezeAmount) / 100;
 
   position.setX(position.x - (speed - freezedSpeed) * (deltaTime / 1000));
-}
-
-export function createZombie(
-  type: ZombieType,
-  x: number,
-  y: number,
-  ctx: LevelContext,
-): Zombie | null {
-  let zombie: Zombie | null = null;
-
-  switch (type) {
-    case ZombieType.Basic:
-      zombie = createBasicZombie({
-        x,
-        y,
-        ctx,
-      });
-      break;
-
-    case ZombieType.Flag:
-      zombie = createFlagZombie({
-        x,
-        y,
-        ctx,
-      });
-      break;
-  }
-
-  return zombie;
 }
 
 export function findZombiesWithinArea(

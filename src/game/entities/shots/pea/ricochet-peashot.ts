@@ -1,5 +1,5 @@
 import { findZombiesWithinArea } from "../../zombies";
-import { createShotId } from "../shot-service";
+import { createShotId } from "../service";
 import { ShotDirection, ShotType } from "../constants";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";

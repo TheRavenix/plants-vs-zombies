@@ -1,10 +1,10 @@
-import { type Board } from "@/game/board";
 import { drawText } from "@/game/helpers/canvas";
 import { FontSize } from "@/game/constants/font";
-import { ShotDirection, ShotType } from "./constants";
+import { ShotDirection, ShotType } from "../constants";
 
 import type { Position } from "@/game/features/position";
 import type { Size } from "@/game/features/size";
+import type { Board } from "@/game/board";
 
 export function createShotId(): string {
   return `SHOT-${crypto.randomUUID()}`;
