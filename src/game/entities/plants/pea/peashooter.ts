@@ -1,6 +1,6 @@
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import { createPeashot } from "../../shots";
-import { createPlantId } from "../plant-service";
+import { createPlantId } from "../service";
 import { PlantType } from "../constants/plant-type";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";

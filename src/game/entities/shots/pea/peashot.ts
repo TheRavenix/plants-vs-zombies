@@ -1,4 +1,4 @@
-import { createShotId, handleShotDirection } from "../shot-service";
+import { createShotId, handleShotDirection } from "../service";
 import { ShotDirection, ShotType } from "../constants";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";

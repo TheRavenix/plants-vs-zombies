@@ -6,7 +6,8 @@ import {
   TILE_WIDTH,
   type Board,
 } from "../board";
-import { createPlant, PlantInfo } from "../entities/plants";
+import { PlantInfo } from "../entities/plants";
+import { createPlant } from "../entities/plants/service/create-plant";
 import {
   createSeedSlotManager,
   type SeedSlotManager,

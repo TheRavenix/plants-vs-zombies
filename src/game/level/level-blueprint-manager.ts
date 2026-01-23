@@ -1,5 +1,5 @@
 import { BOARD_COLS, TILE_HEIGHT, TILE_WIDTH } from "../board";
-import { createZombie, ZombieType } from "../entities/zombies";
+import { createZombie } from "../entities/zombies/service/create-zombie";
 import { createSeedPacket } from "../seed";
 
 import type { LevelContext } from "./level";
@@ -7,6 +7,7 @@ import type { Startable } from "../types/startable";
 import type { Updatable } from "../types/updatable";
 import type { PlantType } from "../entities/plants/constants/plant-type";
 import type { Zombie } from "../entities/zombies/types/zombie";
+import type { ZombieType } from "../entities/zombies";
 
 export type LevelBlueprint = {
   id: string;

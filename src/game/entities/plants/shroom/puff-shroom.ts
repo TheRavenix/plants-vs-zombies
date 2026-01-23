@@ -1,6 +1,6 @@
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import { createShroomshot } from "../../shots";
-import { createPlantId, drawPlantRect, drawPlantType } from "../plant-service";
+import { createPlantId, drawPlantRect, drawPlantType } from "../service";
 import { createHitbox } from "@/game/features/hitbox";
 import { PLANT_HEIGHT, PLANT_WIDTH } from "../constants";
 import { PlantType } from "../constants/plant-type";

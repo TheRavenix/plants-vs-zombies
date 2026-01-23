@@ -1,5 +1,5 @@
 import { createHitbox } from "@/game/features/hitbox";
-import { createPlantId, drawPlantRect, drawPlantType } from "../plant-service";
+import { createPlantId, drawPlantRect, drawPlantType } from "../service";
 import { PLANT_HEIGHT, PLANT_WIDTH } from "../constants";
 import { PlantType } from "../constants/plant-type";
 import { createPosition } from "@/game/features/position";
