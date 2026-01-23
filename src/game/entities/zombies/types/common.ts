@@ -1,30 +1,21 @@
-import type { Hitbox } from "@/game/helpers/hitbox";
+import type { Hitbox } from "@/game/features/hitbox";
 import type { ZombieState } from "../constants";
-import type { Rect } from "@/game/types/math";
-import type { Board } from "@/game/board";
-import type { HasHealth } from "../../types";
-import type { Level } from "@/game/level";
+import type { Size } from "@/game/features/size";
+import type { Position } from "@/game/features/position";
+import type { Health } from "@/game/features/health";
+import type { Drawable } from "@/game/types/drawable";
+import type { Updatable } from "@/game/types/updatable";
 
-export type BaseZombie = {
-  id: string;
-  state: ZombieState;
-  damage: number;
-  speed: number;
-  hitbox: Hitbox;
-  damageTimer: number;
-  freezeAmount: number;
-} & Rect &
-  HasHealth;
-
-export type ZombieDrawOptions = {
-  board: Board;
-};
-
-export type ZombieUpdateOptions = {
-  deltaTime: number;
-  level: Level;
-};
-
-export type ZombieTakeDamageOptions = {
-  damage: number;
-};
+export interface BaseZombie extends Drawable, Updatable {
+  readonly id: string;
+  readonly position: Position;
+  readonly size: Size;
+  readonly health: Health;
+  readonly hitbox: Hitbox;
+  readonly state: ZombieState;
+  readonly damage: number;
+  readonly speed: number;
+  readonly damageTimer: number;
+  readonly freezeAmount: number;
+  setFreezeAmount(freezeAmount: number): void;
+}

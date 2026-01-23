@@ -1,13 +1,19 @@
+import { createPosition, type Position } from "@/game/features/position";
+import { createSize, type Size } from "@/game/features/size";
+
 import type { Board } from "@/game/board";
-import type { Level } from "@/game/level";
+import type { Drawable } from "@/game/types/drawable";
+import type { Updatable } from "@/game/types/updatable";
 import type { Rect, Vector2 } from "@/game/types/math";
 
-export type Sun = {
-  id: string;
-  amount: number;
-} & Rect;
+export interface Sun extends Drawable, Updatable {
+  readonly id: string;
+  readonly position: Position;
+  readonly size: Size;
+  readonly amount: number;
+}
 
-type CreateSunOptions = {
+type Options = {
   amount: number;
 } & Vector2;
 
@@ -21,19 +27,58 @@ const SPRITE_IMAGE_SH = 17;
 
 SPRITE_IMAGE.src = "./sun/Sun.png";
 
-function createSunId(): string {
-  return `SUN-${crypto.randomUUID()}`;
-}
-
-export function createSun(options: CreateSunOptions): Sun {
-  return {
-    id: createSunId(),
-    amount: options.amount,
+export function createSun(options: Options): Sun {
+  const id = createSunId();
+  const position = createPosition({
     x: options.x,
     y: options.y,
+  });
+  const size = createSize({
     width: SUN_SPRITE_WIDTH,
     height: SUN_SPRITE_HEIGHT,
+  });
+  let amount = options.amount;
+
+  function draw(board: Board) {
+    const { ctx } = board;
+
+    if (ctx === null) {
+      return;
+    }
+
+    drawSunImage(
+      {
+        x: position.x,
+        y: position.y,
+        width: size.width,
+        height: size.height,
+      },
+      board,
+    );
+  }
+
+  function update(_deltaTime: number) {}
+
+  return {
+    get id() {
+      return id;
+    },
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get amount() {
+      return amount;
+    },
+    draw,
+    update,
   };
+}
+
+function createSunId(): string {
+  return `SUN-${crypto.randomUUID()}`;
 }
 
 export function drawSunImage(rect: Rect, board: Board) {
@@ -52,35 +97,6 @@ export function drawSunImage(rect: Rect, board: Board) {
     Math.round(rect.x),
     Math.round(rect.y),
     rect.width,
-    rect.height
+    rect.height,
   );
-}
-
-export function drawSun(sun: Sun, board: Board) {
-  const { ctx } = board;
-
-  if (ctx === null) {
-    return;
-  }
-
-  drawSunImage(sun, board);
-}
-
-export function updateSun(_sun: Sun, _deltaTime: number) {}
-
-export function addSun(suns: Sun[], sun: Sun): Sun[] {
-  return [...suns, sun];
-}
-
-export function removeSunById(suns: Sun[], id: string): Sun[] {
-  return suns.filter((sun) => sun.id !== id);
-}
-
-export function findSunById(suns: Sun[], id: string): Sun | undefined {
-  return suns.find((sun) => sun.id === id);
-}
-
-export function collectSun(sun: Sun, level: Level) {
-  level.sunAmount += sun.amount;
-  level.suns = removeSunById(level.suns, sun.id);
 }

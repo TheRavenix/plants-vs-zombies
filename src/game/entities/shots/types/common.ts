@@ -1,24 +1,17 @@
-import type { Hitbox } from "@/game/helpers/hitbox";
+import type { Hitbox } from "@/game/features/hitbox";
 import type { ShotDirection } from "../constants";
-import type { Rect } from "@/game/types/math";
-import type { Board } from "@/game/board";
-import type { Level } from "@/game/level";
+import type { Size } from "@/game/features/size";
+import type { Position } from "@/game/features/position";
+import type { Drawable } from "@/game/types/drawable";
+import type { Updatable } from "@/game/types/updatable";
 
-export type BaseShot = {
-  id: string;
-  damage: number;
-  speed: number;
-  hitbox: Hitbox;
-  fillStyle: string;
-  direction?: ShotDirection;
-  active: boolean;
-} & Rect;
-
-export type ShotDrawOptions = {
-  board: Board;
-};
-
-export type ShotUpdateOptions = {
-  deltaTime: number;
-  level: Level;
-};
+export interface BaseShot extends Drawable, Updatable {
+  readonly id: string;
+  readonly position: Position;
+  readonly size: Size;
+  readonly hitbox: Hitbox;
+  readonly damage: number;
+  readonly speed: number;
+  readonly direction?: ShotDirection;
+  readonly active: boolean;
+}

@@ -1,102 +1,73 @@
-import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import {
-  createBasicZombie,
-  drawBasicZombie,
-  updateBasicZombie,
-} from "./basic-zombie";
-import {
-  createFlagZombie,
-  drawFlagZombie,
-  updateFlagZombie,
-} from "./flag-zombie";
+import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
+import { createBasicZombie } from "./basic-zombie";
+import { createFlagZombie } from "./flag-zombie";
 import { drawText } from "@/game/helpers/canvas";
 import { FontSize } from "@/game/constants/font";
 import { ZombieType } from "./constants";
 
-import type {
-  BaseZombie,
-  Zombie,
-  ZombieDrawOptions,
-  ZombieUpdateOptions,
-} from "./types";
+import type { Zombie } from "./types/zombie";
+import type { Position } from "@/game/features/position";
+import type { Size } from "@/game/features/size";
+import type { Health } from "@/game/features/health";
+import type { LevelContext } from "@/game/level";
 
 export function createZombieId(): string {
   return `ZOMBIE-${crypto.randomUUID()}`;
 }
 
-export function drawZombieRect(zombie: BaseZombie, options: ZombieDrawOptions) {
-  const { ctx } = options.board;
+export function drawZombieRect(position: Position, size: Size, board: Board) {
+  const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
   ctx.fillStyle = "#708090";
-  ctx.fillRect(zombie.x, zombie.y, zombie.width, zombie.height);
+  ctx.fillRect(position.x, position.y, size.width, size.height);
   ctx.fill();
 }
 
-export function drawZombieType(zombie: Zombie, options: ZombieDrawOptions) {
-  const { ctx } = options.board;
+export function drawZombieType(
+  type: ZombieType,
+  position: Position,
+  size: Size,
+  health: Health,
+  board: Board,
+) {
+  const { ctx } = board;
 
   if (ctx === null) {
     return;
   }
 
   drawText(
-    options.board,
-    `${zombie.type} ${zombie.health}`,
-    zombie.x,
-    zombie.y + zombie.height / 2,
+    board,
+    `${type} ${health.hp}`,
+    position.x,
+    position.y + size.height / 2,
     "#000000",
     {
       fontSize: FontSize.Xs,
-    }
+    },
   );
 }
 
 export function handleZombieDefaultMovement(
-  zombie: BaseZombie,
-  options: ZombieUpdateOptions
+  position: Position,
+  freezeAmount: number,
+  speed: number,
+  deltaTime: number,
 ) {
-  const { speed, freezeAmount } = zombie;
   const freezedSpeed = (speed * freezeAmount) / 100;
-  zombie.x -= (speed - freezedSpeed) * (options.deltaTime / 1000);
-}
 
-export function syncZombieHitbox(zombie: BaseZombie) {
-  zombie.hitbox.x = zombie.x;
-  zombie.hitbox.y = zombie.y;
-}
-
-export function drawZombie(zombie: Zombie, options: ZombieDrawOptions) {
-  switch (zombie.type) {
-    case ZombieType.Basic:
-      drawBasicZombie(zombie, options);
-      break;
-
-    case ZombieType.Flag:
-      drawFlagZombie(zombie, options);
-      break;
-  }
-}
-
-export function updateZombie(zombie: Zombie, options: ZombieUpdateOptions) {
-  switch (zombie.type) {
-    case ZombieType.Basic:
-      updateBasicZombie(zombie, options);
-      break;
-
-    case ZombieType.Flag:
-      updateFlagZombie(zombie, options);
-      break;
-  }
+  position.setX(position.x - (speed - freezedSpeed) * (deltaTime / 1000));
 }
 
 export function createZombie(
   type: ZombieType,
   x: number,
-  y: number
+  y: number,
+  ctx: LevelContext,
 ): Zombie | null {
   let zombie: Zombie | null = null;
 
@@ -105,6 +76,7 @@ export function createZombie(
       zombie = createBasicZombie({
         x,
         y,
+        ctx,
       });
       break;
 
@@ -112,6 +84,7 @@ export function createZombie(
       zombie = createFlagZombie({
         x,
         y,
+        ctx,
       });
       break;
   }
@@ -119,34 +92,11 @@ export function createZombie(
   return zombie;
 }
 
-export function addZombie(zombies: Zombie[], zombie: Zombie): Zombie[] {
-  return [...zombies, zombie];
-}
-
-export function addZombies(zombies: Zombie[], ...toAdd: Zombie[]): Zombie[] {
-  return [...zombies, ...toAdd];
-}
-
-export function removeZombieById(zombies: Zombie[], id: string): Zombie[] {
-  return zombies.filter((zombie) => zombie.id !== id);
-}
-
-export function findZombieById(
-  zombies: Zombie[],
-  id: string
-): Zombie | undefined {
-  return zombies.find((zombie) => zombie.id === id);
-}
-
-export function removeOutOfHealthZombies(zombies: Zombie[]): Zombie[] {
-  return zombies.filter((zombie) => zombie.health > 0);
-}
-
 export function findZombiesWithinArea(
   zombies: Zombie[],
   x: number,
   y: number,
-  tileRange?: number
+  tileRange?: number,
 ): Zombie[] {
   const tileRangeX =
     tileRange !== undefined ? TILE_WIDTH * tileRange : TILE_WIDTH;
@@ -155,10 +105,10 @@ export function findZombiesWithinArea(
 
   return zombies.filter((zombie) => {
     return (
-      zombie.x >= x - tileRangeX &&
-      zombie.x <= x + tileRangeX &&
-      zombie.y >= y - tileRangeY &&
-      zombie.y <= y + tileRangeY
+      zombie.position.x >= x - tileRangeX &&
+      zombie.position.x <= x + tileRangeX &&
+      zombie.position.y >= y - tileRangeY &&
+      zombie.position.y <= y + tileRangeY
     );
   });
 }

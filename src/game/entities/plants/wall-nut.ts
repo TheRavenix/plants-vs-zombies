@@ -1,26 +1,25 @@
-import { drawHitbox } from "@/game/helpers/hitbox";
-import {
-  createPlantId,
-  drawPlantRect,
-  drawPlantType,
-  syncPlantHitbox,
-} from "./plant-service";
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "./constants";
+import { createPlantId } from "./plant-service";
+import { PLANT_HEIGHT, PLANT_WIDTH } from "./constants";
+import { PlantType } from "./constants/plant-type";
+import { createHitbox } from "@/game/features/hitbox";
+import { createPosition } from "@/game/features/position";
+import { createSize } from "@/game/features/size";
+import { createHealth } from "@/game/features/health";
 
-import type {
-  BasePlant,
-  PlantDrawOptions,
-  PlantInfoType,
-  PlantUpdateOptions,
-} from "./types";
+import type { Board } from "@/game/board";
+import type { BasePlant, PlantInfoType } from "./types";
 import type { Vector2 } from "@/game/types/math";
+import type { LevelContext } from "@/game/level";
 
-export type WallNut = {
+export interface WallNut extends BasePlant {
   type: PlantType.WallNut;
-} & BasePlant;
+}
 
-type CreateWallNutOptions = Vector2;
+type Options = {
+  ctx: LevelContext;
+} & Vector2;
 
+const TYPE = PlantType.WallNut as const;
 const HEALTH = 4000;
 const SUNCOST = 50;
 const COOLDOWN = 1000 * 20;
@@ -32,39 +31,70 @@ export const WallNutInfo: PlantInfoType = {
   Cooldown: COOLDOWN,
 };
 
-export function createWallNut(options: CreateWallNutOptions): WallNut {
-  const { x, y } = options;
-  return {
-    type: PlantType.WallNut,
-    id: createPlantId(),
-    x,
-    y,
+export function createWallNut(options: Options): WallNut {
+  const id = createPlantId();
+  const position = createPosition({
+    x: options.x,
+    y: options.y,
+  });
+  const size = createSize({
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    health: HEALTH,
-    sunCost: SUNCOST,
-    hitbox: {
-      x,
-      y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
-    },
-  };
-}
+  });
+  const health = createHealth({
+    hp: HEALTH,
+  });
+  const hitbox = createHitbox({
+    x: position.x,
+    y: position.y,
+    width: size.width,
+    height: size.height,
+  });
 
-export function drawWallNut(wallNut: WallNut, options: PlantDrawOptions) {
-  const { board } = options;
-  const { ctx } = board;
+  function draw(board: Board) {
+    const { ctx } = board;
 
-  if (ctx === null) {
-    return;
+    if (ctx === null) {
+      return;
+    }
+
+    ctx.drawImage(
+      SPRITE_IMAGE,
+      Math.round(position.x),
+      Math.round(position.y),
+      size.width,
+      size.height,
+    );
+    hitbox.draw(board);
   }
 
-  drawPlantRect(wallNut, options);
-  drawPlantType(wallNut, options);
-  drawHitbox(wallNut.hitbox, board);
-}
+  function update(_deltaTime: number) {
+    hitbox.position.set(position.x, position.y);
+  }
 
-export function updateWallNut(wallNut: WallNut, _options: PlantUpdateOptions) {
-  syncPlantHitbox(wallNut);
+  return {
+    get type() {
+      return TYPE;
+    },
+    get id() {
+      return id;
+    },
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get health() {
+      return health;
+    },
+    get sunCost() {
+      return SUNCOST;
+    },
+    get hitbox() {
+      return hitbox;
+    },
+    draw,
+    update,
+  };
 }

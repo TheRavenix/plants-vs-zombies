@@ -1,28 +1,18 @@
-import type { Board } from "@/game/board";
-import type { Hitbox } from "@/game/helpers/hitbox";
-import type { Rect } from "@/game/types/math";
-import type { HasHealth } from "../../types";
-import type { Level } from "@/game/level";
+import type { Hitbox } from "@/game/features/hitbox";
+import type { Position } from "@/game/features/position";
+import type { Size } from "@/game/features/size";
+import type { Health } from "@/game/features/health";
+import type { Drawable } from "@/game/types/drawable";
+import type { Updatable } from "@/game/types/updatable";
 
-export type BasePlant = {
-  id: string;
-  sunCost: number;
-  hitbox: Hitbox;
-} & Rect &
-  HasHealth;
-
-export type PlantDrawOptions = {
-  board: Board;
-};
-
-export type PlantUpdateOptions = {
-  deltaTime: number;
-  level: Level;
-};
-
-export type PlantTakeDamageOptions = {
-  damage: number;
-};
+export interface BasePlant extends Drawable, Updatable {
+  readonly id: string;
+  readonly position: Position;
+  readonly size: Size;
+  readonly health: Health;
+  readonly hitbox: Hitbox;
+  readonly sunCost: number;
+}
 
 export type PlantInfoType = Readonly<{
   SunCost: number;

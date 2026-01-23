@@ -1,18 +1,24 @@
 import {
   BOARD_COLS,
   BOARD_ROWS,
-  getCanvasCoordinates,
   TILE_HEIGHT,
   TILE_WIDTH,
   type Board,
 } from "../board";
-import { GameScene, setGameScene, type Game } from "../game";
-import { drawButton, type Button } from "../helpers/canvas";
+import { GameScene, type GameContext } from "../game";
+import { drawButton, isPointInRect, type Button } from "../helpers/canvas";
 
 import type { Cleanup } from "../types/cleanup";
 import type { Vector2 } from "../types/math";
+import type { Drawable } from "../types/drawable";
 
-export type MainMenu = {};
+export interface MainMenu extends Drawable {
+  start(board: Board): Cleanup;
+}
+
+type Options = {
+  ctx: GameContext;
+};
 
 const SPRITE_WIDTH = TILE_WIDTH;
 const SPRITE_HEIGHT = TILE_HEIGHT;
@@ -58,82 +64,77 @@ const buttons: Button[] = [
 ZOMBIE_SYMBOL_IMAGE.src = "./zombie-symbol/Zombie_Symbol.png";
 PLANT_SYMBOL_IMAGE.src = "./plant-symbol/Plant_Symbol.png";
 
-export function createMainMenu(): MainMenu {
-  return {};
-}
+export function createMainMenu(options: Options): MainMenu {
+  const { ctx } = options;
 
-export function startMainMenu(
-  _mainMenu: MainMenu,
-  board: Board,
-  game: Game
-): Cleanup {
-  const { canvas } = board;
+  function draw(board: Board) {
+    const { ctx } = board;
 
-  function handlePointerDownEvent(e: PointerEvent) {
-    const coords = getCanvasCoordinates(canvas, e);
-    const button = getClickedButton(coords);
-
-    if (button !== undefined) {
-      handleButtonClick(button.id, game, board);
+    if (ctx === null) {
+      return;
     }
-  }
 
-  canvas.addEventListener("pointerdown", handlePointerDownEvent);
+    for (let col = 0; col < BOARD_COLS; col++) {
+      for (let row = 0; row < BOARD_ROWS; row++) {
+        const img =
+          (row + col) % 2 === 0 ? ZOMBIE_SYMBOL_IMAGE : PLANT_SYMBOL_IMAGE;
 
-  return () => {
-    canvas.removeEventListener("pointerdown", handlePointerDownEvent);
-  };
-}
-
-export function drawMainMenu(_mainMenu: MainMenu, board: Board) {
-  const { ctx } = board;
-
-  if (ctx === null) {
-    return;
-  }
-
-  for (let col = 0; col < BOARD_COLS; col++) {
-    for (let row = 0; row < BOARD_ROWS; row++) {
-      const img =
-        (row + col) % 2 === 0 ? ZOMBIE_SYMBOL_IMAGE : PLANT_SYMBOL_IMAGE;
-
-      ctx.drawImage(
-        img,
-        Math.round(col * SPRITE_WIDTH),
-        Math.round(row * SPRITE_HEIGHT),
-        SPRITE_WIDTH,
-        SPRITE_HEIGHT
+        ctx.drawImage(
+          img,
+          Math.round(col * SPRITE_WIDTH),
+          Math.round(row * SPRITE_HEIGHT),
+          SPRITE_WIDTH,
+          SPRITE_HEIGHT,
+        );
+      }
+    }
+    for (const button of buttons) {
+      drawButton(
+        board,
+        button.text,
+        button.x,
+        button.y,
+        button.width,
+        button.height,
+        button.fill,
+        button.font,
       );
     }
   }
-  for (const button of buttons) {
-    drawButton(
-      board,
-      button.text,
-      button.x,
-      button.y,
-      button.width,
-      button.height,
-      button.fill,
-      button.font
-    );
+
+  function start(board: Board) {
+    const { canvas } = board;
+
+    function handlePointerDownEvent(e: PointerEvent) {
+      const coords = board.getCanvasCoordinates(e);
+      const button = getClickedButton(coords);
+
+      if (button !== undefined) {
+        handleButtonClick(button.id, ctx);
+      }
+    }
+
+    canvas.addEventListener("pointerdown", handlePointerDownEvent);
+
+    return () => {
+      canvas.removeEventListener("pointerdown", handlePointerDownEvent);
+    };
   }
+
+  return {
+    draw,
+    start,
+  };
 }
 
 function getClickedButton(coords: Vector2): Button | undefined {
-  return buttons.find(
-    (button) =>
-      coords.x >= button.x &&
-      coords.x <= button.x + button.width &&
-      coords.y >= button.y &&
-      coords.y <= button.y + button.height
-  );
+  return buttons.find((button) => isPointInRect(coords, button));
 }
 
-function handleButtonClick(id: string, game: Game, board: Board) {
+function handleButtonClick(id: string, ctx: GameContext) {
   switch (id) {
     case ButtonId.Play:
-      setGameScene(game, GameScene.Level, board);
+      ctx.setScene(GameScene.Level);
       break;
 
     case ButtonId.Settings:

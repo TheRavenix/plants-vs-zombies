@@ -1,29 +1,27 @@
-import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
-import { addShot, createShroomshot, SHOT_HEIGHT } from "../../shots";
-import {
-  createPlantId,
-  drawPlantRect,
-  drawPlantType,
-  syncPlantHitbox,
-} from "../plant-service";
-import { drawHitbox } from "@/game/helpers/hitbox";
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
+import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
+import { createShroomshot } from "../../shots";
+import { createPlantId, drawPlantRect, drawPlantType } from "../plant-service";
+import { createHitbox } from "@/game/features/hitbox";
+import { PLANT_HEIGHT, PLANT_WIDTH } from "../constants";
+import { PlantType } from "../constants/plant-type";
+import { createSize } from "@/game/features/size";
+import { createHealth } from "@/game/features/health";
+import { createPosition } from "@/game/features/position";
 
-import type {
-  BasePlant,
-  PlantDrawOptions,
-  PlantInfoType,
-  PlantUpdateOptions,
-} from "../types";
 import type { Vector2 } from "@/game/types/math";
+import type { BasePlant, PlantInfoType } from "../types";
+import type { LevelContext } from "@/game/level";
 
-export type Puffshroom = {
-  type: PlantType.Puffshroom;
-  shotTimer: number;
-} & BasePlant;
+export interface Puffshroom extends BasePlant {
+  readonly type: PlantType.Puffshroom;
+  readonly shotTimer: number;
+}
 
-type CreatePuffshroomOptions = Vector2;
+type Options = {
+  ctx: LevelContext;
+} & Vector2;
 
+const TYPE = PlantType.Puffshroom as const;
 const HEALTH = 300;
 const SUNCOST = 0;
 const SHOT_INTERVAL = 1500;
@@ -37,75 +35,95 @@ export const PuffshroomInfo: PlantInfoType = {
   Cooldown: COOLDOWN,
 };
 
-export function createPuffshroom(options: CreatePuffshroomOptions): Puffshroom {
-  const { x, y } = options;
-  return {
-    type: PlantType.Puffshroom,
-    id: createPlantId(),
-    x,
-    y,
+export function createPuffshroom(options: Options): Puffshroom {
+  const { ctx } = options;
+  const id = createPlantId();
+  const position = createPosition({
+    x: options.x,
+    y: options.y,
+  });
+  const size = createSize({
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    health: HEALTH,
-    sunCost: SUNCOST,
-    shotTimer: 0,
-    hitbox: {
-      x,
-      y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
-    },
-  };
-}
-
-export function drawPuffshroom(
-  puffshroom: Puffshroom,
-  options: PlantDrawOptions
-) {
-  const { board } = options;
-  const { ctx } = board;
-
-  if (ctx === null) {
-    return;
-  }
-
-  drawPlantRect(puffshroom, {
-    ...options,
-    fillStyle: "#E6E6FA",
   });
-  drawPlantType(puffshroom, options);
-  drawHitbox(puffshroom.hitbox, board);
-}
+  const health = createHealth({
+    hp: HEALTH,
+  });
+  const hitbox = createHitbox({
+    x: position.x,
+    y: position.y,
+    width: size.width,
+    height: size.height,
+  });
+  let shotTimer = 0;
 
-export function updatePuffshroom(
-  puffshroom: Puffshroom,
-  options: PlantUpdateOptions
-) {
-  const { deltaTime, level } = options;
+  function draw(board: Board) {
+    const { ctx } = board;
 
-  puffshroom.shotTimer += deltaTime;
-
-  if (puffshroom.shotTimer >= SHOT_INTERVAL) {
-    const ableToShoot = level.zombies.some((zombie) => {
-      return (
-        puffshroom.y >= zombie.y &&
-        puffshroom.y <= zombie.y + TILE_HEIGHT &&
-        zombie.x <= puffshroom.x + RANGE
-      );
-    });
-
-    if (ableToShoot) {
-      level.shots = addShot(
-        level.shots,
-        createShroomshot({
-          x: puffshroom.x + puffshroom.width,
-          y: puffshroom.y + SHOT_HEIGHT / 2,
-        })
-      );
+    if (ctx === null) {
+      return;
     }
 
-    puffshroom.shotTimer = 0;
+    drawPlantRect(position, size, "#E6E6FA", board);
+    drawPlantType(TYPE, position, size, health, board);
+
+    hitbox.draw(board);
   }
 
-  syncPlantHitbox(puffshroom);
+  function update(deltaTime: number) {
+    shotTimer += deltaTime;
+
+    if (shotTimer >= SHOT_INTERVAL) {
+      const ableToShoot = ctx.zombies.some((zombie) => {
+        return (
+          position.y >= zombie.position.y &&
+          position.y <= zombie.position.y + TILE_HEIGHT &&
+          zombie.position.x <= position.x + RANGE
+        );
+      });
+
+      if (ableToShoot) {
+        ctx.addShot(
+          createShroomshot({
+            x: position.x + size.width,
+            y: position.y,
+            ctx,
+          }),
+        );
+      }
+
+      shotTimer = 0;
+    }
+
+    hitbox.position.set(position.x, position.y);
+  }
+
+  return {
+    get type() {
+      return TYPE;
+    },
+    get id() {
+      return id;
+    },
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get health() {
+      return health;
+    },
+    get sunCost() {
+      return SUNCOST;
+    },
+    get hitbox() {
+      return hitbox;
+    },
+    get shotTimer() {
+      return shotTimer;
+    },
+    draw,
+    update,
+  };
 }

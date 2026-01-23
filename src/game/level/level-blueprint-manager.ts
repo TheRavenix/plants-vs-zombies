@@ -1,14 +1,12 @@
 import { BOARD_COLS, TILE_HEIGHT, TILE_WIDTH } from "../board";
-import type { PlantType } from "../entities/plants";
-import {
-  addZombie,
-  createZombie,
-  ZombieType,
-  type Zombie,
-} from "../entities/zombies";
+import { createZombie, ZombieType } from "../entities/zombies";
 import { createSeedPacket } from "../seed";
 
-import type { Level } from "./level";
+import type { LevelContext } from "./level";
+import type { Startable } from "../types/startable";
+import type { Updatable } from "../types/updatable";
+import type { PlantType } from "../entities/plants/constants/plant-type";
+import type { Zombie } from "../entities/zombies/types/zombie";
 
 export type LevelBlueprint = {
   id: string;
@@ -36,89 +34,100 @@ export type LevelBlueprint = {
   };
 };
 
-export type LevelBlueprintManager = {
-  levelBlueprint: LevelBlueprint;
-  triggeredTimelineIds: string[];
-  started: boolean;
-  lastStayingZombie: Zombie | null;
-};
+export interface LevelBlueprintManager extends Updatable, Startable {
+  readonly levelBlueprint: LevelBlueprint;
+  readonly triggeredTimelineIds: string[];
+  readonly started: boolean;
+  readonly lastStayingZombie: Zombie | null;
+}
 
-type CreateLevelBlueprintManagerOptions = {
+type Options = {
   levelBlueprint: LevelBlueprint;
+  ctx: LevelContext;
 };
 
 export function createLevelBlueprintManager(
-  options: CreateLevelBlueprintManagerOptions
+  options: Options,
 ): LevelBlueprintManager {
-  return {
-    levelBlueprint: options.levelBlueprint,
-    triggeredTimelineIds: [],
-    started: false,
-    lastStayingZombie: null,
-  };
-}
+  const { ctx } = options;
+  let levelBlueprint = options.levelBlueprint;
+  let triggeredTimelineIds: string[] = [];
+  let started = false;
+  let lastStayingZombie: Zombie | null = null;
 
-export function startLevelBlueprintManager(
-  levelBlueprintManager: LevelBlueprintManager,
-  level: Level
-) {
-  if (!levelBlueprintManager.started) {
-    level.sunAmount = levelBlueprintManager.levelBlueprint.config.initialSun;
-    levelBlueprintManager.started = true;
-  }
-}
+  function update(_deltaTime: number) {
+    const timeMins = parseFloat((ctx.time / 1000).toFixed(2));
 
-export function updateLevelBlueprintManager(
-  levelBlueprintManager: LevelBlueprintManager,
-  _deltaTime: number,
-  level: Level
-) {
-  const { levelBlueprint, triggeredTimelineIds } = levelBlueprintManager;
-
-  const timeMins = parseFloat((level.time / 1000).toFixed(2));
-
-  for (const timeline of levelBlueprint.timelines) {
-    if (timeMins >= timeline.timeTrigger) {
-      if (triggeredTimelineIds.includes(timeline.id)) {
-        continue;
-      }
-
-      for (const zombieConfig of timeline.zombies) {
-        const zombie = createZombie(
-          zombieConfig.type,
-          TILE_WIDTH * BOARD_COLS,
-          TILE_HEIGHT * zombieConfig.lane
-        );
-
-        if (zombie === null) {
+    for (const timeline of levelBlueprint.timelines) {
+      if (timeMins >= timeline.timeTrigger) {
+        if (triggeredTimelineIds.includes(timeline.id)) {
           continue;
         }
 
-        level.zombies = addZombie(level.zombies, zombie);
+        for (const zombieConfig of timeline.zombies) {
+          const zombie = createZombie(
+            zombieConfig.type,
+            TILE_WIDTH * BOARD_COLS,
+            TILE_HEIGHT * zombieConfig.lane,
+            ctx,
+          );
+
+          if (zombie === null) {
+            continue;
+          }
+
+          ctx.addZombie(zombie);
+        }
+
+        triggeredTimelineIds.push(timeline.id);
       }
-
-      triggeredTimelineIds.push(timeline.id);
     }
-  }
 
-  if (triggeredTimelineIds.length === levelBlueprint.timelines.length) {
-    if (level.zombies.length === 1) {
-      if (levelBlueprintManager.lastStayingZombie === null) {
-        levelBlueprintManager.lastStayingZombie = level.zombies[0];
+    if (triggeredTimelineIds.length === levelBlueprint.timelines.length) {
+      if (ctx.zombies.length === 1) {
+        if (lastStayingZombie === null) {
+          lastStayingZombie = ctx.zombies[0];
+        }
       }
-    }
-    if (level.zombies.length <= 0) {
-      level.gameOver = true;
+      if (ctx.zombies.length <= 0) {
+        ctx.setGameOver(true);
 
-      if (level.rewardPacket === null) {
-        if (levelBlueprintManager.lastStayingZombie !== null) {
-          level.rewardPacket = createSeedPacket({
-            plantType: levelBlueprint.winConditions.reward,
-            x: levelBlueprintManager.lastStayingZombie.x,
-            y: levelBlueprintManager.lastStayingZombie.y,
-          });
+        if (ctx.rewardPacket === null) {
+          if (lastStayingZombie !== null) {
+            ctx.setRewardPacket(
+              createSeedPacket({
+                plantType: levelBlueprint.winConditions.reward,
+                x: lastStayingZombie.position.x,
+                y: lastStayingZombie.position.y,
+              }),
+            );
+          }
         }
       }
     }
   }
+
+  function start() {
+    if (!started) {
+      ctx.setSunAmount(levelBlueprint.config.initialSun);
+      started = true;
+    }
+  }
+
+  return {
+    get levelBlueprint() {
+      return levelBlueprint;
+    },
+    get triggeredTimelineIds() {
+      return triggeredTimelineIds;
+    },
+    get started() {
+      return started;
+    },
+    get lastStayingZombie() {
+      return lastStayingZombie;
+    },
+    update,
+    start,
+  };
 }

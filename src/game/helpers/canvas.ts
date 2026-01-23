@@ -27,7 +27,8 @@ export function drawText(
   x: number,
   y: number,
   fillStyle: string,
-  font?: DrawTextFont
+  font?: DrawTextFont,
+  maxWidth?: number,
 ) {
   const { ctx } = board;
 
@@ -43,7 +44,7 @@ export function drawText(
   ctx.fillStyle = fillStyle;
   ctx.font = `${bold ? "bold " : ""}${fontSize}px ${fontFamily}`;
 
-  ctx.fillText(text, x, y);
+  ctx.fillText(text, x, y, maxWidth);
 }
 
 export function drawCenteredText(
@@ -52,7 +53,8 @@ export function drawCenteredText(
   x: number,
   y: number,
   fillStyle: string,
-  font?: DrawTextFont
+  font?: DrawTextFont,
+  maxWidth?: number,
 ) {
   const { ctx } = board;
 
@@ -65,7 +67,7 @@ export function drawCenteredText(
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  drawText(board, text, x, y, fillStyle, font);
+  drawText(board, text, x, y, fillStyle, font, maxWidth);
 
   ctx.restore();
 }
@@ -78,7 +80,7 @@ export function drawButton(
   width: number,
   height: number,
   fill: DrawButtonFillStyle,
-  font?: DrawTextFont
+  font?: DrawTextFont,
 ) {
   const { ctx } = board;
 
@@ -111,4 +113,36 @@ export function isPointInRect(point: Vector2, rect: Rect): boolean {
     point.y >= rect.y &&
     point.y <= rect.y + rect.height
   );
+}
+
+export function getWrappedLines(
+  board: Board,
+  text: string,
+  maxWidth: number,
+): string[] {
+  const { ctx } = board;
+
+  if (ctx === null) {
+    return [];
+  }
+
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
+    const width = ctx.measureText(currentLine + " " + word).width;
+
+    if (width < maxWidth) {
+      currentLine += " " + word;
+    } else {
+      lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+
+  lines.push(currentLine);
+
+  return lines;
 }

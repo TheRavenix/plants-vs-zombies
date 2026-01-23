@@ -1,29 +1,28 @@
-import { drawHitbox } from "@/game/helpers/hitbox";
-import {
-  createPlantId,
-  drawPlantRect,
-  drawPlantType,
-  syncPlantHitbox,
-} from "../plant-service";
-import { PLANT_HEIGHT, PLANT_WIDTH, PlantType } from "../constants";
+import { createHitbox } from "@/game/features/hitbox";
+import { createPlantId, drawPlantRect, drawPlantType } from "../plant-service";
+import { PLANT_HEIGHT, PLANT_WIDTH } from "../constants";
+import { PlantType } from "../constants/plant-type";
+import { createPosition } from "@/game/features/position";
+import { createSize } from "@/game/features/size";
+import { createHealth } from "@/game/features/health";
 
-import type {
-  BasePlant,
-  PlantDrawOptions,
-  PlantInfoType,
-  PlantUpdateOptions,
-} from "../types";
+import type { BasePlant, PlantInfoType } from "../types";
 import type { Vector2 } from "@/game/types/math";
+import type { LevelContext } from "@/game/level";
+import type { Board } from "@/game/board";
 
-export type Sunshroom = {
-  type: PlantType.Sunshroom;
-  rechargeTimer: number;
-  upgraded: boolean;
-  upgradeTimer: number;
-} & BasePlant;
+export interface Sunshroom extends BasePlant {
+  readonly type: PlantType.Sunshroom;
+  readonly rechargeTimer: number;
+  readonly upgraded: boolean;
+  readonly upgradeTimer: number;
+}
 
-type CreateSunshroomOptions = Vector2;
+type Options = {
+  ctx: LevelContext;
+} & Vector2;
 
+const TYPE = PlantType.Sunshroom as const;
 const HEALTH = 300;
 const SUNCOST = 25;
 const SUN_PRODUCTION_1 = 15;
@@ -39,60 +38,94 @@ export const SunshroomInfo: PlantInfoType = {
   Cooldown: COOLDOWN,
 };
 
-export function createSunshroom(options: CreateSunshroomOptions): Sunshroom {
-  const { x, y } = options;
-  return {
-    type: PlantType.Sunshroom,
-    id: createPlantId(),
-    x,
-    y,
+export function createSunshroom(options: Options): Sunshroom {
+  const { ctx } = options;
+  const id = createPlantId();
+  const position = createPosition({
+    x: options.x,
+    y: options.y,
+  });
+  const size = createSize({
     width: PLANT_WIDTH,
     height: PLANT_HEIGHT,
-    health: HEALTH,
-    sunCost: SUNCOST,
-    hitbox: {
-      x,
-      y,
-      width: PLANT_WIDTH,
-      height: PLANT_HEIGHT,
+  });
+  const health = createHealth({
+    hp: HEALTH,
+  });
+  const hitbox = createHitbox({
+    x: position.x,
+    y: position.y,
+    width: size.width,
+    height: size.height,
+  });
+  let rechargeTimer = 0;
+  let upgraded = false;
+  let upgradeTimer = 0;
+
+  function draw(board: Board) {
+    const { ctx } = board;
+
+    if (ctx === null) {
+      return;
+    }
+
+    drawPlantRect(position, size, undefined, board);
+    drawPlantType(TYPE, position, size, health, board);
+
+    hitbox.draw(board);
+  }
+
+  function update(deltaTime: number) {
+    rechargeTimer += deltaTime;
+
+    if (!upgraded) {
+      upgradeTimer += deltaTime;
+    }
+    if (upgradeTimer >= UPGRADE_TIMEOUT && !upgraded) {
+      upgraded = true;
+    }
+    if (rechargeTimer >= RECHARGE_INTERVAL) {
+      ctx.setSunAmount(
+        ctx.sunAmount + (upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1),
+      );
+      rechargeTimer = 0;
+    }
+
+    hitbox.position.set(position.x, position.y);
+  }
+
+  return {
+    get type() {
+      return TYPE;
     },
-    rechargeTimer: 0,
-    upgraded: false,
-    upgradeTimer: 0,
+    get id() {
+      return id;
+    },
+    get position() {
+      return position;
+    },
+    get size() {
+      return size;
+    },
+    get health() {
+      return health;
+    },
+    get sunCost() {
+      return SUNCOST;
+    },
+    get hitbox() {
+      return hitbox;
+    },
+    get rechargeTimer() {
+      return rechargeTimer;
+    },
+    get upgraded() {
+      return upgraded;
+    },
+    get upgradeTimer() {
+      return upgradeTimer;
+    },
+    draw,
+    update,
   };
-}
-
-export function drawSunshroom(sunshroom: Sunshroom, options: PlantDrawOptions) {
-  const { board } = options;
-  const { ctx } = board;
-
-  if (ctx === null) {
-    return;
-  }
-
-  drawPlantRect(sunshroom, options);
-  drawPlantType(sunshroom, options);
-  drawHitbox(sunshroom.hitbox, board);
-}
-
-export function updateSunshroom(
-  sunshroom: Sunshroom,
-  options: PlantUpdateOptions
-) {
-  const { level, deltaTime } = options;
-
-  sunshroom.rechargeTimer += deltaTime;
-
-  if (!sunshroom.upgraded) {
-    sunshroom.upgradeTimer += deltaTime;
-  }
-  if (sunshroom.upgradeTimer >= UPGRADE_TIMEOUT && !sunshroom.upgraded) {
-    sunshroom.upgraded = true;
-  }
-  if (sunshroom.rechargeTimer >= RECHARGE_INTERVAL) {
-    level.sunAmount += sunshroom.upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1;
-    sunshroom.rechargeTimer = 0;
-  }
-
-  syncPlantHitbox(sunshroom);
 }
