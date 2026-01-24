@@ -1,4 +1,8 @@
-import { createShotId, handleShotDirection } from "../service";
+import {
+  createShotId,
+  handleShotDirection,
+  handleShotZombieCollision,
+} from "../service";
 import { ShotDirection, ShotType } from "../constants";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
@@ -8,6 +12,7 @@ import type { BaseShot } from "../types";
 import type { Vector2 } from "@/game/types/math";
 import type { LevelContext } from "@/game/level";
 import type { Board } from "@/game/board";
+import type { Zombie } from "../../zombies/types/zombie";
 
 export interface Peashot extends BaseShot {
   readonly type: ShotType.Peashot;
@@ -75,29 +80,18 @@ export function createPeashot(options: Options): Peashot {
   }
 
   function update(deltaTime: number) {
-    handleShotDirection(direction, position, speed, deltaTime);
-
-    let deleteZombieId: string | null = null;
-
-    const collisionZombie = ctx.zombies.find((zombie) => {
-      return hitbox.isColliding(zombie.hitbox);
-    });
-
-    if (collisionZombie !== undefined) {
-      deleteZombieId = collisionZombie.id;
-    }
-    if (deleteZombieId !== null) {
-      const zombie = ctx.findZombieById(deleteZombieId);
-
-      if (zombie !== undefined) {
-        zombie.health.takeDamage(damage);
-
-        active = false;
-        deleteZombieId = null;
-      }
-    }
-
     hitbox.position.set(position.x, position.y);
+
+    handleShotDirection(direction, position, speed, deltaTime);
+    handleShotZombieCollision(hitbox, ctx, onZombieHit, setActive);
+  }
+
+  function onZombieHit(zombie: Zombie) {
+    zombie.health.takeDamage(damage);
+  }
+
+  function setActive(newActive: boolean) {
+    active = newActive;
   }
 
   return {

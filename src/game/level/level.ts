@@ -75,6 +75,15 @@ export interface Level extends Drawable, Updatable {
 }
 
 export interface LevelContext {
+  readonly sunAmount: number;
+  readonly time: number;
+  readonly gameOver: boolean;
+  readonly rewardPacket: SeedPacket | null;
+  readonly plants: Plant[];
+  readonly zombies: Zombie[];
+  readonly shots: Shot[];
+  readonly suns: Sun[];
+  readonly seedSlotManager: SeedSlotManager;
   setSunAmount(amount: number): void;
   setActiveModal(modal: Modal | null): void;
   setIsPaused(paused: boolean): void;
@@ -93,15 +102,6 @@ export interface LevelContext {
   addSun(...suns: Sun[]): void;
   removeSunById(id: string): void;
   findSunById(id: string): Sun | undefined;
-  readonly sunAmount: number;
-  readonly time: number;
-  readonly gameOver: boolean;
-  readonly rewardPacket: SeedPacket | null;
-  readonly plants: ReadonlyArray<Plant>;
-  readonly zombies: ReadonlyArray<Zombie>;
-  readonly shots: ReadonlyArray<Shot>;
-  readonly suns: ReadonlyArray<Sun>;
-  readonly seedSlotManager: SeedSlotManager;
 }
 
 type Options = {
