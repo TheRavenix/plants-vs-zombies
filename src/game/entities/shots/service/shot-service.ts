@@ -5,6 +5,10 @@ import { ShotDirection, ShotType } from "../constants";
 import type { Position } from "@/game/features/position";
 import type { Size } from "@/game/features/size";
 import type { Board } from "@/game/board";
+import { findFirstCollision } from "../../helpers/collision";
+import type { Zombie } from "../../zombies/types/zombie";
+import type { Hitbox } from "../../features/hitbox";
+import type { LevelContext } from "@/game/level";
 
 export function createShotId(): string {
   return `SHOT-${crypto.randomUUID()}`;
@@ -68,4 +72,24 @@ export function handleShotDirection(
     default:
       position.setX(position.x + finalSpeed);
   }
+}
+
+export function handleShotZombieCollision(
+  hitbox: Hitbox,
+  ctx: LevelContext,
+  onHit: (zombie: Zombie) => void,
+  setActive: (newActive: boolean) => void,
+) {
+  const collisionZombie = findFirstCollision<Zombie>(
+    hitbox,
+    ctx.zombies,
+    (z) => z.hitbox,
+  );
+
+  if (collisionZombie === undefined) {
+    return;
+  }
+
+  onHit(collisionZombie);
+  setActive(false);
 }
