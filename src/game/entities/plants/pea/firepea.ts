@@ -14,7 +14,6 @@ import type { LevelContext } from "@/game/level";
 
 export interface Firepea extends BasePlant {
   readonly type: PlantType.Firepea;
-  readonly shotTimer: number;
 }
 
 type Options = {
@@ -76,7 +75,6 @@ export function createFirepea(options: Options): Firepea {
       );
     },
   });
-  let shotTimer = 0;
 
   function draw(board: Board) {
     const { ctx } = board;
@@ -121,9 +119,6 @@ export function createFirepea(options: Options): Firepea {
     },
     get hitbox() {
       return hitbox;
-    },
-    get shotTimer() {
-      return shotTimer;
     },
     draw,
     update,

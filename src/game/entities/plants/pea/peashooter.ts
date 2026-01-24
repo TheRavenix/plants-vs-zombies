@@ -14,7 +14,6 @@ import type { LevelContext } from "@/game/level";
 
 export interface Peashooter extends BasePlant {
   readonly type: PlantType.Peashooter;
-  readonly shotTimer: number;
 }
 
 type Options = {
@@ -76,7 +75,6 @@ export function createPeashooter(options: Options): Peashooter {
       );
     },
   });
-  let shotTimer = 0;
 
   function draw(board: Board) {
     const { ctx } = board;
@@ -122,9 +120,6 @@ export function createPeashooter(options: Options): Peashooter {
     },
     get hitbox() {
       return hitbox;
-    },
-    get shotTimer() {
-      return shotTimer;
     },
     draw,
     update,

@@ -28,6 +28,7 @@ import {
   type LevelBlueprint,
   type LevelBlueprintManager,
 } from "./level-blueprint-manager";
+import { createTimer, type Timer } from "../entities/features/timer";
 
 import type { Vector2 } from "../types/math";
 import type { Cleanup } from "../types/cleanup";
@@ -46,7 +47,7 @@ export interface Level extends Drawable, Updatable {
   readonly shots: Shot[];
   readonly suns: Sun[];
   readonly seedSlotManager: SeedSlotManager;
-  readonly sunRechargeTimer: number;
+  readonly sunRechargeTimer: Timer;
   readonly levelBlueprintManager: LevelBlueprintManager;
   readonly time: number;
   readonly gameOver: boolean;
@@ -154,8 +155,6 @@ export function createLevel(options: Options): Level {
   let plants: Plant[] = [];
   let shots: Shot[] = [];
   let suns: Sun[] = [];
-
-  let sunRechargeTimer = 0;
   let time = 0;
   let gameOver = false;
   let rewardPacket: SeedPacket | null = null;
@@ -209,6 +208,19 @@ export function createLevel(options: Options): Level {
     findSunById,
     removeSunById,
   };
+
+  const sunRechargeTimer = createTimer({
+    maxTime: SUN_RECHARGE_INTERVAL,
+    onReady() {
+      levelContext.addSun(
+        createSun({
+          x: TILE_WIDTH,
+          y: TILE_HEIGHT,
+          amount: SUN_PRODUCTION,
+        }),
+      );
+    },
+  });
 
   // FIXME:
   let seedSlotManager = createSeedSlotManager({
@@ -293,6 +305,7 @@ export function createLevel(options: Options): Level {
 
     time += deltaTime;
 
+    sunRechargeTimer.update(deltaTime);
     levelBlueprintManager.update(deltaTime);
     seedSlotManager.update(deltaTime);
 
@@ -313,19 +326,6 @@ export function createLevel(options: Options): Level {
     plants = removeDeadPlants(plants);
     shots = removeOutOfZoneShots(shots, board);
     shots = removeInactiveShots(shots);
-
-    sunRechargeTimer += deltaTime;
-
-    if (sunRechargeTimer >= SUN_RECHARGE_INTERVAL) {
-      addSun(
-        createSun({
-          x: TILE_WIDTH,
-          y: TILE_HEIGHT,
-          amount: SUN_PRODUCTION,
-        }),
-      );
-      sunRechargeTimer = 0;
-    }
 
     if (rewardPacket !== null) {
       rewardPacket.update(deltaTime);

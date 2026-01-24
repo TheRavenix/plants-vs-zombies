@@ -1,11 +1,12 @@
 import { TILE_HEIGHT } from "@/game/board";
+import { createTimer, type Timer } from "../../features/timer";
 
 import type { Position } from "@/game/features/position";
 import type { LevelContext } from "@/game/level";
 import type { Updatable } from "@/game/types/updatable";
 
 export interface Shooter extends Updatable {
-  readonly shotTimer: number;
+  readonly shotTimer: Timer;
 }
 
 type Options = {
@@ -28,26 +29,17 @@ export function createShooter(options: Options): Shooter {
     burstDelay = 0,
     onShoot,
   } = options;
-  let shotTimer = 0;
   let shotsFiredInBurst = 0;
-  let burstTimer = 0;
-
-  function update(deltaTime: number) {
-    if (shotsFiredInBurst > 0 && shotsFiredInBurst < burstCount) {
-      burstTimer += deltaTime;
-
-      if (burstTimer >= burstDelay) {
-        onShoot();
-        shotsFiredInBurst++;
-        burstTimer = 0;
-      }
-
-      return;
-    }
-
-    shotTimer += deltaTime;
-
-    if (shotTimer >= shotInterval) {
+  const burstTimer = createTimer({
+    maxTime: burstDelay,
+    onReady() {
+      onShoot();
+      shotsFiredInBurst++;
+    },
+  });
+  const shotTimer = createTimer({
+    maxTime: shotInterval,
+    onReady() {
       const ableToShoot = ctx.zombies.some((zombie) => {
         return (
           position.y >= zombie.position.y &&
@@ -59,13 +51,22 @@ export function createShooter(options: Options): Shooter {
 
       if (ableToShoot) {
         onShoot();
+
         if (burstCount > 1) {
           shotsFiredInBurst = 1;
-          burstTimer = 0;
+          burstTimer.reset();
         }
       }
-      shotTimer = 0;
+    },
+  });
+
+  function update(deltaTime: number) {
+    if (shotsFiredInBurst > 0 && shotsFiredInBurst < burstCount) {
+      burstTimer.update(deltaTime);
+      return;
     }
+
+    shotTimer.update(deltaTime);
   }
 
   return {
