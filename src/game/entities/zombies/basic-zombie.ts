@@ -2,7 +2,7 @@ import {
   createZombieId,
   drawZombieRect,
   drawZombieType,
-  handleZombieDefaultMovement,
+  handleZombieBehaviour,
 } from "./service";
 import {
   ZOMBIE_HEIGHT,
@@ -19,6 +19,7 @@ import type { Vector2 } from "@/game/types/math";
 import type { BaseZombie } from "./types";
 import type { LevelContext } from "@/game/level";
 import type { Board } from "@/game/board";
+import type { Plant } from "../plants/types/plant";
 
 export interface BasicZombie extends BaseZombie {
   readonly type: ZombieType.Basic;
@@ -74,45 +75,34 @@ export function createBasicZombie(options: Options): BasicZombie {
   }
 
   function update(deltaTime: number) {
-    let eatPlantId: string | null = null;
-
-    const collisionPlant = ctx.plants.find((plant) => {
-      return hitbox.isColliding(plant.hitbox);
-    });
-
-    if (collisionPlant !== undefined) {
-      eatPlantId = collisionPlant.id;
-    }
-
-    if (state === ZombieState.Walking) {
-      handleZombieDefaultMovement(position, freezeAmount, speed, deltaTime);
-
-      const isPlantCollision = ctx.plants.some((plant) => {
-        return hitbox.isColliding(plant.hitbox);
-      });
-
-      if (isPlantCollision) {
-        state = ZombieState.Eating;
-      }
-    }
-    if (state === ZombieState.Eating) {
-      if (eatPlantId === null) {
-        state = ZombieState.Walking;
-      }
-      if (damageTimer >= DAMAGE_INTERVAL && eatPlantId !== null) {
-        const plant = ctx.findPlantById(eatPlantId);
-
-        if (plant !== undefined) {
-          plant.health.takeDamage(damage);
-        }
-
-        damageTimer = 0;
-      }
-
-      damageTimer += deltaTime;
-    }
-
     hitbox.position.set(position.x, position.y);
+
+    handleZombieBehaviour(
+      hitbox,
+      position,
+      freezeAmount,
+      speed,
+      state,
+      damageTimer,
+      DAMAGE_INTERVAL,
+      ctx,
+      deltaTime,
+      onEatPlant,
+      setState,
+      setDamageTimer,
+    );
+  }
+
+  function onEatPlant(plant: Plant) {
+    plant.health.takeDamage(damage);
+  }
+
+  function setState(newState: ZombieState) {
+    state = newState;
+  }
+
+  function setDamageTimer(timer: number) {
+    damageTimer = timer;
   }
 
   return {

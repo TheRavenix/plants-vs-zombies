@@ -78,7 +78,7 @@ export function handleShotZombieCollision(
   hitbox: Hitbox,
   ctx: LevelContext,
   onHit: (zombie: Zombie) => void,
-  setActive: (newActive: boolean) => void,
+  setActive: (active: boolean) => void,
 ) {
   const collisionZombie = findFirstCollision<Zombie>(
     hitbox,

@@ -76,6 +76,7 @@ export function createTorchwood(options: Options): Torchwood {
   }
 
   function update(_deltaTime: number) {
+    // TODO: Use findFirstCollision()
     const shot = ctx.shots.find((shot) => {
       return hitbox.isColliding(shot.hitbox);
     });
