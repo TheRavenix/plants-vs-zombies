@@ -5,17 +5,19 @@ import { PlantType } from "../constants/plant-type";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
+import { createTimer, TimerType, type Timer } from "../../features/timer";
 
 import type { BasePlant, PlantInfoType } from "../types";
 import type { Vector2 } from "@/game/types/math";
 import type { LevelContext } from "@/game/level";
 import type { Board } from "@/game/board";
+import { createSun } from "../../sun";
 
 export interface Sunshroom extends BasePlant {
   readonly type: PlantType.Sunshroom;
-  readonly rechargeTimer: number;
+  readonly rechargeTimer: Timer;
+  readonly upgradeTimer: Timer;
   readonly upgraded: boolean;
-  readonly upgradeTimer: number;
 }
 
 type Options = {
@@ -58,9 +60,26 @@ export function createSunshroom(options: Options): Sunshroom {
     width: size.width,
     height: size.height,
   });
-  let rechargeTimer = 0;
+  const rechargeTimer = createTimer({
+    maxTime: RECHARGE_INTERVAL,
+    onReady() {
+      ctx.addSun(
+        createSun({
+          x: position.x + size.width / 2,
+          y: position.y,
+          amount: getSunProduction(),
+        }),
+      );
+    },
+  });
+  const upgradeTimer = createTimer({
+    maxTime: UPGRADE_TIMEOUT,
+    defaultType: TimerType.Timeout,
+    onReady() {
+      upgrade();
+    },
+  });
   let upgraded = false;
-  let upgradeTimer = 0;
 
   function draw(board: Board) {
     const { ctx } = board;
@@ -76,22 +95,17 @@ export function createSunshroom(options: Options): Sunshroom {
   }
 
   function update(deltaTime: number) {
-    rechargeTimer += deltaTime;
-
-    if (!upgraded) {
-      upgradeTimer += deltaTime;
-    }
-    if (upgradeTimer >= UPGRADE_TIMEOUT && !upgraded) {
-      upgraded = true;
-    }
-    if (rechargeTimer >= RECHARGE_INTERVAL) {
-      ctx.setSunAmount(
-        ctx.sunAmount + (upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1),
-      );
-      rechargeTimer = 0;
-    }
-
     hitbox.position.set(position.x, position.y);
+    rechargeTimer.update(deltaTime);
+    upgradeTimer.update(deltaTime);
+  }
+
+  function upgrade() {
+    upgraded = true;
+  }
+
+  function getSunProduction() {
+    return upgraded ? SUN_PRODUCTION_2 : SUN_PRODUCTION_1;
   }
 
   return {
@@ -119,11 +133,11 @@ export function createSunshroom(options: Options): Sunshroom {
     get rechargeTimer() {
       return rechargeTimer;
     },
-    get upgraded() {
-      return upgraded;
-    },
     get upgradeTimer() {
       return upgradeTimer;
+    },
+    get upgraded() {
+      return upgraded;
     },
     draw,
     update,

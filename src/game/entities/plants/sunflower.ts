@@ -6,6 +6,7 @@ import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { PlantType } from "./constants/plant-type";
+import { createTimer, type Timer } from "../features/timer";
 
 import type { BasePlant, PlantInfoType } from "./types";
 import type { Vector2 } from "@/game/types/math";
@@ -13,7 +14,7 @@ import type { LevelContext } from "@/game/level";
 
 export interface Sunflower extends BasePlant {
   readonly type: PlantType.Sunflower;
-  readonly rechargeTimer: number;
+  readonly timer: Timer;
 }
 
 type Options = {
@@ -60,7 +61,12 @@ export function createSunflower(options: Options): Sunflower {
     width: size.width,
     height: size.height,
   });
-  let rechargeTimer = 0;
+  const timer = createTimer({
+    maxTime: RECHARGE_INTERVAL,
+    onReady() {
+      generateSun();
+    },
+  });
 
   function generateSun() {
     ctx.addSun(
@@ -92,14 +98,8 @@ export function createSunflower(options: Options): Sunflower {
   }
 
   function update(deltaTime: number) {
-    rechargeTimer += deltaTime;
-
-    if (rechargeTimer >= RECHARGE_INTERVAL) {
-      generateSun();
-      rechargeTimer = 0;
-    }
-
     hitbox.position.set(position.x, position.y);
+    timer.update(deltaTime);
   }
 
   return {
@@ -124,8 +124,8 @@ export function createSunflower(options: Options): Sunflower {
     get hitbox() {
       return hitbox;
     },
-    get rechargeTimer() {
-      return rechargeTimer;
+    get timer() {
+      return timer;
     },
     draw,
     update,
