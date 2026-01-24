@@ -12,8 +12,8 @@ import {
 } from "./constants";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
-import { createHealth } from "@/game/features/health";
-import { createHitbox } from "@/game/features/hitbox";
+import { createHealth } from "@/game/entities/features/health";
+import { createHitbox } from "@/game/entities/features/hitbox";
 
 import type { Vector2 } from "@/game/types/math";
 import type { BaseZombie } from "./types";

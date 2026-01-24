@@ -1,4 +1,4 @@
-import type { Hitbox } from "@/game/features/hitbox";
+import type { Hitbox } from "@/game/entities/features/hitbox";
 import type { ShotDirection } from "../constants";
 import type { Size } from "@/game/features/size";
 import type { Position } from "@/game/features/position";

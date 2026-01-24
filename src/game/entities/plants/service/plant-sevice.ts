@@ -4,7 +4,7 @@ import { FontSize } from "@/game/constants/font";
 
 import type { Board } from "@/game/board";
 import type { Position } from "@/game/features/position";
-import type { Health } from "@/game/features/health";
+import type { Health } from "@/game/entities/features/health";
 import type { Size } from "@/game/features/size";
 
 export function createPlantId(): string {

@@ -4,7 +4,7 @@ import { FontSize } from "@/game/constants/font";
 
 import type { Position } from "@/game/features/position";
 import type { Size } from "@/game/features/size";
-import type { Health } from "@/game/features/health";
+import type { Health } from "@/game/entities/features/health";
 import type { ZombieType } from "../constants";
 import type { Zombie } from "../types/zombie";
 

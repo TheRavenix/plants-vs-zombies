@@ -2,10 +2,11 @@ import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import { createSnowpeaShot } from "../../shots";
 import { createPlantId } from "../service";
 import { PlantType } from "../constants/plant-type";
-import { createHitbox } from "@/game/features/hitbox";
+import { createHitbox } from "@/game/entities/features/hitbox";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
-import { createHealth } from "@/game/features/health";
+import { createHealth } from "@/game/entities/features/health";
+import { createShooter } from "../features/shooter";
 
 import type { BasePlant, PlantInfoType } from "../types";
 import type { Vector2 } from "@/game/types/math";
@@ -13,7 +14,6 @@ import type { LevelContext } from "@/game/level";
 
 export interface Snowpea extends BasePlant {
   readonly type: PlantType.Snowpea;
-  readonly shotTimer: number;
 }
 
 type Options = {
@@ -60,7 +60,21 @@ export function createSnowpea(options: Options): Snowpea {
     width: size.width,
     height: size.height,
   });
-  let shotTimer = 0;
+  const shooter = createShooter({
+    shotInterval: SHOT_INTERVAL,
+    position,
+    range: RANGE,
+    ctx,
+    onShoot() {
+      ctx.addShot(
+        createSnowpeaShot({
+          x: position.x + size.width,
+          y: position.y,
+          ctx,
+        }),
+      );
+    },
+  });
 
   function draw(board: Board) {
     const { ctx } = board;
@@ -80,30 +94,7 @@ export function createSnowpea(options: Options): Snowpea {
   }
 
   function update(deltaTime: number) {
-    shotTimer += deltaTime;
-
-    if (shotTimer >= SHOT_INTERVAL) {
-      const ableToShoot = ctx.zombies.some((zombie) => {
-        return (
-          position.y >= zombie.position.y &&
-          position.y <= zombie.position.y + TILE_HEIGHT &&
-          zombie.position.x <= position.x + RANGE
-        );
-      });
-
-      if (ableToShoot) {
-        ctx.addShot(
-          createSnowpeaShot({
-            x: position.x + size.width,
-            y: position.y,
-            ctx,
-          }),
-        );
-      }
-
-      shotTimer = 0;
-    }
-
+    shooter.update(deltaTime);
     hitbox.position.set(position.x, position.y);
   }
 
@@ -128,9 +119,6 @@ export function createSnowpea(options: Options): Snowpea {
     },
     get hitbox() {
       return hitbox;
-    },
-    get shotTimer() {
-      return shotTimer;
     },
     draw,
     update,

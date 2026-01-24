@@ -1,7 +1,7 @@
-import type { Hitbox } from "@/game/features/hitbox";
+import type { Hitbox } from "@/game/entities/features/hitbox";
 import type { Position } from "@/game/features/position";
 import type { Size } from "@/game/features/size";
-import type { Health } from "@/game/features/health";
+import type { Health } from "@/game/entities/features/health";
 import type { Drawable } from "@/game/types/drawable";
 import type { Updatable } from "@/game/types/updatable";
 

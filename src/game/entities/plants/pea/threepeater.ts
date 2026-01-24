@@ -2,18 +2,18 @@ import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import { createPeashot, ShotDirection } from "../../shots";
 import { createPlantId } from "../service";
 import { PlantType } from "../constants/plant-type";
+import { createHitbox } from "@/game/entities/features/hitbox";
+import { createPosition } from "@/game/features/position";
+import { createSize } from "@/game/features/size";
+import { createHealth } from "@/game/entities/features/health";
+import { createShooter } from "../features/shooter";
 
 import type { BasePlant, PlantInfoType } from "../types";
 import type { Vector2 } from "@/game/types/math";
 import type { LevelContext } from "@/game/level";
-import { createHitbox } from "@/game/features/hitbox";
-import { createPosition } from "@/game/features/position";
-import { createSize } from "@/game/features/size";
-import { createHealth } from "@/game/features/health";
 
 export interface Threepeater extends BasePlant {
   readonly type: PlantType.Threepeater;
-  readonly shotTimer: number;
 }
 
 type Options = {
@@ -60,7 +60,33 @@ export function createThreepeater(options: Options): Threepeater {
     width: size.width,
     height: size.height,
   });
-  let shotTimer = 0;
+  const shooter = createShooter({
+    shotInterval: SHOT_INTERVAL,
+    position,
+    range: RANGE,
+    ctx,
+    onShoot() {
+      ctx.addShot(
+        createPeashot({
+          x: position.x + size.width,
+          y: position.y,
+          ctx,
+        }),
+        createPeashot({
+          x: position.x + size.width,
+          y: position.y,
+          direction: ShotDirection.UpRight,
+          ctx,
+        }),
+        createPeashot({
+          x: position.x + size.width,
+          y: position.y,
+          direction: ShotDirection.DownRight,
+          ctx,
+        }),
+      );
+    },
+  });
 
   function draw(board: Board) {
     const { ctx } = board;
@@ -80,38 +106,7 @@ export function createThreepeater(options: Options): Threepeater {
   }
 
   function update(deltaTime: number) {
-    shotTimer += deltaTime;
-
-    if (shotTimer >= SHOT_INTERVAL) {
-      const ableToShoot = ctx.zombies.some((zombie) => {
-        return zombie.position.x <= position.x + RANGE;
-      });
-
-      if (ableToShoot) {
-        ctx.addShot(
-          createPeashot({
-            x: position.x + size.width,
-            y: position.y,
-            ctx,
-          }),
-          createPeashot({
-            x: position.x + size.width,
-            y: position.y,
-            direction: ShotDirection.UpRight,
-            ctx,
-          }),
-          createPeashot({
-            x: position.x + size.width,
-            y: position.y,
-            direction: ShotDirection.DownRight,
-            ctx,
-          }),
-        );
-      }
-
-      shotTimer = 0;
-    }
-
+    shooter.update(deltaTime);
     hitbox.position.set(position.x, position.y);
   }
 
@@ -136,9 +131,6 @@ export function createThreepeater(options: Options): Threepeater {
     },
     get hitbox() {
       return hitbox;
-    },
-    get shotTimer() {
-      return shotTimer;
     },
     draw,
     update,

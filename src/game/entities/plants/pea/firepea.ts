@@ -1,11 +1,12 @@
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import { createFirepeaShot } from "../../shots";
 import { createPlantId } from "../service";
-import { createHitbox } from "@/game/features/hitbox";
+import { createHitbox } from "@/game/entities/features/hitbox";
 import { PlantType } from "../constants/plant-type";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
-import { createHealth } from "@/game/features/health";
+import { createHealth } from "@/game/entities/features/health";
+import { createShooter } from "../features/shooter";
 
 import type { BasePlant, PlantInfoType } from "../types";
 import type { Vector2 } from "@/game/types/math";
@@ -60,6 +61,21 @@ export function createFirepea(options: Options): Firepea {
     width: size.width,
     height: size.height,
   });
+  const shooter = createShooter({
+    shotInterval: SHOT_INTERVAL,
+    position,
+    range: RANGE,
+    ctx,
+    onShoot() {
+      ctx.addShot(
+        createFirepeaShot({
+          x: position.x + size.width,
+          y: position.y,
+          ctx,
+        }),
+      );
+    },
+  });
   let shotTimer = 0;
 
   function draw(board: Board) {
@@ -80,30 +96,7 @@ export function createFirepea(options: Options): Firepea {
   }
 
   function update(deltaTime: number) {
-    shotTimer += deltaTime;
-
-    if (shotTimer >= SHOT_INTERVAL) {
-      const ableToShoot = ctx.zombies.some((zombie) => {
-        return (
-          position.y >= zombie.position.y &&
-          position.y <= zombie.position.y + TILE_HEIGHT &&
-          zombie.position.x <= position.x + RANGE
-        );
-      });
-
-      if (ableToShoot) {
-        ctx.addShot(
-          createFirepeaShot({
-            x: position.x + size.width,
-            y: position.y,
-            ctx,
-          }),
-        );
-      }
-
-      shotTimer = 0;
-    }
-
+    shooter.update(deltaTime);
     hitbox.position.set(position.x, position.y);
   }
 

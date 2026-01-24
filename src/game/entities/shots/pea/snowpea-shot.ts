@@ -2,7 +2,7 @@ import { createShotId, handleShotDirection } from "../service";
 import { ShotDirection, ShotType } from "../constants";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
-import { createHitbox } from "@/game/features/hitbox";
+import { createHitbox } from "@/game/entities/features/hitbox";
 
 import type { BaseShot } from "../types";
 import type { Vector2 } from "@/game/types/math";

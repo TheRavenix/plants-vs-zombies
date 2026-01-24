@@ -1,8 +1,8 @@
-import { createPosition, type Position } from "./position";
-import { createSize, type Size } from "./size";
+import { createPosition, type Position } from "@/game/features/position";
+import { createSize, type Size } from "@/game/features/size";
 
-import type { Board } from "../board";
-import type { Drawable } from "../types/drawable";
+import type { Board } from "@/game/board";
+import type { Drawable } from "@/game/types/drawable";
 
 export interface Hitbox extends Drawable {
   readonly position: Position;
