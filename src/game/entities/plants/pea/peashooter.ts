@@ -4,8 +4,9 @@ import { createPlantId } from "../service";
 import { PlantType } from "../constants/plant-type";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
-import { createHealth } from "@/game/features/health";
-import { createHitbox } from "@/game/features/hitbox";
+import { createHealth } from "@/game/entities/features/health";
+import { createHitbox } from "@/game/entities/features/hitbox";
+import { createShooter } from "../features/shooter";
 
 import type { BasePlant, PlantInfoType } from "../types";
 import type { Vector2 } from "@/game/types/math";
@@ -60,6 +61,21 @@ export function createPeashooter(options: Options): Peashooter {
     width: size.width,
     height: size.height,
   });
+  const shooter = createShooter({
+    shotInterval: SHOT_INTERVAL,
+    position,
+    range: RANGE,
+    ctx,
+    onShoot() {
+      ctx.addShot(
+        createPeashot({
+          x: position.x + size.width,
+          y: position.y,
+          ctx,
+        }),
+      );
+    },
+  });
   let shotTimer = 0;
 
   function draw(board: Board) {
@@ -80,29 +96,7 @@ export function createPeashooter(options: Options): Peashooter {
   }
 
   function update(deltaTime: number) {
-    shotTimer += deltaTime;
-
-    if (shotTimer >= SHOT_INTERVAL) {
-      const ableToShoot = ctx.zombies.some((zombie) => {
-        return (
-          position.y >= zombie.position.y &&
-          position.y <= zombie.position.y + TILE_HEIGHT &&
-          zombie.position.x <= position.x + RANGE
-        );
-      });
-
-      if (ableToShoot) {
-        ctx.addShot(
-          createPeashot({
-            x: position.x + size.width,
-            y: position.y,
-            ctx,
-          }),
-        );
-      }
-
-      shotTimer = 0;
-    }
+    shooter.update(deltaTime);
 
     hitbox.position.set(position.x, position.y);
   }

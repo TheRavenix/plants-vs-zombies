@@ -1,11 +1,11 @@
 import { createFirepeaShot, ShotType } from "../shots";
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import { createPlantId } from "./service";
-import { createHitbox } from "@/game/features/hitbox";
+import { createHitbox } from "@/game/entities/features/hitbox";
 import { PlantType } from "./constants/plant-type";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
-import { createHealth } from "@/game/features/health";
+import { createHealth } from "@/game/entities/features/health";
 
 import type { BasePlant, PlantInfoType } from "./types";
 import type { Vector2 } from "@/game/types/math";
