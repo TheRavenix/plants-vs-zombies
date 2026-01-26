@@ -8,17 +8,13 @@ import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { createShooter } from "../features/shooter";
 
-import type { BasePlant, PlantInfoType } from "../types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
+import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
 
 export interface Threepeater extends BasePlant {
   readonly type: PlantType.Threepeater;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.Threepeater as const;
 const HEALTH = 300;
@@ -41,7 +37,8 @@ export const ThreepeaterInfo: PlantInfoType = {
 SPRITE_IMAGE.src = "./plants/pea/threepeater/Threepeater.png";
 
 export function createThreepeater(options: Options): Threepeater {
-  const { ctx } = options;
+  const { store } = options;
+  const { actions } = store;
   const id = createPlantId();
   const position = createPosition({
     x: options.x + OFFSET_X,
@@ -64,25 +61,25 @@ export function createThreepeater(options: Options): Threepeater {
     shotInterval: SHOT_INTERVAL,
     position,
     range: RANGE,
-    ctx,
+    store,
     onShoot() {
-      ctx.addShot(
+      actions.addShot(
         createPeashot({
           x: position.x + size.width,
           y: position.y,
-          ctx,
+          store,
         }),
         createPeashot({
           x: position.x + size.width,
           y: position.y,
           direction: ShotDirection.UpRight,
-          ctx,
+          store,
         }),
         createPeashot({
           x: position.x + size.width,
           y: position.y,
           direction: ShotDirection.DownRight,
-          ctx,
+          store,
         }),
       );
     },

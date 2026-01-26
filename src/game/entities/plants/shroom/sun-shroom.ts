@@ -6,12 +6,10 @@ import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { createTimer, TimerType, type Timer } from "../../features/timer";
-
-import type { BasePlant, PlantInfoType } from "../types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
-import type { Board } from "@/game/board";
 import { createSun } from "../../sun";
+
+import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
+import type { Board } from "@/game/board";
 
 export interface Sunshroom extends BasePlant {
   readonly type: PlantType.Sunshroom;
@@ -20,9 +18,7 @@ export interface Sunshroom extends BasePlant {
   readonly upgraded: boolean;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.Sunshroom as const;
 const HEALTH = 300;
@@ -41,7 +37,8 @@ export const SunshroomInfo: PlantInfoType = {
 };
 
 export function createSunshroom(options: Options): Sunshroom {
-  const { ctx } = options;
+  const { store } = options;
+  const { actions } = store;
   const id = createPlantId();
   const position = createPosition({
     x: options.x,
@@ -63,7 +60,7 @@ export function createSunshroom(options: Options): Sunshroom {
   const rechargeTimer = createTimer({
     maxTime: RECHARGE_INTERVAL,
     onReady() {
-      ctx.addSun(
+      actions.addSun(
         createSun({
           x: position.x + size.width / 2,
           y: position.y,

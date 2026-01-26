@@ -15,9 +15,7 @@ import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { createHitbox } from "@/game/entities/features/hitbox";
 
-import type { Vector2 } from "@/game/types/math";
-import type { BaseZombie } from "./types";
-import type { LevelContext } from "@/game/level";
+import type { BaseZombie, ZombieOptions } from "./types";
 import type { Board } from "@/game/board";
 import type { Plant } from "../plants/types/plant";
 
@@ -25,9 +23,7 @@ export interface BasicZombie extends BaseZombie {
   readonly type: ZombieType.Basic;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = ZombieOptions;
 
 const TYPE = ZombieType.Basic as const;
 const HEALTH = 190;
@@ -36,7 +32,7 @@ const SPEED = 15;
 const DAMAGE_INTERVAL = 1000;
 
 export function createBasicZombie(options: Options): BasicZombie {
-  const { ctx } = options;
+  const { store } = options;
   const id = createZombieId();
   const position = createPosition({
     x: options.x,
@@ -85,7 +81,7 @@ export function createBasicZombie(options: Options): BasicZombie {
       state,
       damageTimer,
       DAMAGE_INTERVAL,
-      ctx,
+      store,
       deltaTime,
       onEatPlant,
       setState,

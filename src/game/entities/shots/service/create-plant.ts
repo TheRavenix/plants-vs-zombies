@@ -7,14 +7,14 @@ import {
 } from "../pea";
 import { createShroomshot } from "../shroomshot";
 
-import type { LevelContext } from "@/game/level";
+import type { LevelStore } from "@/game/level";
 import type { Shot } from "../types/shot";
 
 export function createShot(
   type: ShotType,
   x: number,
   y: number,
-  ctx: LevelContext,
+  store: LevelStore,
   direction?: ShotDirection,
 ): Shot | null {
   let shot: Shot | null = null;
@@ -25,7 +25,7 @@ export function createShot(
         x,
         y,
         direction,
-        ctx,
+        store,
       });
       break;
 
@@ -34,7 +34,7 @@ export function createShot(
         x,
         y,
         direction,
-        ctx,
+        store,
       });
       break;
 
@@ -43,7 +43,7 @@ export function createShot(
         x,
         y,
         direction,
-        ctx,
+        store,
       });
       break;
 
@@ -51,7 +51,7 @@ export function createShot(
       shot = createRicochetPeashot({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -59,7 +59,7 @@ export function createShot(
       shot = createShroomshot({
         x,
         y,
-        ctx,
+        store,
       });
       break;
   }

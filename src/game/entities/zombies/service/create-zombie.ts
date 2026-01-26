@@ -3,13 +3,13 @@ import { createBasicZombie } from "../basic-zombie";
 import { createFlagZombie } from "../flag-zombie";
 
 import type { Zombie } from "../types/zombie";
-import type { LevelContext } from "@/game/level";
+import type { LevelStore } from "@/game/level";
 
 export function createZombie(
   type: ZombieType,
   x: number,
   y: number,
-  ctx: LevelContext,
+  store: LevelStore,
 ): Zombie | null {
   let zombie: Zombie | null = null;
 
@@ -18,7 +18,7 @@ export function createZombie(
       zombie = createBasicZombie({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -26,7 +26,7 @@ export function createZombie(
       zombie = createFlagZombie({
         x,
         y,
-        ctx,
+        store,
       });
       break;
   }

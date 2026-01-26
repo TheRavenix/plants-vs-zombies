@@ -9,17 +9,13 @@ import { createHealth } from "@/game/entities/features/health";
 import { createPosition } from "@/game/features/position";
 import { createShooter } from "../features/shooter";
 
-import type { Vector2 } from "@/game/types/math";
-import type { BasePlant, PlantInfoType } from "../types";
-import type { LevelContext } from "@/game/level";
+import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
 
 export interface Puffshroom extends BasePlant {
   readonly type: PlantType.Puffshroom;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.Puffshroom as const;
 const HEALTH = 300;
@@ -36,7 +32,8 @@ export const PuffshroomInfo: PlantInfoType = {
 };
 
 export function createPuffshroom(options: Options): Puffshroom {
-  const { ctx } = options;
+  const { store } = options;
+  const { actions } = store;
   const id = createPlantId();
   const position = createPosition({
     x: options.x,
@@ -59,13 +56,13 @@ export function createPuffshroom(options: Options): Puffshroom {
     shotInterval: SHOT_INTERVAL,
     position,
     range: RANGE,
-    ctx,
+    store,
     onShoot() {
-      ctx.addShot(
+      actions.addShot(
         createShroomshot({
           x: position.x + size.width,
           y: position.y,
-          ctx,
+          store,
         }),
       );
     },

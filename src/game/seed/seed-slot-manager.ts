@@ -15,7 +15,6 @@ import { createSize, type Size } from "../features/size";
 import { PlantType } from "../entities/plants/constants/plant-type";
 
 import type { Rect } from "../types/math";
-import type { LevelContext } from "../level";
 import type { Drawable } from "../types/drawable";
 import type { Updatable } from "../types/updatable";
 
@@ -34,7 +33,7 @@ export interface SeedSlotManager extends Drawable, Updatable {
 }
 
 type Options = {
-  ctx: LevelContext;
+  getSunAmount(): number;
 };
 
 const SEED_SLOT_WIDTH = 80 + SEED_PACKET_MARGIN_LEFT;
@@ -52,7 +51,7 @@ SEED_SLOT_CENTER_IMAGE.src = "./seed/seed-slot/Seed_Slot_Center.png";
 SEED_SLOT_CLOSE_IMAGE.src = "./seed/seed-slot/Seed_Slot_Close.png";
 
 export function createSeedSlotManager(options: Options): SeedSlotManager {
-  const { ctx: levelContext } = options;
+  const { getSunAmount } = options;
   const position = createPosition({
     x: 0,
     y: SEED_SLOT_OFFSET_Y,
@@ -146,7 +145,7 @@ export function createSeedSlotManager(options: Options): SeedSlotManager {
     );
     drawCenteredText(
       board,
-      levelContext.sunAmount.toString(),
+      getSunAmount().toString(),
       SEED_SLOT_OFFSET_X + SEED_PACKET_MARGIN_LEFT / 2 + SEED_SLOT_WIDTH / 2,
       SEED_SLOT_OFFSET_Y + SEED_SLOT_HEIGHT / 1.25,
       "#ffffff",
@@ -172,7 +171,7 @@ export function createSeedSlotManager(options: Options): SeedSlotManager {
   }
 
   function update(deltaTime: number) {
-    handleSeedPacketStatus(selectedSlot, slots, levelContext);
+    handleSeedPacketStatus(selectedSlot, slots, getSunAmount());
     handleSeedPacketCooldown(slots, deltaTime);
 
     for (const slot of slots) {
@@ -231,7 +230,7 @@ function drawSeedSlot(
 function handleSeedPacketStatus(
   selectedSlot: SeedSlot | null,
   slots: SeedSlot[],
-  ctx: LevelContext,
+  sunAmount: number,
 ) {
   for (const slot of slots) {
     const packet = slot.packet;
@@ -248,7 +247,7 @@ function handleSeedPacketStatus(
     } else {
       const plantSunCost = PlantInfo[packet.plantType].SunCost;
 
-      if (ctx.sunAmount < plantSunCost) {
+      if (sunAmount < plantSunCost) {
         packet.setStatus(SeedPacketStatus.Disabled);
       } else {
         packet.setStatus(SeedPacketStatus.Active);

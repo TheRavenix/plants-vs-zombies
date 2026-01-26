@@ -4,6 +4,8 @@ import type { Size } from "@/game/features/size";
 import type { Health } from "@/game/entities/features/health";
 import type { Drawable } from "@/game/types/drawable";
 import type { Updatable } from "@/game/types/updatable";
+import type { Vector2 } from "@/game/types/math";
+import type { LevelStore } from "@/game/level";
 
 export interface BasePlant extends Drawable, Updatable {
   readonly id: string;
@@ -19,3 +21,7 @@ export type PlantInfoType = Readonly<{
   SpriteImage: HTMLImageElement;
   Cooldown: number;
 }>;
+
+export type PlantOptions = {
+  store: LevelStore;
+} & Vector2;

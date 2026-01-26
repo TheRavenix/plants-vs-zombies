@@ -2,12 +2,12 @@ import { BOARD_COLS, TILE_HEIGHT, TILE_WIDTH } from "../board";
 import { createZombie } from "../entities/zombies/service/create-zombie";
 import { createSeedPacket } from "../seed";
 
-import type { LevelContext } from "./level";
 import type { Startable } from "../types/startable";
 import type { Updatable } from "../types/updatable";
 import type { PlantType } from "../entities/plants/constants/plant-type";
 import type { Zombie } from "../entities/zombies/types/zombie";
 import type { ZombieType } from "../entities/zombies";
+import type { LevelStore } from "./level-store";
 
 export type LevelBlueprint = {
   id: string;
@@ -36,30 +36,31 @@ export type LevelBlueprint = {
 };
 
 export interface LevelBlueprintManager extends Updatable, Startable {
-  readonly levelBlueprint: LevelBlueprint;
+  readonly blueprint: LevelBlueprint;
   readonly triggeredTimelineIds: string[];
   readonly started: boolean;
   readonly lastStayingZombie: Zombie | null;
 }
 
 type Options = {
-  levelBlueprint: LevelBlueprint;
-  ctx: LevelContext;
+  blueprint: LevelBlueprint;
+  store: LevelStore;
 };
 
 export function createLevelBlueprintManager(
   options: Options,
 ): LevelBlueprintManager {
-  const { ctx } = options;
-  let levelBlueprint = options.levelBlueprint;
+  const { store } = options;
+  const { state, actions } = store;
+  let blueprint = options.blueprint;
   let triggeredTimelineIds: string[] = [];
   let started = false;
   let lastStayingZombie: Zombie | null = null;
 
   function update(_deltaTime: number) {
-    const timeMins = parseFloat((ctx.time / 1000).toFixed(2));
+    const timeMins = parseFloat((state.time / 1000).toFixed(2));
 
-    for (const timeline of levelBlueprint.timelines) {
+    for (const timeline of blueprint.timelines) {
       if (timeMins >= timeline.timeTrigger) {
         if (triggeredTimelineIds.includes(timeline.id)) {
           continue;
@@ -70,34 +71,34 @@ export function createLevelBlueprintManager(
             zombieConfig.type,
             TILE_WIDTH * BOARD_COLS,
             TILE_HEIGHT * zombieConfig.lane,
-            ctx,
+            store,
           );
 
           if (zombie === null) {
             continue;
           }
 
-          ctx.addZombie(zombie);
+          actions.addZombie(zombie);
         }
 
         triggeredTimelineIds.push(timeline.id);
       }
     }
 
-    if (triggeredTimelineIds.length === levelBlueprint.timelines.length) {
-      if (ctx.zombies.length === 1) {
+    if (triggeredTimelineIds.length === blueprint.timelines.length) {
+      if (state.zombies.length === 1) {
         if (lastStayingZombie === null) {
-          lastStayingZombie = ctx.zombies[0];
+          lastStayingZombie = state.zombies[0];
         }
       }
-      if (ctx.zombies.length <= 0) {
-        ctx.setGameOver(true);
+      if (state.zombies.length <= 0) {
+        actions.setGameOver(true);
 
-        if (ctx.rewardPacket === null) {
+        if (state.rewardPacket === null) {
           if (lastStayingZombie !== null) {
-            ctx.setRewardPacket(
+            actions.setRewardPacket(
               createSeedPacket({
-                plantType: levelBlueprint.winConditions.reward,
+                plantType: blueprint.winConditions.reward,
                 x: lastStayingZombie.position.x,
                 y: lastStayingZombie.position.y,
               }),
@@ -110,14 +111,14 @@ export function createLevelBlueprintManager(
 
   function start() {
     if (!started) {
-      ctx.setSunAmount(levelBlueprint.config.initialSun);
+      actions.setSunAmount(blueprint.config.initialSun);
       started = true;
     }
   }
 
   return {
-    get levelBlueprint() {
-      return levelBlueprint;
+    get blueprint() {
+      return blueprint;
     },
     get triggeredTimelineIds() {
       return triggeredTimelineIds;

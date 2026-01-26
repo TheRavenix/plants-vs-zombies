@@ -2,7 +2,7 @@ import { TILE_HEIGHT } from "@/game/board";
 import { createTimer, type Timer } from "../../features/timer";
 
 import type { Position } from "@/game/features/position";
-import type { LevelContext } from "@/game/level";
+import type { LevelStore } from "@/game/level";
 import type { Updatable } from "@/game/types/updatable";
 
 export interface Shooter extends Updatable {
@@ -15,7 +15,7 @@ type Options = {
   range: number;
   burstCount?: number;
   burstDelay?: number;
-  ctx: LevelContext;
+  store: LevelStore;
   onShoot(): void;
 };
 
@@ -24,11 +24,12 @@ export function createShooter(options: Options): Shooter {
     shotInterval,
     position,
     range,
-    ctx,
+    store,
     burstCount = 1,
     burstDelay = 0,
     onShoot,
   } = options;
+  const { state } = store;
   let shotsFiredInBurst = 0;
   const burstTimer = createTimer({
     maxTime: burstDelay,
@@ -40,7 +41,7 @@ export function createShooter(options: Options): Shooter {
   const shotTimer = createTimer({
     maxTime: shotInterval,
     onReady() {
-      const ableToShoot = ctx.zombies.some((zombie) => {
+      const ableToShoot = state.zombies.some((zombie) => {
         return (
           position.y >= zombie.position.y &&
           position.y <= zombie.position.y + TILE_HEIGHT &&

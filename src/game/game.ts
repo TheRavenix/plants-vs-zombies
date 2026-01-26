@@ -1,4 +1,4 @@
-import { createLevel, type Level } from "./level";
+import { createLevel, type Level } from "./level/level";
 import { createMainMenu, type MainMenu } from "./main-menu";
 
 import type { Board } from "./board";

@@ -8,18 +8,14 @@ import { createHealth } from "@/game/entities/features/health";
 import { PlantType } from "./constants/plant-type";
 import { createTimer, type Timer } from "../features/timer";
 
-import type { BasePlant, PlantInfoType } from "./types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
+import type { BasePlant, PlantInfoType, PlantOptions } from "./types";
 
 export interface Sunflower extends BasePlant {
   readonly type: PlantType.Sunflower;
   readonly timer: Timer;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.Sunflower as const;
 const HEALTH = 300;
@@ -42,7 +38,8 @@ export const SunflowerInfo: PlantInfoType = {
 SPRITE_IMAGE.src = "./plants/sunflower/Sunflower.png";
 
 export function createSunflower(options: Options): Sunflower {
-  const { ctx } = options;
+  const { store } = options;
+  const { actions } = store;
   const id = createPlantId();
   const position = createPosition({
     x: options.x + OFFSET_X,
@@ -69,7 +66,7 @@ export function createSunflower(options: Options): Sunflower {
   });
 
   function generateSun() {
-    ctx.addSun(
+    actions.addSun(
       createSun({
         x: position.x + SUN_SPRITE_WIDTH / 2,
         y: position.y,

@@ -7,17 +7,13 @@ import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 
 import type { Board } from "@/game/board";
-import type { BasePlant, PlantInfoType } from "./types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
+import type { BasePlant, PlantInfoType, PlantOptions } from "./types";
 
 export interface WallNut extends BasePlant {
   type: PlantType.WallNut;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.WallNut as const;
 const HEALTH = 4000;

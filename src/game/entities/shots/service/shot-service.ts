@@ -1,14 +1,14 @@
 import { drawText } from "@/game/helpers/canvas";
 import { FontSize } from "@/game/constants/font";
 import { ShotDirection, ShotType } from "../constants";
+import { findFirstCollision } from "../../helpers/collision";
 
 import type { Position } from "@/game/features/position";
 import type { Size } from "@/game/features/size";
 import type { Board } from "@/game/board";
-import { findFirstCollision } from "../../helpers/collision";
 import type { Zombie } from "../../zombies/types/zombie";
 import type { Hitbox } from "../../features/hitbox";
-import type { LevelContext } from "@/game/level";
+import type { LevelStore } from "@/game/level";
 
 export function createShotId(): string {
   return `SHOT-${crypto.randomUUID()}`;
@@ -76,13 +76,14 @@ export function handleShotDirection(
 
 export function handleShotZombieCollision(
   hitbox: Hitbox,
-  ctx: LevelContext,
+  store: LevelStore,
   onHit: (zombie: Zombie) => void,
   setActive: (active: boolean) => void,
 ) {
+  const { state } = store;
   const collisionZombie = findFirstCollision<Zombie>(
     hitbox,
-    ctx.zombies,
+    state.zombies,
     (z) => z.hitbox,
   );
 
