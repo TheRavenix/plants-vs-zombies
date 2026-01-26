@@ -7,9 +7,8 @@ import { createHitbox } from "@/game/entities/features/hitbox";
 
 import type { BaseShot } from "../types";
 import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
 import type { Board } from "@/game/board";
-import type { Zombie } from "../../zombies/types/zombie";
+import type { LevelStore } from "@/game/level";
 
 export interface RicochetPeashot extends BaseShot {
   readonly type: ShotType.RicochetPeashot;
@@ -18,7 +17,7 @@ export interface RicochetPeashot extends BaseShot {
 }
 
 type Options = {
-  ctx: LevelContext;
+  store: LevelStore;
 } & Vector2;
 
 const TYPE = ShotType.RicochetPeashot as const;
@@ -36,7 +35,8 @@ const SPRITE_IMAGE_SH = 9;
 SPRITE_IMAGE.src = "./shots/pea/peashot/Peashot.png";
 
 export function createRicochetPeashot(options: Options): RicochetPeashot {
-  const { ctx } = options;
+  const { store } = options;
+  const { state, actions } = store;
   const id = createShotId();
   const position = createPosition({
     x: options.x,
@@ -92,12 +92,12 @@ export function createRicochetPeashot(options: Options): RicochetPeashot {
         return;
       }
 
-      let filteredZombies: Zombie[] = [...ctx.zombies];
-      const lastHitZombie = ctx.findZombieById(lastHitZombieId);
+      let filteredZombies = state.zombies;
+      const lastHitZombie = actions.findZombieById(lastHitZombieId);
 
       if (lastHitZombie !== undefined) {
         filteredZombies = findZombiesWithinArea(
-          [...ctx.zombies],
+          state.zombies,
           lastHitZombie.position.x,
           lastHitZombie.position.y,
         );
@@ -164,7 +164,7 @@ export function createRicochetPeashot(options: Options): RicochetPeashot {
         deleteZombieId = collisionZombie.id;
       }
       if (deleteZombieId !== null) {
-        const zombie = ctx.findZombieById(deleteZombieId);
+        const zombie = actions.findZombieById(deleteZombieId);
 
         if (zombie !== undefined) {
           zombie.health.takeDamage(damage);
@@ -180,7 +180,7 @@ export function createRicochetPeashot(options: Options): RicochetPeashot {
 
       let deleteZombieId: string | null = null;
 
-      const collisionZombie = ctx.zombies.find((zombie) => {
+      const collisionZombie = state.zombies.find((zombie) => {
         return hitbox.isColliding(zombie.hitbox);
       });
 
@@ -188,7 +188,7 @@ export function createRicochetPeashot(options: Options): RicochetPeashot {
         deleteZombieId = collisionZombie.id;
       }
       if (deleteZombieId !== null) {
-        const zombie = ctx.findZombieById(deleteZombieId);
+        const zombie = actions.findZombieById(deleteZombieId);
 
         if (zombie !== undefined) {
           zombie.health.takeDamage(damage);

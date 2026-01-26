@@ -6,18 +6,15 @@ import { PlantType } from "./constants/plant-type";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
+import { findFirstCollision } from "../helpers/collision";
 
-import type { BasePlant, PlantInfoType } from "./types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
+import type { BasePlant, PlantInfoType, PlantOptions } from "./types";
 
 export interface Torchwood extends BasePlant {
   readonly type: PlantType.Torchwood;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.Torchwood as const;
 const HEALTH = 300;
@@ -38,7 +35,8 @@ export const TorchwoodInfo: PlantInfoType = {
 SPRITE_IMAGE.src = "./plants/torchwood/Torchwood.png";
 
 export function createTorchwood(options: Options): Torchwood {
-  const { ctx } = options;
+  const { store } = options;
+  const { state, actions } = store;
   const id = createPlantId();
   const position = createPosition({
     x: options.x + OFFSET_X,
@@ -76,20 +74,17 @@ export function createTorchwood(options: Options): Torchwood {
   }
 
   function update(_deltaTime: number) {
-    // TODO: Use findFirstCollision()
-    const shot = ctx.shots.find((shot) => {
-      return hitbox.isColliding(shot.hitbox);
-    });
+    const shot = findFirstCollision(hitbox, state.shots, (shot) => shot.hitbox);
 
     if (shot !== undefined) {
       if (shot.type === ShotType.Peashot) {
-        ctx.removeShotById(shot.id);
-        ctx.addShot(
+        actions.removeShotById(shot.id);
+        actions.addShot(
           createFirepeaShot({
             x: shot.position.x,
             y: shot.position.y,
             direction: shot.direction,
-            ctx,
+            store,
           }),
         );
       }

@@ -6,103 +6,27 @@ import {
   TILE_WIDTH,
   type Board,
 } from "../board";
-import { PlantInfo } from "../entities/plants";
-import { createPlant } from "../entities/plants/service/create-plant";
-import {
-  createSeedSlotManager,
-  type SeedSlotManager,
-} from "../seed/seed-slot-manager";
-import { createSun, type Sun } from "../entities/sun";
-import { SeedPacketStatus, type SeedPacket } from "../seed";
-import { closestLowerValue } from "@/utils/math";
-import { drawButton, isPointInRect, type Button } from "../helpers/canvas";
-import {
-  createModal,
-  getModalButtonRect,
-  isPointerInModalCloseArea,
-  type Modal,
-} from "../modal";
-import { GameScene, type GameContext } from "../game";
+import { drawButton, type Button } from "../helpers/canvas";
 import {
   createLevelBlueprintManager,
   type LevelBlueprint,
-  type LevelBlueprintManager,
 } from "./level-blueprint-manager";
-import { createTimer, type Timer } from "../entities/features/timer";
+import { createLevelStore, type LevelStore } from "./level-store";
+import { createLevelEventHandler } from "./level-event-handler";
 
-import type { Vector2 } from "../types/math";
 import type { Cleanup } from "../types/cleanup";
 import type { Drawable } from "../types/drawable";
 import type { Updatable } from "../types/updatable";
 import type { Zombie } from "../entities/zombies/types/zombie";
 import type { Plant } from "../entities/plants/types/plant";
 import type { Shot } from "../entities/shots/types/shot";
+import type { GameContext } from "../game";
 
 import levels from "./levels.json";
 
 export interface Level extends Drawable, Updatable {
-  readonly sunAmount: number;
-  readonly zombies: Zombie[];
-  readonly plants: Plant[];
-  readonly shots: Shot[];
-  readonly suns: Sun[];
-  readonly seedSlotManager: SeedSlotManager;
-  readonly sunRechargeTimer: Timer;
-  readonly levelBlueprintManager: LevelBlueprintManager;
-  readonly time: number;
-  readonly gameOver: boolean;
-  readonly rewardPacket: SeedPacket | null;
-  readonly activeModal: Modal | null;
-  readonly isPaused: boolean;
+  readonly store: LevelStore;
   start(board: Board): Cleanup;
-  setSunAmount(amount: number): void;
-  setActiveModal(modal: Modal | null): void;
-  setIsPaused(paused: boolean): void;
-  setRewardPacket(rewardPacket: SeedPacket | null): void;
-  setGameOver(gameOver: boolean): void;
-  addPlant(...plants: Plant[]): void;
-  removePlantById(id: string): void;
-  findPlantById(id: string): Plant | undefined;
-  addZombie(...Zombies: Zombie[]): void;
-  removeZombieById(id: string): void;
-  findZombieById(id: string): Zombie | undefined;
-  findZombiesWithinArea(x: number, y: number, tileRange?: number): Zombie[];
-  addShot(...shots: Shot[]): void;
-  removeShotById(id: string): void;
-  findShotById(id: string): Shot | undefined;
-  addSun(...suns: Sun[]): void;
-  removeSunById(id: string): void;
-  findSunById(id: string): Sun | undefined;
-}
-
-export interface LevelContext {
-  readonly sunAmount: number;
-  readonly time: number;
-  readonly gameOver: boolean;
-  readonly rewardPacket: SeedPacket | null;
-  readonly plants: Plant[];
-  readonly zombies: Zombie[];
-  readonly shots: Shot[];
-  readonly suns: Sun[];
-  readonly seedSlotManager: SeedSlotManager;
-  setSunAmount(amount: number): void;
-  setActiveModal(modal: Modal | null): void;
-  setIsPaused(paused: boolean): void;
-  setRewardPacket(rewardPacket: SeedPacket | null): void;
-  setGameOver(gameOver: boolean): void;
-  addPlant(...plants: Plant[]): void;
-  removePlantById(id: string): void;
-  findPlantById(id: string): Plant | undefined;
-  addZombie(...Zombies: Zombie[]): void;
-  removeZombieById(id: string): void;
-  findZombieById(id: string): Zombie | undefined;
-  findZombiesWithinArea(x: number, y: number, tileRange?: number): Zombie[];
-  addShot(...shots: Shot[]): void;
-  removeShotById(id: string): void;
-  findShotById(id: string): Shot | undefined;
-  addSun(...suns: Sun[]): void;
-  removeSunById(id: string): void;
-  findSunById(id: string): Sun | undefined;
 }
 
 type Options = {
@@ -110,9 +34,6 @@ type Options = {
   board: Board;
 };
 
-const DEFAULT_SUN_AMOUNT = 100;
-const SUN_PRODUCTION = 25;
-const SUN_RECHARGE_INTERVAL = 1000 * 24;
 const GRASS_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
 const GRASS_2_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
 const WALL_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
@@ -121,12 +42,12 @@ enum ButtonId {
   Menu = "MENU",
 }
 
-enum ModalButtonId {
-  ExitToMap = "EXIT_TO_MAP",
-  Restart = "RESTART",
-  Resume = "RESUME",
-  Continue = "CONTINUE",
-}
+// enum ModalButtonId {
+//   ExitToMap = "EXIT_TO_MAP",
+//   Restart = "RESTART",
+//   Resume = "RESUME",
+//   Continue = "CONTINUE",
+// }
 
 const buttons: Button[] = [
   {
@@ -150,86 +71,16 @@ WALL_IMAGE.src = "./wall/Wall.png";
 
 export function createLevel(options: Options): Level {
   const { gameContext, board } = options;
-  let sunAmount = DEFAULT_SUN_AMOUNT;
-  let zombies: Zombie[] = [];
-  let plants: Plant[] = [];
-  let shots: Shot[] = [];
-  let suns: Sun[] = [];
-  let time = 0;
-  let gameOver = false;
-  let rewardPacket: SeedPacket | null = null;
-  let activeModal: Modal | null = null;
-  let isPaused = false;
-
-  const levelContext: LevelContext = {
-    get sunAmount() {
-      return sunAmount;
-    },
-    get time() {
-      return time;
-    },
-    get rewardPacket() {
-      return rewardPacket;
-    },
-    get gameOver() {
-      return gameOver;
-    },
-    get zombies() {
-      return zombies;
-    },
-    get plants() {
-      return plants;
-    },
-    get shots() {
-      return shots;
-    },
-    get suns() {
-      return suns;
-    },
-    get seedSlotManager() {
-      return seedSlotManager;
-    },
-    setSunAmount,
-    setActiveModal,
-    setIsPaused,
-    setRewardPacket,
-    setGameOver,
-    addPlant,
-    removePlantById,
-    findPlantById,
-    addZombie,
-    removeZombieById,
-    findZombieById,
-    findZombiesWithinArea,
-    addShot,
-    removeShotById,
-    findShotById,
-    addSun,
-    findSunById,
-    removeSunById,
-  };
-
-  const sunRechargeTimer = createTimer({
-    maxTime: SUN_RECHARGE_INTERVAL,
-    onReady() {
-      levelContext.addSun(
-        createSun({
-          x: TILE_WIDTH,
-          y: TILE_HEIGHT,
-          amount: SUN_PRODUCTION,
-        }),
-      );
-    },
+  const store = createLevelStore();
+  const { state, actions } = store;
+  const blueprintManager = createLevelBlueprintManager({
+    blueprint: levels[0] as LevelBlueprint,
+    store,
   });
-
-  // FIXME:
-  let seedSlotManager = createSeedSlotManager({
-    ctx: levelContext,
-  });
-
-  const levelBlueprintManager = createLevelBlueprintManager({
-    levelBlueprint: levels[0] as LevelBlueprint,
-    ctx: levelContext,
+  const eventHandler = createLevelEventHandler({
+    gameContext,
+    buttons,
+    store,
   });
 
   function draw(board: Board) {
@@ -258,20 +109,20 @@ export function createLevel(options: Options): Level {
         );
       }
     }
-    for (const plant of plants) {
+    for (const plant of state.plants) {
       plant.draw(board);
     }
-    for (const zombie of zombies) {
+    for (const zombie of state.zombies) {
       zombie.draw(board);
     }
-    for (const shot of shots) {
+    for (const shot of state.shots) {
       shot.draw(board);
     }
-    for (const sun of suns) {
+    for (const sun of state.suns) {
       sun.draw(board);
     }
 
-    seedSlotManager.draw(board);
+    state.seedSlotManager.draw(board);
 
     for (const button of buttons) {
       drawButton(
@@ -286,457 +137,93 @@ export function createLevel(options: Options): Level {
       );
     }
 
-    if (rewardPacket !== null) {
-      rewardPacket.draw(board);
+    if (state.rewardPacket !== null) {
+      state.rewardPacket.draw(board);
     }
-    if (activeModal !== null) {
-      activeModal.draw(board);
+    if (state.activeModal !== null) {
+      state.activeModal.draw(board);
     }
   }
 
   function update(deltaTime: number) {
-    if (activeModal !== null) {
-      activeModal.update(deltaTime);
+    if (state.activeModal !== null) {
+      state.activeModal.update(deltaTime);
     }
 
-    if (isPaused) {
+    if (state.isPaused) {
       return;
     }
 
-    time += deltaTime;
+    actions.setTime(state.time + deltaTime);
+    blueprintManager.update(deltaTime);
+    state.sunRechargeTimer.update(deltaTime);
+    state.seedSlotManager.update(deltaTime);
 
-    sunRechargeTimer.update(deltaTime);
-    levelBlueprintManager.update(deltaTime);
-    seedSlotManager.update(deltaTime);
-
-    for (const zombie of zombies) {
+    for (const zombie of state.zombies) {
       zombie.update(deltaTime);
     }
-    for (const plant of plants) {
+    for (const plant of state.plants) {
       plant.update(deltaTime);
     }
-    for (const shot of shots) {
+    for (const shot of state.shots) {
       shot.update(deltaTime);
     }
-    for (const sun of suns) {
+    for (const sun of state.suns) {
       sun.update(deltaTime);
     }
 
-    zombies = removeDeadZombies(zombies);
-    plants = removeDeadPlants(plants);
-    shots = removeOutOfZoneShots(shots, board);
-    shots = removeInactiveShots(shots);
+    // TODO: Find a better way to write these
+    // I mean this is updating the arrays on every frame so it's expensive
+    actions.setPlants(removeDeadPlants(state.plants));
+    actions.setZombies(removeDeadZombies(state.zombies));
+    actions.setShots(removeOutOfZoneShots(state.shots, board));
+    actions.setShots(removeInactiveShots(state.shots));
 
-    if (rewardPacket !== null) {
-      rewardPacket.update(deltaTime);
+    if (state.rewardPacket !== null) {
+      state.rewardPacket.update(deltaTime);
     }
-    if (activeModal !== null) {
-      isPaused = true;
+    if (state.activeModal !== null) {
+      actions.setIsPaused(true);
     }
 
     // FOR TESTING ONLY
-    // TODO: Remove Dangerous Code
-    gameOver = zombies.some((zombie) => zombie.position.x < TILE_WIDTH);
+    // FIXME: Remove Dangerous Code
+    actions.setGameOver(
+      state.zombies.some((zombie) => zombie.position.x < TILE_WIDTH),
+    );
   }
 
   function start(board: Board) {
-    const { canvas, ctx } = board;
+    const { ctx } = board;
 
     if (ctx !== null) {
       ctx.imageSmoothingEnabled = false;
     }
 
-    levelBlueprintManager.start();
-
-    function handlePointerDownEvent(e: PointerEvent) {
-      const coords = board.getCanvasCoordinates(e);
-
-      if (activeModal !== null) {
-        if (isPointerInModalCloseArea(activeModal, board, e)) {
-          activeModal = null;
-          isPaused = false;
-          return;
-        }
-
-        const modalButton = activeModal.buttons.find((_, index) =>
-          isPointInRect(
-            coords,
-            getModalButtonRect(index, activeModal!.buttons),
-          ),
-        );
-
-        if (modalButton !== undefined) {
-          handleModalButtonClick(modalButton.id, gameContext, levelContext);
-        }
-      }
-      if (isPaused) {
-        return;
-      }
-      if (
-        rewardPacket !== null &&
-        isPointInRect(coords, {
-          x: rewardPacket.position.x,
-          y: rewardPacket.position.y,
-          width: rewardPacket.size.width,
-          height: rewardPacket.size.height,
-        })
-      ) {
-        const modal = createModal({
-          title: "Reward",
-          description: rewardPacket.plantType,
-          buttons: [
-            {
-              id: ModalButtonId.Continue,
-              text: "Continue",
-            },
-          ],
-        });
-        setActiveModal(modal);
-        return;
-      }
-      if (!gameOver) {
-        handleSunCollect(levelContext, board, e, coords);
-        handleSeedSlotSelect(seedSlotManager, coords);
-        handlePlacePlant(levelContext, board, e, coords);
-      }
-
-      const button = buttons.find((btn) => isPointInRect(coords, btn));
-
-      if (button !== undefined) {
-        handleButtonClick(button.id, levelContext);
-      }
-    }
-
-    canvas.addEventListener("pointerdown", handlePointerDownEvent);
+    blueprintManager.start();
+    const eventHandlerCleanup = eventHandler.start(board);
 
     return () => {
-      canvas.removeEventListener("pointerdown", handlePointerDownEvent);
+      eventHandlerCleanup();
     };
   }
 
-  function setSunAmount(newSunAmount: number) {
-    sunAmount = newSunAmount;
-  }
-
-  function setActiveModal(newActiveModal: Modal | null) {
-    activeModal = newActiveModal;
-  }
-
-  function setIsPaused(newIsPaused: boolean) {
-    isPaused = newIsPaused;
-  }
-
-  function setRewardPacket(newRewardPacket: SeedPacket | null) {
-    rewardPacket = newRewardPacket;
-  }
-
-  function setGameOver(newGameOver: boolean) {
-    gameOver = newGameOver;
-  }
-
-  function addPlant(...newPlants: Plant[]) {
-    plants.push(...newPlants);
-  }
-
-  function removePlantById(id: string) {
-    plants = plants.filter((plant) => plant.id !== id);
-  }
-
-  function findPlantById(id: string) {
-    return plants.find((plant) => plant.id === id);
-  }
-
-  function addZombie(...newZombies: Zombie[]) {
-    zombies.push(...newZombies);
-  }
-
-  function removeZombieById(id: string) {
-    zombies = zombies.filter((zombie) => zombie.id !== id);
-  }
-
-  function findZombieById(id: string) {
-    return zombies.find((zombie) => zombie.id === id);
-  }
-
-  function findZombiesWithinArea(x: number, y: number, tileRange?: number) {
-    const tileRangeX =
-      tileRange !== undefined ? TILE_WIDTH * tileRange : TILE_WIDTH;
-    const tileRangeY =
-      tileRange !== undefined ? TILE_HEIGHT * tileRange : TILE_HEIGHT;
-
-    return zombies.filter((zombie) => {
-      return (
-        zombie.position.x >= x - tileRangeX &&
-        zombie.position.x <= x + tileRangeX &&
-        zombie.position.y >= y - tileRangeY &&
-        zombie.position.y <= y + tileRangeY
-      );
-    });
-  }
-
-  function addShot(...newShots: Shot[]) {
-    shots.push(...newShots);
-  }
-
-  function removeShotById(id: string) {
-    shots = shots.filter((shot) => shot.id !== id);
-  }
-
-  function findShotById(id: string) {
-    return shots.find((shot) => shot.id === id);
-  }
-
-  function addSun(...newSuns: Sun[]) {
-    suns.push(...newSuns);
-  }
-
-  function removeSunById(id: string) {
-    suns = suns.filter((sun) => sun.id !== id);
-  }
-
-  function findSunById(id: string) {
-    return suns.find((sun) => sun.id === id);
-  }
-
   return {
-    get sunAmount() {
-      return sunAmount;
-    },
-    get zombies() {
-      return zombies;
-    },
-    get plants() {
-      return plants;
-    },
-    get shots() {
-      return shots;
-    },
-    get suns() {
-      return suns;
-    },
-    get seedSlotManager() {
-      return seedSlotManager;
-    },
-    get sunRechargeTimer() {
-      return sunRechargeTimer;
-    },
-    get time() {
-      return time;
-    },
-    get levelBlueprintManager() {
-      return levelBlueprintManager;
-    },
-    get gameOver() {
-      return gameOver;
-    },
-    get rewardPacket() {
-      return rewardPacket;
-    },
-    get activeModal() {
-      return activeModal;
-    },
-    get isPaused() {
-      return isPaused;
+    get store() {
+      return store;
     },
     draw,
     update,
     start,
-    setSunAmount,
-    setActiveModal,
-    setIsPaused,
-    setRewardPacket,
-    setGameOver,
-    addPlant,
-    removePlantById,
-    findPlantById,
-    addZombie,
-    removeZombieById,
-    findZombieById,
-    findZombiesWithinArea,
-    addShot,
-    removeShotById,
-    findShotById,
-    addSun,
-    findSunById,
-    removeSunById,
   };
-}
-
-function handleSunCollect(
-  ctx: LevelContext,
-  board: Board,
-  e: PointerEvent,
-  coords: Vector2,
-) {
-  const { suns } = ctx;
-
-  if (suns.length <= 0) {
-    return;
-  }
-  if (!board.isPointerInPlaySafeArea(e)) {
-    return;
-  }
-
-  const sun = suns.find((sun) =>
-    isPointInRect(coords, {
-      x: sun.position.x,
-      y: sun.position.y,
-      width: sun.size.width,
-      height: sun.size.height,
-    }),
-  );
-
-  if (sun === undefined) {
-    return;
-  }
-
-  ctx.setSunAmount(ctx.sunAmount + sun.amount);
-  ctx.removeSunById(sun.id);
-}
-
-function handleSeedSlotSelect(
-  seedSlotManager: SeedSlotManager,
-  coords: Vector2,
-) {
-  if (
-    !isPointInRect(coords, {
-      x: seedSlotManager.position.x,
-      y: seedSlotManager.position.y,
-      width: seedSlotManager.size.width,
-      height: seedSlotManager.size.height,
-    })
-  ) {
-    return;
-  }
-
-  // FIXME: This logic is problematic
-  const selectedSlotId = seedSlotManager.selectedSlot?.id;
-  const seedSlot = seedSlotManager.slots.find((slot) =>
-    isPointInRect(coords, slot),
-  );
-
-  if (seedSlot === undefined) {
-    return;
-  }
-  if (seedSlot.id === selectedSlotId) {
-    seedSlotManager.setSelectedSlot(null);
-  } else {
-    seedSlotManager.setSelectedSlot(seedSlot);
-  }
-}
-
-function handlePlacePlant(
-  ctx: LevelContext,
-  board: Board,
-  e: PointerEvent,
-  coords: Vector2,
-) {
-  const { seedSlotManager } = ctx;
-  const { selectedSlot } = seedSlotManager;
-
-  if (selectedSlot === null) {
-    return;
-  }
-
-  const inPlaySafeArea = board.isPointerInPlaySafeArea(e);
-
-  if (!inPlaySafeArea) {
-    return;
-  }
-  if (selectedSlot.packet.status === SeedPacketStatus.Disabled) {
-    return;
-  }
-
-  const closestX = closestLowerValue(
-    coords.x,
-    board.tilePosList.map((tilePos) => tilePos.x),
-  );
-  const closestY = closestLowerValue(
-    coords.y,
-    board.tilePosList.map((tilePos) => tilePos.y),
-  );
-  const closestPlant = ctx.plants.find((plant) => {
-    return (
-      plant.position.x >= closestX &&
-      plant.position.x <= closestX + TILE_WIDTH &&
-      plant.position.y >= closestY &&
-      plant.position.y <= closestY + TILE_HEIGHT
-    );
-  });
-
-  if (closestPlant !== undefined) {
-    return;
-  }
-
-  const plantType = selectedSlot.packet.plantType;
-  const plantCost = PlantInfo[plantType].SunCost;
-
-  if (ctx.sunAmount < plantCost) {
-    return;
-  }
-
-  const plant = createPlant(plantType, closestX, closestY, ctx);
-
-  if (plant !== null) {
-    ctx.addPlant(plant);
-  }
-
-  selectedSlot.packet.setCooldownTimerPaused(false);
-  seedSlotManager.setSelectedSlot(null);
-  ctx.setSunAmount(ctx.sunAmount - plantCost);
-}
-
-function handleButtonClick(id: string, ctx: LevelContext) {
-  switch (id) {
-    case ButtonId.Menu:
-      const modal = createModal({
-        title: "Game Paused",
-        description:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Porro sequi voluptatibus quasi expedita veniam explicabo optio impedit, repudiandae doloremque enim hic placeat eos. Mollitia ullam quasi molestias voluptates consectetur ratione.",
-        buttons: [
-          {
-            id: ModalButtonId.ExitToMap,
-            text: "Exit To Map",
-          },
-          {
-            id: ModalButtonId.Restart,
-            text: "Restart",
-          },
-          {
-            id: ModalButtonId.Resume,
-            text: "Resume",
-          },
-        ],
-      });
-      ctx.setActiveModal(modal);
-      ctx.setIsPaused(true);
-      break;
-  }
-}
-
-function handleModalButtonClick(
-  id: string,
-  gameContext: GameContext,
-  levelContext: LevelContext,
-) {
-  switch (id) {
-    case ModalButtonId.ExitToMap:
-      gameContext.setScene(GameScene.MainMenu);
-      break;
-
-    case ModalButtonId.Resume:
-      levelContext.setActiveModal(null);
-      levelContext.setIsPaused(false);
-      break;
-  }
-}
-
-function removeDeadZombies(zombies: Zombie[]): Zombie[] {
-  return zombies.filter((zombie) => !zombie.health.isDead());
 }
 
 function removeDeadPlants(plants: Plant[]): Plant[] {
   return plants.filter((plant) => !plant.health.isDead());
+}
+
+function removeDeadZombies(zombies: Zombie[]): Zombie[] {
+  return zombies.filter((zombie) => !zombie.health.isDead());
 }
 
 function removeOutOfZoneShots(shots: Shot[], board: Board): Shot[] {

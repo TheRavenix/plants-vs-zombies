@@ -1,16 +1,16 @@
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
 import { drawText } from "@/game/helpers/canvas";
 import { FontSize } from "@/game/constants/font";
+import { ZombieState, type ZombieType } from "../constants";
+import { findFirstCollision } from "../../helpers/collision";
 
 import type { Position } from "@/game/features/position";
 import type { Size } from "@/game/features/size";
 import type { Health } from "@/game/entities/features/health";
-import { ZombieState, type ZombieType } from "../constants";
 import type { Zombie } from "../types/zombie";
-import { findFirstCollision } from "../../helpers/collision";
 import type { Plant } from "../../plants/types/plant";
 import type { Hitbox } from "../../features/hitbox";
-import type { LevelContext } from "@/game/level";
+import type { LevelStore } from "@/game/level";
 
 export function createZombieId(): string {
   return `ZOMBIE-${crypto.randomUUID()}`;
@@ -72,7 +72,7 @@ export function handleZombieBehaviour(
   state: ZombieState,
   damageTimer: number,
   damageInterval: number,
-  ctx: LevelContext,
+  store: LevelStore,
   deltaTime: number,
   onEatPlant: (plant: Plant) => void,
   setState: (state: ZombieState) => void,
@@ -82,7 +82,7 @@ export function handleZombieBehaviour(
 
   const collisionPlant = findFirstCollision<Plant>(
     hitbox,
-    ctx.plants,
+    store.state.plants,
     (plant) => plant.hitbox,
   );
 

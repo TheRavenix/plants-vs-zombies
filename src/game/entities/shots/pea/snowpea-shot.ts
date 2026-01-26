@@ -8,9 +8,7 @@ import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
 import { createHitbox } from "@/game/entities/features/hitbox";
 
-import type { BaseShot } from "../types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
+import type { BaseShot, ShotOptions } from "../types";
 import type { Board } from "@/game/board";
 import type { Zombie } from "../../zombies/types/zombie";
 
@@ -18,10 +16,7 @@ export interface SnowpeaShot extends BaseShot {
   readonly type: ShotType.SnowpeaShot;
 }
 
-type Options = {
-  direction?: ShotDirection;
-  ctx: LevelContext;
-} & Vector2;
+type Options = ShotOptions;
 
 const TYPE = ShotType.SnowpeaShot as const;
 const DAMAGE = 20;
@@ -38,7 +33,7 @@ const SPRITE_IMAGE_SH = 9;
 SPRITE_IMAGE.src = "./shots/pea/snowpea-shot/SnowpeaShot.png";
 
 export function createSnowpeaShot(options: Options): SnowpeaShot {
-  const { ctx } = options;
+  const { store } = options;
   const id = createShotId();
   const position = createPosition({
     x: options.x,
@@ -84,7 +79,7 @@ export function createSnowpeaShot(options: Options): SnowpeaShot {
     hitbox.position.set(position.x, position.y);
 
     handleShotDirection(direction, position, speed, deltaTime);
-    handleShotZombieCollision(hitbox, ctx, onZombieHit, setActive);
+    handleShotZombieCollision(hitbox, store, onZombieHit, setActive);
   }
 
   function onZombieHit(zombie: Zombie) {

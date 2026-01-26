@@ -11,14 +11,14 @@ import { createPuffshroom, createSunshroom } from "../shroom";
 import { createTorchwood } from "../torchwood";
 import { PlantType } from "../constants/plant-type";
 
-import type { LevelContext } from "@/game/level";
 import type { Plant } from "../types/plant";
+import type { LevelStore } from "@/game/level";
 
 export function createPlant(
   type: PlantType,
   x: number,
   y: number,
-  ctx: LevelContext,
+  store: LevelStore,
 ): Plant | null {
   let plant: Plant | null = null;
 
@@ -27,7 +27,7 @@ export function createPlant(
       plant = createPeashooter({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -35,7 +35,7 @@ export function createPlant(
       plant = createSunflower({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -43,7 +43,7 @@ export function createPlant(
       plant = createRepeater({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -51,7 +51,7 @@ export function createPlant(
       plant = createThreepeater({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -59,7 +59,7 @@ export function createPlant(
       plant = createSnowpea({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -67,7 +67,7 @@ export function createPlant(
       plant = createFirepea({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -75,7 +75,7 @@ export function createPlant(
       plant = createWallNut({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -83,7 +83,7 @@ export function createPlant(
       plant = createTorchwood({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -91,7 +91,7 @@ export function createPlant(
       plant = createPuffshroom({
         x,
         y,
-        ctx,
+        store,
       });
       break;
 
@@ -99,7 +99,7 @@ export function createPlant(
       plant = createSunshroom({
         x,
         y,
-        ctx,
+        store,
       });
       break;
   }

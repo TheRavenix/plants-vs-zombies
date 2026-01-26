@@ -8,17 +8,13 @@ import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { createShooter } from "../features/shooter";
 
-import type { BasePlant, PlantInfoType } from "../types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
+import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
 
 export interface Repeater extends BasePlant {
   readonly type: PlantType.Repeater;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.Repeater as const;
 const HEALTH = 300;
@@ -41,7 +37,8 @@ export const RepeaterInfo: PlantInfoType = {
 SPRITE_IMAGE.src = "./plants/pea/repeater/Repeater.png";
 
 export function createRepeater(options: Options): Repeater {
-  const { ctx } = options;
+  const { store } = options;
+  const { actions } = store;
   const id = createPlantId();
   const position = createPosition({
     x: options.x + OFFSET_X,
@@ -66,13 +63,13 @@ export function createRepeater(options: Options): Repeater {
     range: RANGE,
     burstCount: 2,
     burstDelay: 150,
-    ctx,
+    store,
     onShoot() {
-      ctx.addShot(
+      actions.addShot(
         createPeashot({
           x: position.x + size.width,
           y: position.y,
-          ctx,
+          store,
         }),
       );
     },

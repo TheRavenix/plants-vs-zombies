@@ -8,17 +8,13 @@ import { createHealth } from "@/game/entities/features/health";
 import { createHitbox } from "@/game/entities/features/hitbox";
 import { createShooter } from "../features/shooter";
 
-import type { BasePlant, PlantInfoType } from "../types";
-import type { Vector2 } from "@/game/types/math";
-import type { LevelContext } from "@/game/level";
+import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
 
 export interface Peashooter extends BasePlant {
   readonly type: PlantType.Peashooter;
 }
 
-type Options = {
-  ctx: LevelContext;
-} & Vector2;
+type Options = PlantOptions;
 
 const TYPE = PlantType.Peashooter as const;
 const HEALTH = 300;
@@ -41,7 +37,8 @@ export const PeashooterInfo: PlantInfoType = {
 SPRITE_IMAGE.src = "./plants/pea/peashooter/Peashooter.png";
 
 export function createPeashooter(options: Options): Peashooter {
-  const { ctx } = options;
+  const { store } = options;
+  const { actions } = store;
   const id = createPlantId();
   const position = createPosition({
     x: options.x + OFFSET_X,
@@ -64,13 +61,13 @@ export function createPeashooter(options: Options): Peashooter {
     shotInterval: SHOT_INTERVAL,
     position,
     range: RANGE,
-    ctx,
+    store,
     onShoot() {
-      ctx.addShot(
+      actions.addShot(
         createPeashot({
           x: position.x + size.width,
           y: position.y,
-          ctx,
+          store,
         }),
       );
     },
