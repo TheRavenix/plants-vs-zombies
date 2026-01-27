@@ -5,9 +5,11 @@ import type { Health } from "@/game/entities/features/health";
 import type { Drawable } from "@/game/types/drawable";
 import type { Updatable } from "@/game/types/updatable";
 import type { Vector2 } from "@/game/types/math";
-import type { LevelStore } from "@/game/level";
+import type { GameEvent } from "@/game/events/types";
+import type { Zombie } from "../../zombies/types/zombie";
+import type { Shooter } from "../features/shooter";
 
-export interface BasePlant extends Drawable, Updatable {
+export interface BasePlant extends Drawable, Updatable<GameEvent[]> {
   readonly id: string;
   readonly position: Position;
   readonly size: Size;
@@ -16,12 +18,18 @@ export interface BasePlant extends Drawable, Updatable {
   readonly sunCost: number;
 }
 
+export interface ShooterPlant extends BasePlant {
+  readonly shooter: Shooter;
+}
+
 export type PlantInfoType = Readonly<{
   SunCost: number;
-  SpriteImage: HTMLImageElement;
+  SpritePath: string;
   Cooldown: number;
 }>;
 
-export type PlantOptions = {
-  store: LevelStore;
+export type PlantOptions = {} & Vector2;
+
+export type ShooterPlantOptions = {
+  getZombies(): Zombie[];
 } & Vector2;

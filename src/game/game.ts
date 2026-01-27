@@ -14,10 +14,6 @@ export interface Game extends Startable {
   setScene(scene: GameScene): void;
 }
 
-export interface GameContext {
-  setScene(scene: GameScene): void;
-}
-
 type Options = {
   board: Board;
 };
@@ -32,15 +28,8 @@ export function createGame(options: Options): Game {
   let lastTime = 0;
   let scene = GameScene.Level;
   let activeCleanup: Cleanup | null = null;
-
-  const gameContext: GameContext = {
-    setScene,
-  };
-
-  const level = createLevel({ gameContext, board });
-  const mainMenu = createMainMenu({
-    ctx: gameContext,
-  });
+  const level = createLevel({ board, setScene });
+  const mainMenu = createMainMenu({ setScene });
 
   function draw(board: Board) {
     const { canvas, ctx } = board;

@@ -6,7 +6,7 @@ import type { Health } from "@/game/entities/features/health";
 import type { Drawable } from "@/game/types/drawable";
 import type { Updatable } from "@/game/types/updatable";
 import type { Vector2 } from "@/game/types/math";
-import type { LevelStore } from "@/game/level";
+import type { Plant } from "../../plants/types/plant";
 
 export interface BaseZombie extends Drawable, Updatable {
   readonly id: string;
@@ -23,5 +23,5 @@ export interface BaseZombie extends Drawable, Updatable {
 }
 
 export type ZombieOptions = {
-  store: LevelStore;
+  getPlants(): Plant[];
 } & Vector2;

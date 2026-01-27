@@ -3,6 +3,7 @@ import { drawSunImage } from "../entities/sun";
 import { drawCenteredText } from "../helpers/canvas";
 import { createPosition, type Position } from "../features/position";
 import { createSize, type Size } from "../features/size";
+import { getOrLoadImage } from "../assets";
 
 import type { Board } from "../board";
 import type { Vector2 } from "../types/math";
@@ -85,7 +86,7 @@ export function createSeedPacket(options: Options): SeedPacket {
       size.height,
     );
     ctx.drawImage(
-      plantInfo.SpriteImage,
+      getOrLoadImage(plantInfo.SpritePath),
       Math.round(position.x + size.width / 4),
       Math.round(
         isSelected

@@ -4,11 +4,11 @@ import type {
   RicochetPeashot,
   SnowpeaShot,
 } from "../pea";
-import type { Shroomshot } from "../shroomshot";
+import type { PuffShroomshot } from "../shroom";
 
 export type Shot =
   | Peashot
   | SnowpeaShot
-  | Shroomshot
+  | PuffShroomshot
   | FirepeaShot
   | RicochetPeashot;

@@ -1,5 +1,6 @@
 import { createPosition, type Position } from "@/game/features/position";
 import { createSize, type Size } from "@/game/features/size";
+import { getOrLoadImage } from "@/game/assets";
 
 import type { Board } from "@/game/board";
 import type { Drawable } from "@/game/types/drawable";
@@ -19,13 +20,11 @@ type Options = {
 
 export const SUN_SPRITE_WIDTH = 32;
 export const SUN_SPRITE_HEIGHT = 32;
-const SPRITE_IMAGE = new Image(SUN_SPRITE_WIDTH, SUN_SPRITE_HEIGHT);
+const SPRITE_PATH = "./sun/Sun.png";
 const SPRITE_IMAGE_SX = 7;
 const SPRITE_IMAGE_SY = 7;
 const SPRITE_IMAGE_SW = 17;
 const SPRITE_IMAGE_SH = 17;
-
-SPRITE_IMAGE.src = "./sun/Sun.png";
 
 export function createSun(options: Options): Sun {
   const id = createSunId();
@@ -89,7 +88,7 @@ export function drawSunImage(rect: Rect, board: Board) {
   }
 
   ctx.drawImage(
-    SPRITE_IMAGE,
+    getOrLoadImage(SPRITE_PATH),
     SPRITE_IMAGE_SX,
     SPRITE_IMAGE_SY,
     SPRITE_IMAGE_SW,

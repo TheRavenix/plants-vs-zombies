@@ -10,7 +10,6 @@ import type { Health } from "@/game/entities/features/health";
 import type { Zombie } from "../types/zombie";
 import type { Plant } from "../../plants/types/plant";
 import type { Hitbox } from "../../features/hitbox";
-import type { LevelStore } from "@/game/level";
 
 export function createZombieId(): string {
   return `ZOMBIE-${crypto.randomUUID()}`;
@@ -72,8 +71,8 @@ export function handleZombieBehaviour(
   state: ZombieState,
   damageTimer: number,
   damageInterval: number,
-  store: LevelStore,
   deltaTime: number,
+  getPlants: () => Plant[],
   onEatPlant: (plant: Plant) => void,
   setState: (state: ZombieState) => void,
   setDamageTimer: (timer: number) => void,
@@ -82,7 +81,7 @@ export function handleZombieBehaviour(
 
   const collisionPlant = findFirstCollision<Plant>(
     hitbox,
-    store.state.plants,
+    getPlants(),
     (plant) => plant.hitbox,
   );
 

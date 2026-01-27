@@ -6,10 +6,10 @@ import {
   ThreepeaterInfo,
 } from "../pea";
 import { PuffshroomInfo, SunshroomInfo } from "../shroom";
-import { SunflowerInfo } from "../sunflower";
-import { TorchwoodInfo } from "../torchwood";
-import { WallNutInfo } from "../wall-nut";
 import { PlantType } from "../constants/plant-type";
+import { SunflowerInfo } from "../sunflower";
+import { WallNutInfo } from "../wall-nut";
+import { TorchwoodInfo } from "../torchwood";
 
 import type { PlantInfoType } from "../types";
 

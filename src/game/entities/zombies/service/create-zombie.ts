@@ -1,6 +1,6 @@
 import { ZombieType } from "../constants";
-import { createBasicZombie } from "../basic-zombie";
-import { createFlagZombie } from "../flag-zombie";
+import { createBasicZombie } from "../basic-zombie/basic-zombie";
+import { createFlagZombie } from "../flag-zombie/flag-zombie";
 
 import type { Zombie } from "../types/zombie";
 import type { LevelStore } from "@/game/level";
@@ -11,6 +11,7 @@ export function createZombie(
   y: number,
   store: LevelStore,
 ): Zombie | null {
+  const { state } = store;
   let zombie: Zombie | null = null;
 
   switch (type) {
@@ -18,7 +19,7 @@ export function createZombie(
       zombie = createBasicZombie({
         x,
         y,
-        store,
+        getPlants: () => state.plants,
       });
       break;
 
@@ -26,7 +27,7 @@ export function createZombie(
       zombie = createFlagZombie({
         x,
         y,
-        store,
+        getPlants: () => state.plants,
       });
       break;
   }

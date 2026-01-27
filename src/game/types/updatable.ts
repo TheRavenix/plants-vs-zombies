@@ -1,3 +1,3 @@
-export interface Updatable {
-  update(deltaTime: number): void;
+export interface Updatable<T = void> {
+  update(deltaTime: number): T;
 }

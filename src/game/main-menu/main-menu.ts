@@ -5,8 +5,9 @@ import {
   TILE_WIDTH,
   type Board,
 } from "../board";
-import { GameScene, type GameContext } from "../game";
+import { GameScene } from "../game";
 import { drawButton, isPointInRect, type Button } from "../helpers/canvas";
+import { getOrLoadImage } from "../assets";
 
 import type { Cleanup } from "../types/cleanup";
 import type { Vector2 } from "../types/math";
@@ -17,13 +18,13 @@ export interface MainMenu extends Drawable {
 }
 
 type Options = {
-  ctx: GameContext;
+  setScene(scene: GameScene): void;
 };
 
 const SPRITE_WIDTH = TILE_WIDTH;
 const SPRITE_HEIGHT = TILE_HEIGHT;
-const ZOMBIE_SYMBOL_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
-const PLANT_SYMBOL_IMAGE = new Image(SPRITE_WIDTH, SPRITE_HEIGHT);
+const ZOMBIE_SYMBOL_PATH = "./zombie-symbol/Zombie_Symbol.png";
+const PLANT_SYMBOL_PATH = "./plant-symbol/Plant_Symbol.png";
 const BUTTON_WIDTH = 150;
 const BUTTON_HEIGHT = 60;
 
@@ -61,11 +62,8 @@ const buttons: Button[] = [
   },
 ];
 
-ZOMBIE_SYMBOL_IMAGE.src = "./zombie-symbol/Zombie_Symbol.png";
-PLANT_SYMBOL_IMAGE.src = "./plant-symbol/Plant_Symbol.png";
-
 export function createMainMenu(options: Options): MainMenu {
-  const { ctx } = options;
+  const { setScene } = options;
 
   function draw(board: Board) {
     const { ctx } = board;
@@ -76,8 +74,9 @@ export function createMainMenu(options: Options): MainMenu {
 
     for (let col = 0; col < BOARD_COLS; col++) {
       for (let row = 0; row < BOARD_ROWS; row++) {
-        const img =
-          (row + col) % 2 === 0 ? ZOMBIE_SYMBOL_IMAGE : PLANT_SYMBOL_IMAGE;
+        const img = getOrLoadImage(
+          (row + col) % 2 === 0 ? ZOMBIE_SYMBOL_PATH : PLANT_SYMBOL_PATH,
+        );
 
         ctx.drawImage(
           img,
@@ -110,7 +109,7 @@ export function createMainMenu(options: Options): MainMenu {
       const button = getClickedButton(coords);
 
       if (button !== undefined) {
-        handleButtonClick(button.id, ctx);
+        handleButtonClick(button.id, setScene);
       }
     }
 
@@ -131,10 +130,10 @@ function getClickedButton(coords: Vector2): Button | undefined {
   return buttons.find((button) => isPointInRect(coords, button));
 }
 
-function handleButtonClick(id: string, ctx: GameContext) {
+function handleButtonClick(id: string, setScene: (scene: GameScene) => void) {
   switch (id) {
     case ButtonId.Play:
-      ctx.setScene(GameScene.Level);
+      setScene(GameScene.Level);
       break;
 
     case ButtonId.Settings:
