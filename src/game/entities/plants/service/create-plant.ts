@@ -20,6 +20,7 @@ export function createPlant(
   y: number,
   store: LevelStore,
 ): Plant | null {
+  const { state } = store;
   let plant: Plant | null = null;
 
   switch (type) {
@@ -27,7 +28,7 @@ export function createPlant(
       plant = createPeashooter({
         x,
         y,
-        store,
+        getZombies: () => state.zombies,
       });
       break;
 
@@ -35,7 +36,6 @@ export function createPlant(
       plant = createSunflower({
         x,
         y,
-        store,
       });
       break;
 
@@ -43,7 +43,7 @@ export function createPlant(
       plant = createRepeater({
         x,
         y,
-        store,
+        getZombies: () => state.zombies,
       });
       break;
 
@@ -51,7 +51,7 @@ export function createPlant(
       plant = createThreepeater({
         x,
         y,
-        store,
+        getZombies: () => state.zombies,
       });
       break;
 
@@ -59,7 +59,7 @@ export function createPlant(
       plant = createSnowpea({
         x,
         y,
-        store,
+        getZombies: () => state.zombies,
       });
       break;
 
@@ -67,7 +67,7 @@ export function createPlant(
       plant = createFirepea({
         x,
         y,
-        store,
+        getZombies: () => state.zombies,
       });
       break;
 
@@ -75,7 +75,6 @@ export function createPlant(
       plant = createWallNut({
         x,
         y,
-        store,
       });
       break;
 
@@ -83,7 +82,7 @@ export function createPlant(
       plant = createTorchwood({
         x,
         y,
-        store,
+        getShots: () => state.shots,
       });
       break;
 
@@ -91,7 +90,7 @@ export function createPlant(
       plant = createPuffshroom({
         x,
         y,
-        store,
+        getZombies: () => state.zombies,
       });
       break;
 
@@ -99,7 +98,6 @@ export function createPlant(
       plant = createSunshroom({
         x,
         y,
-        store,
       });
       break;
   }

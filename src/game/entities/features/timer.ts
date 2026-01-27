@@ -56,9 +56,9 @@ export function createTimer(options: Options): Timer {
       time += deltaTime;
 
       if (time >= maxTime) {
-        onReady();
         time = 0;
         cycles++;
+        onReady();
       }
     }
   }

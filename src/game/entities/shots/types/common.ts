@@ -5,7 +5,7 @@ import type { Position } from "@/game/features/position";
 import type { Drawable } from "@/game/types/drawable";
 import type { Updatable } from "@/game/types/updatable";
 import type { Vector2 } from "@/game/types/math";
-import type { LevelStore } from "@/game/level";
+import type { Zombie } from "../../zombies/types/zombie";
 
 export interface BaseShot extends Drawable, Updatable {
   readonly id: string;
@@ -20,5 +20,5 @@ export interface BaseShot extends Drawable, Updatable {
 
 export type ShotOptions = {
   direction?: ShotDirection;
-  store: LevelStore;
+  getZombies(): Zombie[];
 } & Vector2;

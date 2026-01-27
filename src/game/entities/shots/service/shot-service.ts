@@ -8,7 +8,6 @@ import type { Size } from "@/game/features/size";
 import type { Board } from "@/game/board";
 import type { Zombie } from "../../zombies/types/zombie";
 import type { Hitbox } from "../../features/hitbox";
-import type { LevelStore } from "@/game/level";
 
 export function createShotId(): string {
   return `SHOT-${crypto.randomUUID()}`;
@@ -76,14 +75,13 @@ export function handleShotDirection(
 
 export function handleShotZombieCollision(
   hitbox: Hitbox,
-  store: LevelStore,
+  getZombies: () => Zombie[],
   onHit: (zombie: Zombie) => void,
   setActive: (active: boolean) => void,
 ) {
-  const { state } = store;
   const collisionZombie = findFirstCollision<Zombie>(
     hitbox,
-    state.zombies,
+    getZombies(),
     (z) => z.hitbox,
   );
 

@@ -1,6 +1,6 @@
 import { closestLowerValue } from "@/utils/math";
 import { TILE_HEIGHT, TILE_WIDTH, type Board } from "../board";
-import { GameScene, type GameContext } from "../game";
+import { GameScene } from "../game";
 import { isPointInRect, type Button } from "../helpers/canvas";
 import {
   createModal,
@@ -21,8 +21,8 @@ export interface LevelEventHandler {
 
 type Options = {
   store: LevelStore;
-  gameContext: GameContext;
   buttons: Button[];
+  setScene(scene: GameScene): void;
 };
 
 enum ButtonId {
@@ -37,7 +37,7 @@ enum ModalButtonId {
 }
 
 export function createLevelEventHandler(options: Options): LevelEventHandler {
-  const { store, gameContext, buttons } = options;
+  const { store, buttons, setScene } = options;
   const { state, actions } = store;
 
   function start(board: Board) {
@@ -59,7 +59,7 @@ export function createLevelEventHandler(options: Options): LevelEventHandler {
         );
 
         if (modalButton !== undefined) {
-          handleModalButtonClick(modalButton.id, gameContext, store);
+          handleModalButtonClick(modalButton.id, store, setScene);
         }
       }
       if (state.isPaused) {
@@ -268,14 +268,14 @@ function handleButtonClick(id: string, store: LevelStore) {
 
 function handleModalButtonClick(
   id: string,
-  gameContext: GameContext,
   store: LevelStore,
+  setScene: (scene: GameScene) => void,
 ) {
   const { actions } = store;
 
   switch (id) {
     case ModalButtonId.ExitToMap:
-      gameContext.setScene(GameScene.MainMenu);
+      setScene(GameScene.MainMenu);
       break;
 
     case ModalButtonId.Resume:

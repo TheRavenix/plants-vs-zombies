@@ -13,6 +13,8 @@ import {
 } from "./level-blueprint-manager";
 import { createLevelStore, type LevelStore } from "./level-store";
 import { createLevelEventHandler } from "./level-event-handler";
+import { getOrLoadImage } from "../assets";
+import { processGameEvents } from "../events";
 
 import type { Cleanup } from "../types/cleanup";
 import type { Drawable } from "../types/drawable";
@@ -20,7 +22,7 @@ import type { Updatable } from "../types/updatable";
 import type { Zombie } from "../entities/zombies/types/zombie";
 import type { Plant } from "../entities/plants/types/plant";
 import type { Shot } from "../entities/shots/types/shot";
-import type { GameContext } from "../game";
+import type { GameScene } from "../game";
 
 import levels from "./levels.json";
 
@@ -30,13 +32,13 @@ export interface Level extends Drawable, Updatable {
 }
 
 type Options = {
-  gameContext: GameContext;
   board: Board;
+  setScene(scene: GameScene): void;
 };
 
-const GRASS_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
-const GRASS_2_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
-const WALL_IMAGE = new Image(TILE_WIDTH, TILE_HEIGHT);
+const GRASS_PATH = "./grass/Grass.png";
+const GRASS_2_PATH = "./grass/Grass_2.png";
+const WALL_PATH = "./wall/Wall.png";
 
 enum ButtonId {
   Menu = "MENU",
@@ -65,12 +67,8 @@ const buttons: Button[] = [
   },
 ];
 
-GRASS_IMAGE.src = "./grass/Grass.png";
-GRASS_2_IMAGE.src = "./grass/Grass_2.png";
-WALL_IMAGE.src = "./wall/Wall.png";
-
 export function createLevel(options: Options): Level {
-  const { gameContext, board } = options;
+  const { board, setScene } = options;
   const store = createLevelStore();
   const { state, actions } = store;
   const blueprintManager = createLevelBlueprintManager({
@@ -78,9 +76,9 @@ export function createLevel(options: Options): Level {
     store,
   });
   const eventHandler = createLevelEventHandler({
-    gameContext,
     buttons,
     store,
+    setScene,
   });
 
   function draw(board: Board) {
@@ -95,9 +93,11 @@ export function createLevel(options: Options): Level {
         let img: HTMLImageElement;
 
         if (col === 0 || row === 0) {
-          img = WALL_IMAGE;
+          img = getOrLoadImage(WALL_PATH);
         } else {
-          img = (row + col) % 2 === 0 ? GRASS_IMAGE : GRASS_2_IMAGE;
+          img = getOrLoadImage(
+            (row + col) % 2 === 0 ? GRASS_PATH : GRASS_2_PATH,
+          );
         }
 
         ctx.drawImage(
@@ -163,7 +163,8 @@ export function createLevel(options: Options): Level {
       zombie.update(deltaTime);
     }
     for (const plant of state.plants) {
-      plant.update(deltaTime);
+      const events = plant.update(deltaTime);
+      processGameEvents(events, store);
     }
     for (const shot of state.shots) {
       shot.update(deltaTime);
