@@ -7,7 +7,7 @@ import { createHealth } from "@/game/entities/features/health";
 import { PlantType } from "../constants/plant-type";
 import { getOrLoadImage } from "@/game/assets";
 import { createEventTimer, type EventTimer } from "../../features/event-timer";
-import { createSpawnSunEvent, type GameEvent } from "@/game/events";
+import { createSpawnSunEvent, type LevelEvent } from "@/game/level/events";
 
 import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
 
@@ -84,7 +84,7 @@ export function createSunflower(options: Options): Sunflower {
   }
 
   function update(deltaTime: number) {
-    let events: GameEvent[] = [];
+    let events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 

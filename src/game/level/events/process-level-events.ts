@@ -1,10 +1,10 @@
-import { createShot } from "../entities/shots/service/create-shot";
-import { createSun } from "../entities/sun";
+import { createShot } from "../../entities/shots/service/create-shot";
+import { createSun } from "../../entities/sun";
 
-import type { LevelStore } from "../level";
-import type { GameEvent } from "./types";
+import type { LevelStore } from "..";
+import type { LevelEvent } from "./types";
 
-export function processGameEvents(events: GameEvent[], store: LevelStore) {
+export function processLevelEvents(events: LevelEvent[], store: LevelStore) {
   const { actions } = store;
 
   for (const { type, payload } of events) {

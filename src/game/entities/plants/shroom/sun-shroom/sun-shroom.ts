@@ -10,11 +10,11 @@ import {
   createEventTimer,
   type EventTimer,
 } from "../../../features/event-timer";
-import { createSpawnSunEvent } from "@/game/events";
+import { createSpawnSunEvent } from "@/game/level/events";
 
 import type { BasePlant, PlantInfoType, PlantOptions } from "../../types";
 import type { Board } from "@/game/board";
-import type { GameEvent } from "@/game/events/types";
+import type { LevelEvent } from "@/game/level/events/types";
 
 export interface Sunshroom extends BasePlant {
   readonly type: PlantType.Sunshroom;
@@ -93,7 +93,7 @@ export function createSunshroom(options: Options): Sunshroom {
   }
 
   function update(deltaTime: number) {
-    let events: GameEvent[] = [];
+    let events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 

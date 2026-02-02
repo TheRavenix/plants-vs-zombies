@@ -10,6 +10,8 @@ import { PlantType } from "../constants/plant-type";
 import { SunflowerInfo } from "../sunflower";
 import { WallNutInfo } from "../wall-nut";
 import { TorchwoodInfo } from "../torchwood";
+import { CherryBombInfo } from "../explosive/cherry-bomb";
+import { PotatoMineInfo } from "../explosive";
 
 import type { PlantInfoType } from "../types";
 
@@ -27,4 +29,6 @@ export const PlantInfo: Readonly<Record<PlantType, PlantInfoType>> = {
   [PlantType.Puffshroom]: PuffshroomInfo,
   [PlantType.Sunshroom]: SunshroomInfo,
   [PlantType.Torchwood]: TorchwoodInfo,
+  [PlantType.CherryBomb]: CherryBombInfo,
+  [PlantType.PotatoMine]: PotatoMineInfo,
 };

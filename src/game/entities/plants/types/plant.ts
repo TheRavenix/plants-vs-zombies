@@ -1,3 +1,5 @@
+import type { CherryBomb } from "../explosive/cherry-bomb";
+import type { PotatoMine } from "../explosive/potato-mine";
 import type {
   Firepea,
   Peashooter,
@@ -20,4 +22,6 @@ export type Plant =
   | Puffshroom
   | Sunshroom
   | Torchwood
-  | Firepea;
+  | Firepea
+  | CherryBomb
+  | PotatoMine;

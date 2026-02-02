@@ -8,14 +8,14 @@ import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { createPosition } from "@/game/features/position";
 import { createShooter } from "../../features/shooter";
-import { createSpawnShotEvent } from "@/game/events";
+import { createSpawnShotEvent } from "@/game/level/events";
 
 import type {
   PlantInfoType,
   ShooterPlantOptions,
   ShooterPlant,
 } from "../../types";
-import type { GameEvent } from "@/game/events/types";
+import type { LevelEvent } from "@/game/level/events/types";
 
 export interface Puffshroom extends ShooterPlant {
   readonly type: PlantType.Puffshroom;
@@ -78,7 +78,7 @@ export function createPuffshroom(options: Options): Puffshroom {
   }
 
   function update(deltaTime: number) {
-    const events: GameEvent[] = [];
+    const events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 

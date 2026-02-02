@@ -96,9 +96,9 @@ export function createRicochetPeashot(options: Options): RicochetPeashot {
 
       if (lastHitZombie !== undefined) {
         filteredZombies = findZombiesWithinArea(
-          getZombies(),
           lastHitZombie.position.x,
           lastHitZombie.position.y,
+          getZombies,
         );
 
         const filteredZombiesNoLastHit = filteredZombies.filter(
@@ -112,9 +112,9 @@ export function createRicochetPeashot(options: Options): RicochetPeashot {
         }
       } else {
         const zombiesWithinArea = findZombiesWithinArea(
-          filteredZombies,
           position.x,
           position.y,
+          () => filteredZombies,
         );
 
         if (zombiesWithinArea.length <= 0) {

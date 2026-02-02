@@ -14,7 +14,7 @@ import {
 import { createLevelStore, type LevelStore } from "./level-store";
 import { createLevelEventHandler } from "./level-event-handler";
 import { getOrLoadImage } from "../assets";
-import { processGameEvents } from "../events";
+import { processLevelEvents } from "./events";
 
 import type { Cleanup } from "../types/cleanup";
 import type { Drawable } from "../types/drawable";
@@ -164,7 +164,7 @@ export function createLevel(options: Options): Level {
     }
     for (const plant of state.plants) {
       const events = plant.update(deltaTime);
-      processGameEvents(events, store);
+      processLevelEvents(events, store);
     }
     for (const shot of state.shots) {
       shot.update(deltaTime);

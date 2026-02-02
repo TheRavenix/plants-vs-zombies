@@ -8,14 +8,14 @@ import { createHealth } from "@/game/entities/features/health";
 import { createShooter } from "../../features/shooter";
 import { getOrLoadImage } from "@/game/assets";
 import { ShotType } from "@/game/entities/shots";
-import { createSpawnShotEvent } from "@/game/events";
+import { createSpawnShotEvent } from "@/game/level/events";
 
 import type {
   PlantInfoType,
   ShooterPlantOptions,
   ShooterPlant,
 } from "../../types";
-import type { GameEvent } from "@/game/events/types";
+import type { LevelEvent } from "@/game/level/events/types";
 
 export interface Snowpea extends ShooterPlant {
   readonly type: PlantType.Snowpea;
@@ -86,7 +86,7 @@ export function createSnowpea(options: Options): Snowpea {
   }
 
   function update(deltaTime: number) {
-    const events: GameEvent[] = [];
+    const events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 

@@ -10,6 +10,8 @@ import { createWallNut } from "../wall-nut";
 import { createPuffshroom, createSunshroom } from "../shroom";
 import { createTorchwood } from "../torchwood";
 import { PlantType } from "../constants/plant-type";
+import { createCherryBomb } from "../explosive/cherry-bomb";
+import { createPotatoMine } from "../explosive/potato-mine";
 
 import type { Plant } from "../types/plant";
 import type { LevelStore } from "@/game/level";
@@ -98,6 +100,22 @@ export function createPlant(
       plant = createSunshroom({
         x,
         y,
+      });
+      break;
+
+    case PlantType.CherryBomb:
+      plant = createCherryBomb({
+        x,
+        y,
+        getZombies: () => state.zombies,
+      });
+      break;
+
+    case PlantType.PotatoMine:
+      plant = createPotatoMine({
+        x,
+        y,
+        getZombies: () => state.zombies,
       });
       break;
   }

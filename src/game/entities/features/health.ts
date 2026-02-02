@@ -2,6 +2,7 @@ export interface Health {
   readonly hp: number;
   heal(amount: number): void;
   takeDamage(amount: number): void;
+  kill(): void;
   isDead(): boolean;
 }
 
@@ -21,6 +22,9 @@ export function createHealth(options: Options): Health {
     },
     takeDamage(amount) {
       hp = Math.max(0, hp - amount);
+    },
+    kill() {
+      hp = 0;
     },
     isDead() {
       return hp <= 0;
