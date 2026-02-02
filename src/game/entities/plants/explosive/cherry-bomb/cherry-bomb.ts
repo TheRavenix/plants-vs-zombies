@@ -1,47 +1,43 @@
-import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
-import { createPlantId } from "../../service";
+import { createPlantId, drawPlantRect, drawPlantType } from "../../service";
 import { PlantType } from "../../constants/plant-type";
+import { createHitbox } from "@/game/entities/features/hitbox";
 import { createPosition } from "@/game/features/position";
 import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
-import { createHitbox } from "@/game/entities/features/hitbox";
-import { createShooter } from "../../features/shooter";
-import { getOrLoadImage } from "@/game/assets";
-import { createSpawnShotEvent } from "@/game/level/events";
-import { ShotType } from "@/game/entities/shots";
+import { TILE_HEIGHT, TILE_WIDTH, type Board } from "@/game/board";
+import { findZombiesWithinArea } from "../../../zombies";
 
 import type {
+  BasePlant,
+  GetZombiesOptions,
   PlantInfoType,
-  ShooterPlantOptions,
-  ShooterPlant,
+  PlantOptions,
 } from "../../types";
 import type { LevelEvent } from "@/game/level/events/types";
 
-export interface Peashooter extends ShooterPlant {
-  readonly type: PlantType.Peashooter;
+export interface CherryBomb extends BasePlant {
+  type: PlantType.CherryBomb;
 }
 
-type Options = ShooterPlantOptions;
+type Options = PlantOptions & GetZombiesOptions;
 
-const TYPE = PlantType.Peashooter as const;
+const TYPE = PlantType.CherryBomb as const;
 const HEALTH = 300;
 const SUNCOST = 0;
-const SHOT_INTERVAL = 1500;
-const RANGE = TILE_WIDTH * 7;
 const COOLDOWN = 0;
 const SPRITE_WIDTH = 64;
 const SPRITE_HEIGHT = 64;
 const OFFSET_X = (TILE_WIDTH - SPRITE_WIDTH) / 2;
 const OFFSET_Y = (TILE_HEIGHT - SPRITE_HEIGHT) / 2;
-const SPRITE_PATH = "./plants/pea/peashooter/Peashooter.png";
+const SPRITE_PATH = "";
 
-export const PeashooterInfo: PlantInfoType = {
+export const CherryBombInfo: PlantInfoType = {
   SunCost: SUNCOST,
   SpritePath: SPRITE_PATH,
   Cooldown: COOLDOWN,
 };
 
-export function createPeashooter(options: Options): Peashooter {
+export function createCherryBomb(options: Options): CherryBomb {
   const { getZombies } = options;
   const id = createPlantId();
   const position = createPosition({
@@ -61,12 +57,6 @@ export function createPeashooter(options: Options): Peashooter {
     width: size.width,
     height: size.height,
   });
-  const shooter = createShooter({
-    shotInterval: SHOT_INTERVAL,
-    position,
-    range: RANGE,
-    getZombies,
-  });
 
   function draw(board: Board) {
     const { ctx } = board;
@@ -75,32 +65,29 @@ export function createPeashooter(options: Options): Peashooter {
       return;
     }
 
-    ctx.drawImage(
-      getOrLoadImage(SPRITE_PATH),
-      Math.round(position.x),
-      Math.round(position.y),
-      size.width,
-      size.height,
-    );
+    drawPlantRect(position, size, "red", board);
+    drawPlantType(TYPE, position, size, health, board);
+
     hitbox.draw(board);
   }
 
-  function update(deltaTime: number) {
+  function update(_deltaTime: number) {
     const events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 
-    const ableToShoot = shooter.update(deltaTime);
+    const areaZombies = findZombiesWithinArea(
+      position.x,
+      position.y,
+      getZombies,
+      2,
+    );
 
-    if (ableToShoot) {
-      events.push(
-        createSpawnShotEvent({
-          type: ShotType.Peashot,
-          x: position.x + size.width,
-          y: position.y,
-        }),
-      );
+    for (const areaZombie of areaZombies) {
+      areaZombie.health.kill();
     }
+
+    health.kill();
 
     return events;
   }
@@ -126,9 +113,6 @@ export function createPeashooter(options: Options): Peashooter {
     },
     get hitbox() {
       return hitbox;
-    },
-    get shooter() {
-      return shooter;
     },
     draw,
     update,

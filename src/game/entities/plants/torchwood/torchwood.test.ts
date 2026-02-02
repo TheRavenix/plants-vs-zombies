@@ -4,7 +4,7 @@ import { TILE_HEIGHT, TILE_WIDTH } from "@/game/board";
 import { createPeashot, createSnowpeaShot } from "../../shots";
 
 import type { Shot } from "../../shots/types/shot";
-import type { DespawnShotEvent, SpawnShotEvent } from "@/game/events";
+import type { DespawnShotEvent, SpawnShotEvent } from "@/game/level/events";
 
 describe("Torchood Logic", () => {
   it("Should not do anything if there's no peashot", () => {

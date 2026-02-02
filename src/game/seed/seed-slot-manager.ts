@@ -112,6 +112,18 @@ export function createSeedSlotManager(options: Options): SeedSlotManager {
         y: SEED_SLOT_OFFSET_Y + SEED_PACKET_ACTIVE_Y,
       }),
     },
+    {
+      id: createSeedSlotId(),
+      x: TILE_WIDTH + SEED_SLOT_WIDTH * 4,
+      y: SEED_SLOT_OFFSET_Y,
+      width: SEED_SLOT_WIDTH,
+      height: SEED_SLOT_HEIGHT,
+      packet: createSeedPacket({
+        plantType: PlantType.CherryBomb,
+        x: TILE_WIDTH + SEED_SLOT_WIDTH * 4 + SEED_PACKET_MARGIN_LEFT,
+        y: SEED_SLOT_OFFSET_Y + SEED_PACKET_ACTIVE_Y,
+      }),
+    },
   );
 
   function draw(board: Board) {

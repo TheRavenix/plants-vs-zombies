@@ -8,11 +8,14 @@ import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { findFirstCollision } from "../../helpers/collision";
 import { getOrLoadImage } from "@/game/assets";
-import { createDespawnShotEvent, createSpawnShotEvent } from "@/game/events";
+import {
+  createDespawnShotEvent,
+  createSpawnShotEvent,
+} from "@/game/level/events";
 
 import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
 import type { Shot } from "../../shots/types/shot";
-import type { GameEvent } from "@/game/events/types";
+import type { LevelEvent } from "@/game/level/events/types";
 
 export interface Torchwood extends BasePlant {
   readonly type: PlantType.Torchwood;
@@ -77,7 +80,7 @@ export function createTorchwood(options: Options): Torchwood {
   }
 
   function update(_deltaTime: number) {
-    const events: GameEvent[] = [];
+    const events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 

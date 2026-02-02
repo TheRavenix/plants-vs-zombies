@@ -1,7 +1,7 @@
-import type { GameEvent } from "@/game/events/types";
+import type { LevelEvent } from "@/game/level/events/types";
 import type { Updatable } from "@/game/types/updatable";
 
-export interface EventTimer extends Updatable<GameEvent[]> {
+export interface EventTimer extends Updatable<LevelEvent[]> {
   readonly time: number;
   readonly state: TimerState;
   readonly type: TimerType;
@@ -13,7 +13,7 @@ export interface EventTimer extends Updatable<GameEvent[]> {
 
 type Options = {
   maxTime: number;
-  events: GameEvent[];
+  events: LevelEvent[];
   defaultState?: TimerState;
   defaultType?: TimerType;
   maxCycles?: number;

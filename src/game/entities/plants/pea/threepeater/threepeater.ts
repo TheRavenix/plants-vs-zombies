@@ -8,14 +8,17 @@ import { createSize } from "@/game/features/size";
 import { createHealth } from "@/game/entities/features/health";
 import { createShooter } from "../../features/shooter";
 import { getOrLoadImage } from "@/game/assets";
-import { createSpawnShotEvent } from "@/game/events";
+import { createSpawnShotEvent } from "@/game/level/events";
 
 import type {
   PlantInfoType,
   ShooterPlantOptions,
   ShooterPlant,
 } from "../../types";
-import type { GameEvent, SpawnShotEventPayload } from "@/game/events/types";
+import type {
+  LevelEvent,
+  SpawnShotEventPayload,
+} from "@/game/level/events/types";
 
 export interface Threepeater extends ShooterPlant {
   readonly type: PlantType.Threepeater;
@@ -86,7 +89,7 @@ export function createThreepeater(options: Options): Threepeater {
   }
 
   function update(deltaTime: number) {
-    const events: GameEvent[] = [];
+    const events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 

@@ -1,4 +1,4 @@
-import type { ShotDirection, ShotType } from "../entities/shots";
+import type { ShotDirection, ShotType } from "../../entities/shots";
 
 export type SpawnShotEventPayload = {
   type: ShotType;
@@ -32,4 +32,4 @@ export type DespawnShotEvent = {
   payload: DespawnEventPayload;
 };
 
-export type GameEvent = SpawnShotEvent | SpawnSunEvent | DespawnShotEvent;
+export type LevelEvent = SpawnShotEvent | SpawnSunEvent | DespawnShotEvent;

@@ -104,9 +104,9 @@ export function handleZombieBehaviour(
 }
 
 export function findZombiesWithinArea(
-  zombies: Zombie[],
   x: number,
   y: number,
+  getZombies: () => Zombie[],
   tileRange?: number,
 ): Zombie[] {
   const tileRangeX =
@@ -114,7 +114,7 @@ export function findZombiesWithinArea(
   const tileRangeY =
     tileRange !== undefined ? TILE_HEIGHT * tileRange : TILE_HEIGHT;
 
-  return zombies.filter((zombie) => {
+  return getZombies().filter((zombie) => {
     return (
       zombie.position.x >= x - tileRangeX &&
       zombie.position.x <= x + tileRangeX &&

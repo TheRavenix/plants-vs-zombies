@@ -9,7 +9,7 @@ import { getOrLoadImage } from "@/game/assets";
 
 import type { Board } from "@/game/board";
 import type { BasePlant, PlantInfoType, PlantOptions } from "../types";
-import type { GameEvent } from "@/game/events/types";
+import type { LevelEvent } from "@/game/level/events/types";
 
 export interface WallNut extends BasePlant {
   type: PlantType.WallNut;
@@ -67,7 +67,7 @@ export function createWallNut(options: Options): WallNut {
   }
 
   function update(_deltaTime: number) {
-    const events: GameEvent[] = [];
+    const events: LevelEvent[] = [];
 
     hitbox.position.set(position.x, position.y);
 

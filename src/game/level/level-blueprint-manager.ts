@@ -1,4 +1,10 @@
-import { BOARD_COLS, TILE_HEIGHT, TILE_WIDTH } from "../board";
+import {
+  BOARD_COLS,
+  BOARD_HEIGHT,
+  BOARD_WIDTH,
+  TILE_HEIGHT,
+  TILE_WIDTH,
+} from "../board";
 import { createZombie } from "../entities/zombies/service/create-zombie";
 import { createSeedPacket } from "../seed";
 
@@ -101,6 +107,14 @@ export function createLevelBlueprintManager(
                 plantType: blueprint.winConditions.reward,
                 x: lastStayingZombie.position.x,
                 y: lastStayingZombie.position.y,
+              }),
+            );
+          } else {
+            actions.setRewardPacket(
+              createSeedPacket({
+                plantType: blueprint.winConditions.reward,
+                x: BOARD_WIDTH / 2,
+                y: BOARD_HEIGHT / 2,
               }),
             );
           }
